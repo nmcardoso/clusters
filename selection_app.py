@@ -4,6 +4,7 @@ import plotly.express as px
 import plotly.figure_factory as ff
 import plotly.graph_objs as go
 import streamlit as st
+from scipy.stats import mode
 
 SPEC_DATA_URL = 'https://github.com/nmcardoso/clusters/raw/main/public/clusters_spec_all.csv'
 AUX_DATA_URL = 'https://github.com/nmcardoso/clusters/raw/main/public/catalog_chinese_xray.csv'  
@@ -38,7 +39,11 @@ def main():
   
   sel_col1, sel_col2 = st.columns(2)
   with sel_col1:
-    sel_cluster_name = st.selectbox('Cluster:', label_visibility='collapsed', options=spec_df[spec_df.cluster.isin(aux_df.name)].cluster.unique())
+    sel_cluster_name = st.selectbox(
+      'Cluster:', 
+      label_visibility='collapsed', 
+      options=spec_df[spec_df.cluster.isin(aux_df.name)].cluster.unique()
+    )
     sel_cluster_z = aux_df[aux_df['name'] == sel_cluster_name]['z'].values[0]
   
   with sel_col2:
@@ -92,8 +97,19 @@ def main():
       data_frame=cluster_df_z,
       x='z',
       title='Spec Z Histogram',
+      nbins=22
     )
     st.plotly_chart(hist_z, use_container_width=True)
+    
+    density_plot_z = ff.create_2d_density(
+      x=cluster_df_z.RA.values, 
+      y=cluster_df_z.DEC.values, 
+      point_size=6,
+      # hist_color='#ADD8E6',
+      title='Spec Z Density',
+      ncontours=22,
+    )
+    st.plotly_chart(density_plot_z, use_container_width=True)
     
     scatter_z = px.scatter(
       data_frame=cluster_df_z, 
@@ -104,16 +120,6 @@ def main():
       color_continuous_scale='Plasma',
     )
     st.plotly_chart(scatter_z, use_container_width=True)
-    
-    density_plot_z = ff.create_2d_density(
-      x=cluster_df_z.RA.values, 
-      y=cluster_df_z.DEC.values, 
-      point_size=6,
-      # hist_color='#ADD8E6',
-      title='Spec Z Density'
-    )
-    st.plotly_chart(density_plot_z, use_container_width=True)
-  
   
   with plt_col2:
     st.header('Photo Z')
@@ -122,8 +128,19 @@ def main():
       data_frame=cluster_df_photoz,
       x='zml',
       title='Photo Z Histogram',
+      nbins=22,
     )
     st.plotly_chart(hist_photoz, use_container_width=True)
+    
+    density_plot_photoz = ff.create_2d_density(
+      x=cluster_df_photoz.RA.values, 
+      y=cluster_df_photoz.DEC.values, 
+      point_size=6,
+      # hist_color='#ADD8E6',
+      title='Photo Z Density',
+      ncontours=22,
+    )
+    st.plotly_chart(density_plot_photoz, use_container_width=True)
     
     scatter_photoz = px.scatter(
       data_frame=cluster_df_photoz, 
@@ -131,18 +148,43 @@ def main():
       y='DEC', 
       color='zml', 
       title='Photo Z Distribution', 
-      color_continuous_scale='Plasma'
+      color_continuous_scale='Plasma',
     )
     st.plotly_chart(scatter_photoz, use_container_width=True)
     
-    density_plot_photoz = ff.create_2d_density(
-      x=cluster_df_photoz.RA.values, 
-      y=cluster_df_photoz.DEC.values, 
-      point_size=6,
-      # hist_color='#ADD8E6',
-      title='Photo Z Density'
-    )
-    st.plotly_chart(density_plot_photoz, use_container_width=True)
   
+
+  try:
+    cluster_ra = aux_df[aux_df['name'] == sel_cluster_name]['ra'].values[0]
+    cluster_dec = aux_df[aux_df['name'] == sel_cluster_name]['dec'].values[0]
+  except:
+    pass
+
+  if np.isnan(cluster_ra) or np.isnan(cluster_dec):
+    cluster_ra = np.median(cluster_df_z.RA.values)
+    cluster_dec = np.median(cluster_df_z.DEC.values)
+  
+  img_col1, img_col2, img_col3 = st.columns([1, 1, 1])
+  with img_col1:
+    with st.form('img_form'):
+      st.markdown('##### Legacy DR10 & S-PLUS Stamp')
+      stamp_ra = st.number_input(label='RA', value=cluster_ra, format='%.6f')
+      stamp_dec = st.number_input(label='DEC', value=cluster_dec, format='%.6f')
+      stamp_pixscale = st.number_input(label='Pixel Scale (Legacy Only)', min_value=0.1, max_value=30.0, value=1.0, step=0.1)
+      st.form_submit_button('Reload Stamp')
+      
+  with img_col2:
+    url = (
+      f'https://www.legacysurvey.org/viewer/jpeg-cutout?layer=ls-dr10&'
+      f'ra={stamp_ra}&dec={stamp_dec}&pixscale={stamp_pixscale}&size=500'
+    )
+    st.image(image=url, use_column_width=True, caption=f'{sel_cluster_name} Legacy Stamp')
+    
+  with img_col3:
+    url=(
+      f'https://checker-melted-forsythia.glitch.me/img?'
+      f'ra={stamp_ra}&dec={stamp_dec}&size=1000'
+    )
+    st.image(image=url, use_column_width=True, caption=f'{sel_cluster_name} S-PLUS Stamp')
   
 main()
