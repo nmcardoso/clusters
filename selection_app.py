@@ -49,10 +49,26 @@ def main():
   with st.form('z_range'):
     col1, col2 = st.columns(2)
     with col1:
-      z_range = st.slider('Spec Z Range', 0.0, 0.05, 0.01, format='%.3f', step=0.001, label_visibility='visible')
+      z_range = st.slider(
+        label='Spec Z Range', 
+        min_value=0.0, 
+        max_value=0.05, 
+        value=0.01, 
+        format='%.3f', 
+        step=0.001, 
+        label_visibility='visible'
+      )
 
     with col2:
-      photoz_range = st.slider('Photo Z Range', 0.0, 0.05, 0.015, format='%.3f', step=0.001, label_visibility='visible')
+      photoz_range = st.slider(
+        label='Photo Z Range', 
+        min_value=0.0, 
+        max_value=0.05,
+        value=0.015, 
+        format='%.3f', 
+        step=0.001, 
+        label_visibility='visible'
+      )
 
     st.form_submit_button('Update Plots')
     
