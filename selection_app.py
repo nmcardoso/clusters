@@ -62,7 +62,7 @@ def main():
     y='DEC', 
     color='z', 
     title='Spec Z', 
-    color_continuous_scale='Plasma'
+    color_continuous_scale='Plasma',
   )
   st.plotly_chart(scatter_z, use_container_width=True)
   
@@ -70,7 +70,7 @@ def main():
     x=cluster_df_z.RA.values, 
     y=cluster_df_z.DEC.values, 
     point_size=6,
-    hist_color='#ADD8E6',
+    # hist_color='#ADD8E6',
     title='Spec Z Density'
   )
   st.plotly_chart(density_plot_z, use_container_width=True)
@@ -90,7 +90,7 @@ def main():
     x=cluster_df_photoz.RA.values, 
     y=cluster_df_photoz.DEC.values, 
     point_size=6,
-    hist_color='#ADD8E6',
+    # hist_color='#ADD8E6',
     title='Photo Z Density'
   )
   st.plotly_chart(density_plot_photoz, use_container_width=True)
