@@ -47,19 +47,18 @@ def main():
 
     with col2:
       photoz_range = st.slider('Photo Z Range', 0.0, 0.04, 0.015, format='%.3f', step=0.001, label_visibility='visible')
-      
-    
+
     st.form_submit_button('Update Plots')
     
   
 
-  cluster_df_photoz = spec_df[
-    (spec_df.cluster == sel_cluster_name) & 
-    (spec_df.zml.between(sel_cluster_z - photoz_range, sel_cluster_z + photoz_range))
-  ]
   cluster_df_z = spec_df[
     (spec_df.cluster == sel_cluster_name) &
     (spec_df.z.between(sel_cluster_z - z_range, sel_cluster_z + z_range))
+  ]
+  cluster_df_photoz = spec_df[
+    (spec_df.cluster == sel_cluster_name) & 
+    (spec_df.zml.between(sel_cluster_z - photoz_range, sel_cluster_z + photoz_range))
   ]
 
 
@@ -99,7 +98,7 @@ def main():
     st.header('Photo Z')
     
     hist_photoz = px.histogram(
-      data_frame=cluster_df_z,
+      data_frame=cluster_df_photoz,
       x='zml',
       title='Photo Z Histogram',
     )
