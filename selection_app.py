@@ -26,7 +26,7 @@ def load_aux_data() -> pd.DataFrame:
 
 
 def main():
-  st.set_page_config(layout='wide')
+  st.set_page_config(page_title='Cluster Analysis', layout='wide', page_icon='🌌')
   
   if 'spec_df' not in st.session_state:
     st.session_state.spec_df = load_spec_data()
@@ -97,9 +97,9 @@ def main():
       data_frame=cluster_df_z,
       x='z',
       title='Spec Z Histogram',
-      nbins=22
+      nbins=22,
     )
-    st.plotly_chart(hist_z, use_container_width=True)
+    st.plotly_chart(hist_z, use_container_width=True, config={'staticPlot': True})
     
     density_plot_z = ff.create_2d_density(
       x=cluster_df_z.RA.values, 
@@ -109,7 +109,7 @@ def main():
       title='Spec Z Density',
       ncontours=22,
     )
-    st.plotly_chart(density_plot_z, use_container_width=True)
+    st.plotly_chart(density_plot_z, use_container_width=True, config={'staticPlot': True})
     
     scatter_z = px.scatter(
       data_frame=cluster_df_z, 
@@ -119,7 +119,7 @@ def main():
       title='Spec Z Distribution', 
       color_continuous_scale='Plasma',
     )
-    st.plotly_chart(scatter_z, use_container_width=True)
+    st.plotly_chart(scatter_z, use_container_width=True, config={'staticPlot': True})
   
   with plt_col2:
     st.header('Photo Z')
@@ -130,7 +130,7 @@ def main():
       title='Photo Z Histogram',
       nbins=22,
     )
-    st.plotly_chart(hist_photoz, use_container_width=True)
+    st.plotly_chart(hist_photoz, use_container_width=True, config={'staticPlot': True})
     
     density_plot_photoz = ff.create_2d_density(
       x=cluster_df_photoz.RA.values, 
@@ -140,7 +140,7 @@ def main():
       title='Photo Z Density',
       ncontours=22,
     )
-    st.plotly_chart(density_plot_photoz, use_container_width=True)
+    st.plotly_chart(density_plot_photoz, use_container_width=True, config={'staticPlot': True})
     
     scatter_photoz = px.scatter(
       data_frame=cluster_df_photoz, 
@@ -150,7 +150,7 @@ def main():
       title='Photo Z Distribution', 
       color_continuous_scale='Plasma',
     )
-    st.plotly_chart(scatter_photoz, use_container_width=True)
+    st.plotly_chart(scatter_photoz, use_container_width=True, config={'staticPlot': True})
     
   
 
