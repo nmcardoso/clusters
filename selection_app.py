@@ -42,7 +42,6 @@ def main():
     sel_cluster_z = aux_df[aux_df['name'] == sel_cluster_name]['z'].values[0]
   
   with sel_col2:
-    # st.write(f'Info of {sel_cluster_name.upper()}:')
     st.write(f'{sel_cluster_name.upper()} Redshift: {sel_cluster_z}')
 
 
