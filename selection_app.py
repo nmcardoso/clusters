@@ -36,10 +36,16 @@ def main():
   aux_df = st.session_state.aux_df
   
   
-  sel_cluster_name = st.selectbox('Cluster:', options=spec_df[spec_df.cluster.isin(aux_df.name)].cluster.unique())
-  sel_cluster_z = aux_df[aux_df['name'] == sel_cluster_name]['z'].values[0]
+  sel_col1, sel_col2 = st.columns(2)
+  with sel_col1:
+    sel_cluster_name = st.selectbox('Cluster:', options=spec_df[spec_df.cluster.isin(aux_df.name)].cluster.unique())
+    sel_cluster_z = aux_df[aux_df['name'] == sel_cluster_name]['z'].values[0]
   
-  
+  with sel_col2:
+    # st.write(f'Info of {sel_cluster_name.upper()}:')
+    st.write(f'<br>{sel_cluster_name.upper()} Redshift: {sel_cluster_z}', unsafe_allow_html=True)
+
+
   with st.form('z_range'):
     col1, col2 = st.columns(2)
     with col1:
