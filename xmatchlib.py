@@ -124,6 +124,45 @@ class CrossMatch:
     r.secondary_idx = secondary_idx
     r.table = df1_subsample
     return r
+  
+  
+  def left_join(
+    self,
+    table1: XTable,
+    table2: XTable,
+    radius: float = 1
+  ):
+    idx, d = self.pair_match(table1, table2)
+
+    df1 = table1.to_df()
+    df2 = table2.to_df()
+
+    mask = d < (radius * arcsec_in_deg)
+
+    primary_idx = mask.nonzero()[0]
+    secondary_idx = idx[mask]
+
+    # df1_masked = df1.iloc[primary_idx]
+    df2_masked = df2.iloc[secondary_idx]
+
+    df1_subsample = df1[table1.columns].copy() \
+      if table1.columns is not None else df1.copy()
+    df2_subsample = df2_masked[table2.columns].copy() \
+      if table2.columns is not None else df2_masked.copy()
+
+    df1_subsample.loc[primary_idx, df2_subsample.columns] = df2_subsample.values
+    # TODO: include a flag "replace" in this method to indicate if t2 must
+    # replace or not t1 columns. This implementation consider replace=True.
+
+    # outra forma: criar uma coluna na tabela secundária com os idx da primária
+    # como chave estrangeira e depois fazer o join
+
+    r = CrossMatchResult()
+    r.distance = d[mask]
+    r.primary_idx = primary_idx
+    r.secondary_idx = secondary_idx
+    r.table = df1_subsample
+    return r
 
 
   def unique(

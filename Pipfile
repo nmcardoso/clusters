@@ -13,6 +13,8 @@ tqdm = "*"
 astropy = "*"
 scipy = "*"
 ipywidgets = "*"
+astroquery = "*"
+scikit-image = "*"
 
 [dev-packages]
 ipykernel = "*"
