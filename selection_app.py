@@ -25,6 +25,8 @@ def load_aux_data() -> pd.DataFrame:
 
 
 def main():
+  st.set_page_config(layout='wide')
+  
   if 'spec_df' not in st.session_state:
     st.session_state.spec_df = load_spec_data()
   if 'aux_df' not in st.session_state:
@@ -39,8 +41,13 @@ def main():
   
   
   with st.form('z_range'):
-    photoz_range = st.slider('Photo Z Range', 0.0, 0.04, 0.015, format='%.3f', step=0.001, label_visibility='visible')
-    z_range = st.slider('Spec Z Range', 0.0, 0.04, 0.015, format='%.3f', step=0.001, label_visibility='visible')
+    col1, col2 = st.columns(2)
+    with col1:
+      z_range = st.slider('Spec Z Range', 0.0, 0.04, 0.015, format='%.3f', step=0.001, label_visibility='visible')
+
+    with col2:
+      photoz_range = st.slider('Photo Z Range', 0.0, 0.04, 0.015, format='%.3f', step=0.001, label_visibility='visible')
+      
     
     st.form_submit_button('Update Plots')
     
@@ -56,44 +63,66 @@ def main():
   ]
 
 
-  scatter_z = px.scatter(
-    data_frame=cluster_df_z, 
-    x='RA', 
-    y='DEC', 
-    color='z', 
-    title='Spec Z', 
-    color_continuous_scale='Plasma',
-  )
-  st.plotly_chart(scatter_z, use_container_width=True)
+  plt_col1, plt_col2 = st.columns(2)
   
-  density_plot_z = ff.create_2d_density(
-    x=cluster_df_z.RA.values, 
-    y=cluster_df_z.DEC.values, 
-    point_size=6,
-    # hist_color='#ADD8E6',
-    title='Spec Z Density'
-  )
-  st.plotly_chart(density_plot_z, use_container_width=True)
+  with plt_col1:
+    st.header('Spec Z')
+    
+    hist_z = px.histogram(
+      data_frame=cluster_df_z,
+      x='z',
+      title='Spec Z Histogram',
+    )
+    st.plotly_chart(hist_z, use_container_width=True)
+    
+    scatter_z = px.scatter(
+      data_frame=cluster_df_z, 
+      x='RA', 
+      y='DEC', 
+      color='z', 
+      title='Spec Z Distribution', 
+      color_continuous_scale='Plasma',
+    )
+    st.plotly_chart(scatter_z, use_container_width=True)
+    
+    density_plot_z = ff.create_2d_density(
+      x=cluster_df_z.RA.values, 
+      y=cluster_df_z.DEC.values, 
+      point_size=6,
+      # hist_color='#ADD8E6',
+      title='Spec Z Density'
+    )
+    st.plotly_chart(density_plot_z, use_container_width=True)
   
   
-  scatter_photoz = px.scatter(
-    data_frame=cluster_df_photoz, 
-    x='RA', 
-    y='DEC', 
-    color='zml', 
-    title='Photo Z', 
-    color_continuous_scale='Plasma'
-  )
-  st.plotly_chart(scatter_photoz, use_container_width=True)
-  
-  density_plot_photoz = ff.create_2d_density(
-    x=cluster_df_photoz.RA.values, 
-    y=cluster_df_photoz.DEC.values, 
-    point_size=6,
-    # hist_color='#ADD8E6',
-    title='Photo Z Density'
-  )
-  st.plotly_chart(density_plot_photoz, use_container_width=True)
+  with plt_col2:
+    st.header('Photo Z')
+    
+    hist_photoz = px.histogram(
+      data_frame=cluster_df_z,
+      x='zml',
+      title='Photo Z Histogram',
+    )
+    st.plotly_chart(hist_photoz, use_container_width=True)
+    
+    scatter_photoz = px.scatter(
+      data_frame=cluster_df_photoz, 
+      x='RA', 
+      y='DEC', 
+      color='zml', 
+      title='Photo Z Distribution', 
+      color_continuous_scale='Plasma'
+    )
+    st.plotly_chart(scatter_photoz, use_container_width=True)
+    
+    density_plot_photoz = ff.create_2d_density(
+      x=cluster_df_photoz.RA.values, 
+      y=cluster_df_photoz.DEC.values, 
+      point_size=6,
+      # hist_color='#ADD8E6',
+      title='Photo Z Density'
+    )
+    st.plotly_chart(density_plot_photoz, use_container_width=True)
   
   
 main()
