@@ -38,21 +38,21 @@ def main():
   
   sel_col1, sel_col2 = st.columns(2)
   with sel_col1:
-    sel_cluster_name = st.selectbox('Cluster:', options=spec_df[spec_df.cluster.isin(aux_df.name)].cluster.unique())
+    sel_cluster_name = st.selectbox('Cluster:', label_visibility='collapsed', options=spec_df[spec_df.cluster.isin(aux_df.name)].cluster.unique())
     sel_cluster_z = aux_df[aux_df['name'] == sel_cluster_name]['z'].values[0]
   
   with sel_col2:
     # st.write(f'Info of {sel_cluster_name.upper()}:')
-    st.write(f'<br>{sel_cluster_name.upper()} Redshift: {sel_cluster_z}', unsafe_allow_html=True)
+    st.write(f'{sel_cluster_name.upper()} Redshift: {sel_cluster_z}')
 
 
   with st.form('z_range'):
     col1, col2 = st.columns(2)
     with col1:
-      z_range = st.slider('Spec Z Range', 0.0, 0.04, 0.015, format='%.3f', step=0.001, label_visibility='visible')
+      z_range = st.slider('Spec Z Range', 0.0, 0.05, 0.01, format='%.3f', step=0.001, label_visibility='visible')
 
     with col2:
-      photoz_range = st.slider('Photo Z Range', 0.0, 0.04, 0.015, format='%.3f', step=0.001, label_visibility='visible')
+      photoz_range = st.slider('Photo Z Range', 0.0, 0.05, 0.015, format='%.3f', step=0.001, label_visibility='visible')
 
     st.form_submit_button('Update Plots')
     
