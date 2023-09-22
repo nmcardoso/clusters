@@ -1,8 +1,10 @@
 import json
+import urllib
 from copy import deepcopy
 
 import numpy as np
 import pandas as pd
+import PIL
 import plotly.express as px
 import plotly.figure_factory as ff
 import plotly.graph_objs as go
@@ -25,6 +27,22 @@ def load_spec_data() -> pd.DataFrame:
 def load_aux_data() -> pd.DataFrame:
   df = pd.read_csv(AUX_DATA_URL)
   return df
+
+@st.cache_data
+def get_xray_image(cluster_name: str) -> np.ndarray:
+  try:
+    prepared_cluster_name = cluster_name
+    if prepared_cluster_name[0] == 'A':
+      while prepared_cluster_name[1] == '0':
+        prepared_cluster_name = 'A' + prepared_cluster_name[2:]
+    
+    url = f'http://zmtt.bao.ac.cn/galaxy_clusters/dyXimages/image_all/{prepared_cluster_name}_image.eps'
+    img = PIL.Image.open(urllib.request.urlopen(url))
+    img.load(transparency=True)
+    img = img.rotate(-90)
+    return np.array(img)
+  except:
+    return None
 
 
 plot_layout = {
@@ -227,24 +245,28 @@ def main():
   img_col1, img_col2, img_col3 = st.columns([1, 1, 1])
   with img_col1:
     with st.form('img_form'):
-      st.markdown('##### Legacy DR10 & S-PLUS Stamp')
+      st.markdown('##### Legacy DR10')
       stamp_ra = st.number_input(label='RA', value=cluster_ra, format='%.6f')
       stamp_dec = st.number_input(label='DEC', value=cluster_dec, format='%.6f')
-      stamp_pixscale = st.number_input(label='Pixel Scale (Legacy Only)', min_value=0.1, max_value=30.0, value=1.0, step=0.1)
+      stamp_pixscale = st.number_input(label='Pixel Scale', min_value=0.1, max_value=30.0, value=1.0, step=0.1)
       st.form_submit_button('Reload Stamp')
       
   with img_col2:
-    url = (
+    legacy_url = (
       f'https://www.legacysurvey.org/viewer/jpeg-cutout?layer=ls-dr10&'
       f'ra={stamp_ra}&dec={stamp_dec}&pixscale={stamp_pixscale}&size=500'
     )
-    st.image(image=url, use_column_width=True, caption=f'{sel_cluster_name} Legacy Stamp')
+    st.image(image=legacy_url, use_column_width=True, caption=f'{sel_cluster_name} Legacy Stamp')
     
   with img_col3:
-    url=(
-      f'https://checker-melted-forsythia.glitch.me/img?'
-      f'ra={stamp_ra}&dec={stamp_dec}&size=1000'
-    )
-    st.image(image=url, use_column_width=True, caption=f'{sel_cluster_name} S-PLUS Stamp')
+    xray_img = get_xray_image(sel_cluster_name)
+    if xray_img is not None:
+      st.image(image=xray_img, use_column_width=True, caption=f'{sel_cluster_name} X-Ray')
+    else:
+      splus_url=(
+        f'https://checker-melted-forsythia.glitch.me/img?'
+        f'ra={stamp_ra}&dec={stamp_dec}&size=1000'
+      )
+      st.image(image=splus_url, use_column_width=True, caption=f'{sel_cluster_name} S-PLUS Stamp')
   
 main()
