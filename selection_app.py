@@ -1,10 +1,12 @@
+import json
+from copy import deepcopy
+
 import numpy as np
 import pandas as pd
 import plotly.express as px
 import plotly.figure_factory as ff
 import plotly.graph_objs as go
 import streamlit as st
-from scipy.stats import mode
 
 SPEC_DATA_URL = 'https://github.com/nmcardoso/clusters/raw/main/public/clusters_spec_all.csv'
 AUX_DATA_URL = 'https://github.com/nmcardoso/clusters/raw/main/public/catalog_chinese_xray.csv'  
@@ -23,6 +25,57 @@ def load_spec_data() -> pd.DataFrame:
 def load_aux_data() -> pd.DataFrame:
   df = pd.read_csv(AUX_DATA_URL)
   return df
+
+
+plot_layout = {
+  'yaxis': {
+    'tickfont': {
+      'size': 15,
+      'color': 'black'
+    },
+    'titlefont': {
+      'color': 'black',
+      'size': 15
+    },
+  },
+  'xaxis': {
+    'tickfont': {
+      'size': 15,
+      'color': 'black'
+    },
+    'titlefont': {
+      'color': 'black',
+      'size': 15
+    },
+  },
+  'xaxis2': {
+    'tickfont': {
+      'size': 15,
+      'color': 'black'
+    },
+  },
+  'yaxis2': {
+    'tickfont': {
+      'size': 15,
+      'color': 'black'
+    },
+  },
+  'coloraxis': {
+    'colorbar': {
+      'tickfont': {
+        'size': 15,
+        'color': 'black',
+      },
+      'titlefont': {
+        'size': 15,
+        'color': 'black',
+      },
+    },
+  },
+}
+
+plot_layout_reversed = deepcopy(plot_layout)
+plot_layout_reversed['xaxis']['autorange'] = 'reversed'
 
 
 def main():
@@ -99,9 +152,10 @@ def main():
       title='Spec Z Histogram',
       nbins=22,
     )
+    hist_z.update_layout(plot_layout)
     st.plotly_chart(hist_z, use_container_width=True, config={'staticPlot': True})
     
-    density_plot_z = ff.create_2d_density(
+    density_z = ff.create_2d_density(
       x=cluster_df_z.RA.values, 
       y=cluster_df_z.DEC.values, 
       point_size=6,
@@ -109,7 +163,9 @@ def main():
       title='Spec Z Density',
       ncontours=22,
     )
-    st.plotly_chart(density_plot_z, use_container_width=True, config={'staticPlot': True})
+    density_z.update_layout(plot_layout_reversed)
+    print(json.dumps(density_z.to_dict()['layout'], indent=2))
+    st.plotly_chart(density_z, use_container_width=True, config={'staticPlot': True})
     
     scatter_z = px.scatter(
       data_frame=cluster_df_z, 
@@ -119,6 +175,7 @@ def main():
       title='Spec Z Distribution', 
       color_continuous_scale='Plasma',
     )
+    scatter_z.update_layout(plot_layout_reversed)
     st.plotly_chart(scatter_z, use_container_width=True, config={'staticPlot': True})
   
   with plt_col2:
@@ -130,9 +187,10 @@ def main():
       title='Photo Z Histogram',
       nbins=22,
     )
+    hist_photoz.update_layout(plot_layout)
     st.plotly_chart(hist_photoz, use_container_width=True, config={'staticPlot': True})
     
-    density_plot_photoz = ff.create_2d_density(
+    density_photoz = ff.create_2d_density(
       x=cluster_df_photoz.RA.values, 
       y=cluster_df_photoz.DEC.values, 
       point_size=6,
@@ -140,7 +198,8 @@ def main():
       title='Photo Z Density',
       ncontours=22,
     )
-    st.plotly_chart(density_plot_photoz, use_container_width=True, config={'staticPlot': True})
+    density_photoz.update_layout(plot_layout_reversed)
+    st.plotly_chart(density_photoz, use_container_width=True, config={'staticPlot': True})
     
     scatter_photoz = px.scatter(
       data_frame=cluster_df_photoz, 
@@ -150,6 +209,7 @@ def main():
       title='Photo Z Distribution', 
       color_continuous_scale='Plasma',
     )
+    scatter_photoz.update_layout(plot_layout_reversed)
     st.plotly_chart(scatter_photoz, use_container_width=True, config={'staticPlot': True})
     
   
