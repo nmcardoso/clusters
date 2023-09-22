@@ -182,7 +182,6 @@ def main():
       ncontours=22,
     )
     density_z.update_layout(plot_layout_reversed)
-    print(json.dumps(density_z.to_dict()['layout'], indent=2))
     st.plotly_chart(density_z, use_container_width=True, config={'staticPlot': True})
     
     scatter_z = px.scatter(
