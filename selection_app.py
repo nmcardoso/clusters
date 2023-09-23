@@ -133,6 +133,11 @@ def main():
         step=0.001, 
         label_visibility='visible'
       )
+      cluster_df_z = spec_df[
+        (spec_df.cluster == sel_cluster_name) &
+        (spec_df.z.between(sel_cluster_z - z_range, sel_cluster_z + z_range))
+      ]
+      col1.write(f'Number of objects within the range: {len(cluster_df_z)}')
 
     with col2:
       photoz_range = st.slider(
@@ -144,19 +149,13 @@ def main():
         step=0.001, 
         label_visibility='visible'
       )
-
-    st.form_submit_button('Update Plots')
+      cluster_df_photoz = spec_df[
+        (spec_df.cluster == sel_cluster_name) & 
+        (spec_df.zml.between(sel_cluster_z - photoz_range, sel_cluster_z + photoz_range))
+      ]
+      col2.write(f'Number of objects within the range: {len(cluster_df_photoz)}')
     
-  
-
-  cluster_df_z = spec_df[
-    (spec_df.cluster == sel_cluster_name) &
-    (spec_df.z.between(sel_cluster_z - z_range, sel_cluster_z + z_range))
-  ]
-  cluster_df_photoz = spec_df[
-    (spec_df.cluster == sel_cluster_name) & 
-    (spec_df.zml.between(sel_cluster_z - photoz_range, sel_cluster_z + photoz_range))
-  ]
+    st.form_submit_button('Update Plots')
 
 
   plt_col1, plt_col2 = st.columns(2)
