@@ -10,17 +10,14 @@ import plotly.figure_factory as ff
 import plotly.graph_objs as go
 import streamlit as st
 
-SPEC_DATA_URL = 'public/clusters_37.csv'
-# SPEC_DATA_URL = 'public/clusters_spec_all.csv'
-AUX_DATA_URL = 'public/catalog_chinese_xray.csv'  
-
-# SPEC_DATA_URL = 'public/clusters_spec_all.csv'
-# AUX_DATA_URL = 'public/catalog_chinese_xray.csv'
+SPEC_DATA_V2_URL = 'public/clusters_37.csv'
+SPEC_DATA_V1_URL = 'public/clusters_spec_all.csv'
+AUX_DATA_URL = 'public/catalog_chinese_xray.csv'
 
 
 @st.cache_data
-def load_spec_data() -> pd.DataFrame:
-  df = pd.read_csv(SPEC_DATA_URL)
+def load_spec_data(url: str) -> pd.DataFrame:
+  df = pd.read_csv(url)
   df = df[['RA', 'DEC', 'z', 'zml', 'cluster']]
   return df
 
@@ -100,26 +97,30 @@ plot_layout_reversed['xaxis']['autorange'] = 'reversed'
 def main():
   st.set_page_config(page_title='Cluster Analysis', layout='wide', page_icon='🌌')
   
-  if 'spec_df' not in st.session_state:
-    st.session_state.spec_df = load_spec_data()
-  if 'aux_df' not in st.session_state:
-    st.session_state.aux_df = load_aux_data()
-  
-  spec_df = st.session_state.spec_df
-  aux_df = st.session_state.aux_df
-  
-  
-  sel_col1, sel_col2 = st.columns(2)
+  sel_col1, sel_col2, sel_col3 = st.columns(3)
   with sel_col1:
+    option = st.selectbox(label='Table', options=['clusters_v1', 'clusters_v2'])
+    selected_table = SPEC_DATA_V1_URL if option == 'clusters_v1' else SPEC_DATA_V2_URL
+    
+    if 'spec_df' not in st.session_state or st.session_state.get('selected_table') != option:
+      st.session_state.spec_df = load_spec_data(selected_table)
+      st.session_state.selected_table = option
+    if 'aux_df' not in st.session_state:
+      st.session_state.aux_df = load_aux_data()
+    
+    spec_df = st.session_state.spec_df
+    aux_df = st.session_state.aux_df
+    
+  with sel_col2:
     sel_cluster_name = st.selectbox(
-      'Cluster:', 
-      label_visibility='collapsed', 
+      label='Cluster',
+      # label_visibility='collapsed', 
       options=spec_df[spec_df.cluster.isin(aux_df.name)].cluster.unique()
     )
     sel_cluster_z = aux_df[aux_df['name'] == sel_cluster_name]['z'].values[0]
   
-  with sel_col2:
-    st.write(f'{sel_cluster_name.upper()} Redshift: {sel_cluster_z}')
+  with sel_col3:
+    st.markdown(f'<br/>{sel_cluster_name.upper()} Redshift: {sel_cluster_z}', unsafe_allow_html=True)
 
 
   with st.form('z_range'):
@@ -173,6 +174,13 @@ def main():
     hist_z.update_layout(plot_layout)
     st.plotly_chart(hist_z, use_container_width=True, config={'staticPlot': True})
     
+    # ra_center = aux_df[aux_df['name'] == sel_cluster_name]['ra']
+    # dec_center = aux_df[aux_df['name'] == sel_cluster_name]['dec']
+    # ra = cluster_df_z.RA.values
+    # dec = cluster_df_z.DEC.values
+    # ra_delta = np.maximum(np.abs(ra_center - ra.min()), np.abs(ra_center - ra.max()))
+    # dec_delta = np.maximum(np.abs(dec_center - dec.min()), np.abs(dec_center - dec.max()))
+    
     density_z = ff.create_2d_density(
       x=cluster_df_z.RA.values, 
       y=cluster_df_z.DEC.values, 
@@ -181,6 +189,8 @@ def main():
       title='Spec Z Density',
       ncontours=22,
     )
+    # density_z.update_xaxes(range=[ra_center - ra_delta, ra_center + ra_delta])
+    # density_z.update_yaxes(range=[dec_center - dec_delta, dec_center + dec_delta])
     density_z.update_layout(plot_layout_reversed)
     st.plotly_chart(density_z, use_container_width=True, config={'staticPlot': True})
     
