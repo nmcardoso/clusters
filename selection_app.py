@@ -10,8 +10,8 @@ import plotly.figure_factory as ff
 import plotly.graph_objs as go
 import streamlit as st
 
-SPEC_DATA_V2_URL = 'public/clusters_37.csv'
-SPEC_DATA_V1_URL = 'public/clusters_spec_all.csv'
+SPEC_DATA_V2_URL = 'public/clusters_v2.csv'
+SPEC_DATA_V1_URL = 'public/clusters_v1.csv'
 AUX_DATA_URL = 'public/catalog_chinese_xray.csv'
 
 
