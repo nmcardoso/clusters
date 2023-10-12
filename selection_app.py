@@ -97,7 +97,7 @@ plot_layout_reversed['xaxis']['autorange'] = 'reversed'
 def main():
   st.set_page_config(page_title='Cluster Analysis', layout='wide', page_icon='🌌')
   
-  sel_col1, sel_col2, sel_col3 = st.columns(3)
+  sel_col1, sel_col2 = st.columns(2)
   with sel_col1:
     option = st.selectbox(label='Table', options=['clusters_v1', 'clusters_v2'])
     selected_table = SPEC_DATA_V1_URL if option == 'clusters_v1' else SPEC_DATA_V2_URL
@@ -118,18 +118,15 @@ def main():
       options=spec_df[spec_df.cluster.isin(aux_df.name)].cluster.unique()
     )
     sel_cluster_z = aux_df[aux_df['name'] == sel_cluster_name]['z'].values[0]
-  
-  with sel_col3:
-    st.markdown(f'<br/>{sel_cluster_name.upper()} Redshift: {sel_cluster_z}', unsafe_allow_html=True)
 
 
   with st.form('z_range'):
-    col1, col2 = st.columns(2)
+    col1, col2, col3 = st.columns([0.375, 0.375, 0.25])
     with col1:
       z_range = st.slider(
         label='Spec Z Range', 
         min_value=0.0, 
-        max_value=0.05, 
+        max_value=0.04, 
         value=0.01, 
         format='%.3f', 
         step=0.001, 
@@ -139,13 +136,13 @@ def main():
         (spec_df.cluster == sel_cluster_name) &
         (spec_df.z.between(sel_cluster_z - z_range, sel_cluster_z + z_range))
       ]
-      col1.write(f'Number of objects within the range: {len(cluster_df_z)}')
+      st.write(f'Number of objects within the range: {len(cluster_df_z)}')
 
     with col2:
       photoz_range = st.slider(
         label='Photo Z Range', 
         min_value=0.0, 
-        max_value=0.05,
+        max_value=0.04,
         value=0.015, 
         format='%.3f', 
         step=0.001, 
@@ -155,13 +152,29 @@ def main():
         (spec_df.cluster == sel_cluster_name) & 
         (spec_df.zml.between(sel_cluster_z - photoz_range, sel_cluster_z + photoz_range))
       ]
-      col2.write(f'Number of objects within the range: {len(cluster_df_photoz)}')
+      st.write(f'Number of objects within the range: {len(cluster_df_photoz)}')
+      
+    with col3:
+      st.write('**Cluster Attributes:**')
+      st.write(f'**Redshift:** {sel_cluster_z}')
+
+      cluster_ra = aux_df[aux_df['name'] == sel_cluster_name]['ra'].values[0]
+      cluster_dec = aux_df[aux_df['name'] == sel_cluster_name]['dec'].values[0]
+      
+      if np.isnan(cluster_ra) or np.isnan(cluster_dec):
+        cluster_ra = np.median(cluster_df_z.RA.values)
+        cluster_dec = np.median(cluster_df_z.DEC.values)
+        st.markdown(f'**Nominal RA:** _not found_, using median: {cluster_ra:.4f}')
+        st.markdown(f'**Nominal DEC:** _not found_, using median: {cluster_dec:.4f}')
+      else:
+        st.write(f'**Nominal RA:** {cluster_ra:.4f}')
+        st.write(f'**Nominal DEC:** {cluster_dec:.4f}')
     
     st.form_submit_button('Update Plots')
 
 
+
   plt_col1, plt_col2 = st.columns(2)
-  
   with plt_col1:
     st.header('Spec Z')
     
@@ -174,12 +187,9 @@ def main():
     hist_z.update_layout(plot_layout)
     st.plotly_chart(hist_z, use_container_width=True, config={'staticPlot': True})
     
-    # ra_center = aux_df[aux_df['name'] == sel_cluster_name]['ra']
-    # dec_center = aux_df[aux_df['name'] == sel_cluster_name]['dec']
-    # ra = cluster_df_z.RA.values
-    # dec = cluster_df_z.DEC.values
-    # ra_delta = np.maximum(np.abs(ra_center - ra.min()), np.abs(ra_center - ra.max()))
-    # dec_delta = np.maximum(np.abs(dec_center - dec.min()), np.abs(dec_center - dec.max()))
+    
+    ra_delta_z = np.maximum(np.abs(cluster_ra - cluster_df_z.RA.values.min()), np.abs(cluster_df_z.RA.values.max() - cluster_ra))
+    dec_delta_z = np.maximum(np.abs(cluster_dec - cluster_df_z.DEC.values.min()), np.abs(cluster_df_z.DEC.values.max() - cluster_dec))
     
     density_z = ff.create_2d_density(
       x=cluster_df_z.RA.values, 
@@ -189,8 +199,17 @@ def main():
       title='Spec Z Density',
       ncontours=22,
     )
-    # density_z.update_xaxes(range=[ra_center - ra_delta, ra_center + ra_delta])
-    # density_z.update_yaxes(range=[dec_center - dec_delta, dec_center + dec_delta])
+    density_z.add_scatter(
+      x=[cluster_ra], 
+      y=[cluster_dec], 
+      marker_symbol='cross-thin', 
+      marker_line_color='red', 
+      marker_color='red', 
+      marker_line_width=4, 
+      marker_size=15
+    )
+    density_z.update_layout(xaxis={'range': [cluster_ra - ra_delta_z, cluster_ra + ra_delta_z]})
+    density_z.update_layout(yaxis={'range': [cluster_dec - dec_delta_z, cluster_dec + dec_delta_z]})
     density_z.update_layout(plot_layout_reversed)
     st.plotly_chart(density_z, use_container_width=True, config={'staticPlot': True})
     
@@ -205,6 +224,8 @@ def main():
     scatter_z.update_layout(plot_layout_reversed)
     st.plotly_chart(scatter_z, use_container_width=True, config={'staticPlot': True})
   
+  
+  
   with plt_col2:
     st.header('Photo Z')
     
@@ -217,6 +238,11 @@ def main():
     hist_photoz.update_layout(plot_layout)
     st.plotly_chart(hist_photoz, use_container_width=True, config={'staticPlot': True})
     
+    
+    ra_delta_photoz = np.maximum(np.abs(cluster_ra - cluster_df_photoz.RA.values.min()), np.abs(cluster_df_photoz.RA.values.max() - cluster_ra))
+    dec_delta_photoz = np.maximum(np.abs(cluster_dec - cluster_df_photoz.DEC.values.min()), np.abs(cluster_df_photoz.DEC.values.max() - cluster_dec))
+    
+    # https://plotly.github.io/plotly.py-docs/generated/plotly.graph_objects.Histogram2dContour.html
     density_photoz = ff.create_2d_density(
       x=cluster_df_photoz.RA.values, 
       y=cluster_df_photoz.DEC.values, 
@@ -225,6 +251,18 @@ def main():
       title='Photo Z Density',
       ncontours=22,
     )
+    density_photoz.add_scatter(
+      x=[cluster_ra], 
+      y=[cluster_dec], 
+      marker_symbol='cross-thin', 
+      marker_line_color='red', 
+      marker_color='red', 
+      marker_line_width=4, 
+      marker_size=15
+    )
+    density_photoz.update_layout(xaxis={'range': [cluster_ra - ra_delta_photoz, cluster_ra + ra_delta_photoz]})
+    density_photoz.update_layout(yaxis={'range': [cluster_dec - dec_delta_photoz, cluster_dec + dec_delta_photoz]})
+    
     density_photoz.update_layout(plot_layout_reversed)
     st.plotly_chart(density_photoz, use_container_width=True, config={'staticPlot': True})
     
@@ -240,16 +278,6 @@ def main():
     st.plotly_chart(scatter_photoz, use_container_width=True, config={'staticPlot': True})
     
   
-
-  try:
-    cluster_ra = aux_df[aux_df['name'] == sel_cluster_name]['ra'].values[0]
-    cluster_dec = aux_df[aux_df['name'] == sel_cluster_name]['dec'].values[0]
-  except:
-    pass
-
-  if np.isnan(cluster_ra) or np.isnan(cluster_dec):
-    cluster_ra = np.median(cluster_df_z.RA.values)
-    cluster_dec = np.median(cluster_df_z.DEC.values)
   
   img_col1, img_col2, img_col3 = st.columns([1, 1, 1])
   with img_col1:
@@ -257,7 +285,23 @@ def main():
       st.markdown('##### Legacy DR10')
       stamp_ra = st.number_input(label='RA', value=cluster_ra, format='%.6f')
       stamp_dec = st.number_input(label='DEC', value=cluster_dec, format='%.6f')
-      stamp_pixscale = st.number_input(label='Pixel Scale', min_value=0.1, max_value=30.0, value=1.0, step=0.1)
+      stamp_pixscale = st.number_input(label='Pixel Scale [arcsec/pixel] (Legacy Only)', min_value=0.1, max_value=30.0, value=1.0, step=0.1)
+      fov_leg = f"""$
+      \\displaystyle
+      \\begin{{aligned}}
+        FOV_{{legacy}} &= \\left({stamp_pixscale:.2f}\\frac{{arcsec}}{{pixel}}\\right) \\left(500\\ pixel \\right) =\\\\
+        &= {(stamp_pixscale * 500):.0f}\\ arcsec = {(stamp_pixscale * 500 / 60):.3f}\\ arcmin = {(stamp_pixscale * 500 / 60 / 60):.3f}^{{\\circ}}
+      \\end{{aligned}}
+      $"""
+      fov_splus = f"""$
+      \\displaystyle
+      \\begin{{aligned}}
+        FOV_{{splus}} &= \\left(0.55\\frac{{arcsec}}{{pixel}}\\right) \\left(1000\\ pixel \\right) =\\\\
+        &= 550\\ arcsec = 9.167\\ arcmin = 0.153^{{\\circ}}
+      \\end{{aligned}}
+      $"""
+      st.write(fov_leg)
+      st.write(fov_splus)
       st.form_submit_button('Reload Stamp')
       
   with img_col2:
