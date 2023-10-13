@@ -2,6 +2,7 @@ import json
 import os
 import urllib
 from copy import deepcopy
+from pathlib import Path
 
 import numpy as np
 import pandas as pd
@@ -381,9 +382,9 @@ def main():
     st.image(image=legacy_url, use_column_width=True, caption=f'{sel_cluster_name} Legacy Stamp')
     
   with img_col3:
-    xray_img = get_xray_image(sel_cluster_name)
-    if xray_img is not None:
-      st.image(image=xray_img, use_column_width=True, caption=f'{sel_cluster_name} X-Ray')
+    xray_path = Path('public') / 'xray_images' / f'{sel_cluster_name}.png'
+    if xray_path.is_file():
+      st.image(image=str(xray_path), use_column_width=True, caption=f'{sel_cluster_name} X-Ray')
     else:
       splus_url=(
         f'https://checker-melted-forsythia.glitch.me/img?'
