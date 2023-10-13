@@ -15,6 +15,48 @@ SPEC_DATA_V1_URL = 'public/clusters_v1.csv'
 SPEC_DATA_V2_URL = 'public/clusters_v2.csv'
 SPEC_DATA_V3_URL = 'https://github.com/nmcardoso/clusters/releases/download/clusters_v3/clusters_v3.parquet' if os.environ.get('ENV', '') == 'streamlit' else 'outputs_v3/clusters_v3.csv'
 AUX_DATA_URL = 'public/catalog_chinese_xray.csv'
+URL_MAP = {
+  'clusters_v1': SPEC_DATA_V1_URL,
+  'clusters_v2': SPEC_DATA_V2_URL,
+  'clusters_v3': SPEC_DATA_V3_URL,
+}
+TABLE_DESCRIPTIONS = {
+  'clusters_v1': '''
+Lista de clusters
+
+- Restrições na seleção dos clusters:
+  - Todos os clusters da lista
+  
+- Restrições na seleção dos objetos de cada cluster:
+  - Todos os objetos presentes nos campos do S-PLUS especificados
+  '''.strip(),
+  
+  'clusters_v2': '''
+Todos os clusters da tabela chinesa presentes no S-PLUS
+
+- Restrições na seleção dos clusters:
+  - Clusters com redshift espectroscópico nominal no intervalo: $z_{{nominal}} < 0.1$
+  
+- Restrições na seleção dos objetos de cada cluster:
+  - Raio de busca (S-PLUS iDR4): 1 grau
+  - Posição (S-PLUS iDR4): objeto com distância máxima de 1 arcsec de algum objeto do S-PLUS
+  - PhotoZ (S-PLUS iDR4): $z_{{nominal}} - \\epsilon_2 < z_{{photo}} < z_{{nominal}} + \\epsilon_2$, com $\\epsilon_2 = 0.04$
+  - Redshift (Tabela Erick): $z_{{nominal}} - \\epsilon_1 < z_{{spec}} < z_{{nominal}} + \\epsilon_1$, com $\\epsilon_1 = 0.02$
+  '''.strip(),
+  
+  'clusters_v3': '''
+Todos os clusters da tabela chinesa presentes no S-PLUS.
+
+- Restrições na seleção dos clusters:
+  - Clusters com redshift espectroscópico nominal no intervalo: $0.02 < z_{{nominal}} < 0.1$
+
+- Restrições na seleção dos objetos de cada cluster:
+  - Raio de busca (S-PLUS iDR4): 15 Mpc
+  - Posição (S-PLUS iDR4): objeto com distância máxima de 1 arcsec de algum objeto do S-PLUS
+  - PhotoZ (S-PLUS iDR4): $z_{{nominal}} - \\epsilon_2 < z_{{photo}} < z_{{nominal}} + \\epsilon_2$, com $\\epsilon_2 = 0.04$
+  - Redshift (Tabela Erick): $z_{{nominal}} - \\epsilon_1 < z_{{spec}} < z_{{nominal}} + \\epsilon_1$, com $\\epsilon_1 = 0.02$
+  '''.strip(),
+}
 
 print(os.environ)
 
@@ -23,9 +65,9 @@ print(os.environ)
 def load_spec_data(url: str) -> pd.DataFrame:
   suffix = url.split('.')[-1]
   
-  if suffix == '.csv':
+  if suffix == 'csv':
     df = pd.read_csv(url)
-  elif suffix == '.parquet':
+  elif suffix == 'parquet':
     df = pd.read_parquet(url)
   
   df = df[['RA', 'DEC', 'z', 'zml', 'cluster']]
@@ -109,8 +151,9 @@ def main():
   
   sel_col1, sel_col2 = st.columns(2)
   with sel_col1:
-    option = st.selectbox(label='Table', options=['clusters_v1', 'clusters_v2'])
-    selected_table = SPEC_DATA_V1_URL if option == 'clusters_v1' else SPEC_DATA_V2_URL
+    option = st.selectbox(label='Table', options=['clusters_v1', 'clusters_v2', 'clusters_v3'])
+    selected_table = URL_MAP[option]
+    print(selected_table)
     
     if 'spec_df' not in st.session_state or st.session_state.get('selected_table') != option:
       st.session_state.spec_df = load_spec_data(selected_table)
@@ -131,56 +174,66 @@ def main():
 
 
   with st.form('z_range'):
-    col1, col2, col3 = st.columns([0.375, 0.375, 0.25])
+    col1, col2 = st.columns(2)
     with col1:
       z_range = st.slider(
-        label='Spec Z Range', 
+        label='Spec Z Range ($\\epsilon_1$)', 
         min_value=0.0, 
-        max_value=0.04, 
+        max_value=0.02, 
         value=0.01, 
-        format='%.3f', 
-        step=0.001, 
+        format='%.4f', 
+        step=0.0001, 
         label_visibility='visible'
       )
       cluster_df_z = spec_df[
         (spec_df.cluster == sel_cluster_name) &
         (spec_df.z.between(sel_cluster_z - z_range, sel_cluster_z + z_range))
       ]
-      st.write(f'Number of objects within the range: {len(cluster_df_z)}')
+      st.write(f'Filter: ${(sel_cluster_z - z_range):.4f} < z_{{spec}} < {(sel_cluster_z + z_range):.4f}$. Number of objects: {len(cluster_df_z)}')
 
     with col2:
       photoz_range = st.slider(
-        label='Photo Z Range', 
+        label='Photo Z Range ($\\epsilon_2$)', 
         min_value=0.0, 
-        max_value=0.04,
+        max_value=0.02,
         value=0.015, 
-        format='%.3f', 
-        step=0.001, 
+        format='%.4f', 
+        step=0.0001, 
         label_visibility='visible'
       )
       cluster_df_photoz = spec_df[
         (spec_df.cluster == sel_cluster_name) & 
         (spec_df.zml.between(sel_cluster_z - photoz_range, sel_cluster_z + photoz_range))
       ]
-      st.write(f'Number of objects within the range: {len(cluster_df_photoz)}')
-      
-    with col3:
-      st.write('**Cluster Attributes:**')
-      st.write(f'**Redshift:** {sel_cluster_z}')
-
-      cluster_ra = aux_df[aux_df['name'] == sel_cluster_name]['ra'].values[0]
-      cluster_dec = aux_df[aux_df['name'] == sel_cluster_name]['dec'].values[0]
-      
-      if np.isnan(cluster_ra) or np.isnan(cluster_dec):
-        cluster_ra = np.median(cluster_df_z.RA.values)
-        cluster_dec = np.median(cluster_df_z.DEC.values)
-        st.markdown(f'**Nominal RA:** _not found_, using median: {cluster_ra:.4f}')
-        st.markdown(f'**Nominal DEC:** _not found_, using median: {cluster_dec:.4f}')
-      else:
-        st.write(f'**Nominal RA:** {cluster_ra:.4f}')
-        st.write(f'**Nominal DEC:** {cluster_dec:.4f}')
+      st.write(f'Filter: ${(sel_cluster_z - photoz_range):.4f} < z_{{photo}} < {(sel_cluster_z + photoz_range):.4f}$. Number of objects: {len(cluster_df_photoz)}')
     
     st.form_submit_button('Update Plots')
+
+
+
+  col1, col2 = st.columns(2)    
+  with col1:
+    st.markdown(f'''
+**Table Description:**
+
+{TABLE_DESCRIPTIONS.get(option, "*empty*")}
+    '''.strip())
+    
+  with col2:
+    st.write('**Cluster Attributes:**')
+    st.write(f'**Redshift:** {sel_cluster_z}')
+
+    cluster_ra = aux_df[aux_df['name'] == sel_cluster_name]['ra'].values[0]
+    cluster_dec = aux_df[aux_df['name'] == sel_cluster_name]['dec'].values[0]
+    
+    if np.isnan(cluster_ra) or np.isnan(cluster_dec):
+      cluster_ra = np.median(cluster_df_z.RA.values)
+      cluster_dec = np.median(cluster_df_z.DEC.values)
+      st.markdown(f'**Nominal RA:** _not found_, using median: {cluster_ra:.4f}')
+      st.markdown(f'**Nominal DEC:** _not found_, using median: {cluster_dec:.4f}')
+    else:
+      st.write(f'**Nominal RA:** {cluster_ra:.4f} (X-ray table)')
+      st.write(f'**Nominal DEC:** {cluster_dec:.4f} (X-ray table)')
 
 
 
@@ -295,7 +348,13 @@ def main():
       st.markdown('##### Legacy DR10')
       stamp_ra = st.number_input(label='RA', value=cluster_ra, format='%.6f')
       stamp_dec = st.number_input(label='DEC', value=cluster_dec, format='%.6f')
-      stamp_pixscale = st.number_input(label='Pixel Scale [arcsec/pixel] (Legacy Only)', min_value=0.1, max_value=30.0, value=1.0, step=0.1)
+      stamp_pixscale = st.number_input(
+        label='Pixel Scale [arcsec/pixel] (Legacy Only)', 
+        min_value=0.1, 
+        max_value=30.0, 
+        value=1.1, 
+        step=0.1
+      )
       fov_leg = f"""$
       \\displaystyle
       \\begin{{aligned}}
