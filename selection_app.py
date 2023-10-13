@@ -13,7 +13,7 @@ import streamlit as st
 
 SPEC_DATA_V1_URL = 'public/clusters_v1.csv'
 SPEC_DATA_V2_URL = 'public/clusters_v2.csv'
-SPEC_DATA_V3_URL = 'https://github.com/nmcardoso/clusters/releases/download/clusters_v3/clusters_v3.parquet' if os.environ.get('ENV', '') == 'streamlit' else 'outputs_v3/clusters_v3.csv'
+SPEC_DATA_V3_URL = 'https://github.com/nmcardoso/clusters/releases/download/clusters_v3/clusters_v3.parquet' if os.environ.get('HOSTNAME', '') == 'streamlit' else 'outputs_v3/clusters_v3.csv'
 AUX_DATA_URL = 'public/catalog_chinese_xray.csv'
 URL_MAP = {
   'clusters_v1': SPEC_DATA_V1_URL,
