@@ -196,7 +196,7 @@ def main():
         label='Photo Z Range ($\\epsilon_2$)', 
         min_value=0.0, 
         max_value=0.02,
-        value=0.015, 
+        value=0.0005 if option == 'clusters_v3' else 0.015, 
         format='%.4f', 
         step=0.0001, 
         label_visibility='visible'
