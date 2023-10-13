@@ -1,4 +1,5 @@
 import json
+import os
 import urllib
 from copy import deepcopy
 
@@ -10,14 +11,23 @@ import plotly.figure_factory as ff
 import plotly.graph_objs as go
 import streamlit as st
 
-SPEC_DATA_V2_URL = 'public/clusters_v2.csv'
 SPEC_DATA_V1_URL = 'public/clusters_v1.csv'
+SPEC_DATA_V2_URL = 'public/clusters_v2.csv'
+SPEC_DATA_V3_URL = 'https://github.com/nmcardoso/clusters/releases/download/clusters_v3/clusters_v3.parquet' if os.environ.get('ENV', '') == 'streamlit' else 'outputs_v3/clusters_v3.csv'
 AUX_DATA_URL = 'public/catalog_chinese_xray.csv'
+
+print(os.environ)
 
 
 @st.cache_data
 def load_spec_data(url: str) -> pd.DataFrame:
-  df = pd.read_csv(url)
+  suffix = url.split('.')[-1]
+  
+  if suffix == '.csv':
+    df = pd.read_csv(url)
+  elif suffix == '.parquet':
+    df = pd.read_parquet(url)
+  
   df = df[['RA', 'DEC', 'z', 'zml', 'cluster']]
   return df
 
