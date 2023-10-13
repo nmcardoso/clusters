@@ -38,7 +38,7 @@ Todos os clusters da tabela chinesa presentes no S-PLUS
   - Clusters com redshift espectroscópico nominal no intervalo: $z_{{nominal}} < 0.1$
   
 - Restrições na seleção dos objetos de cada cluster:
-  - Raio de busca (S-PLUS iDR4): 1 grau
+  - Raio de busca (S-PLUS iDR4): 1 grau do centro nominal do cluster
   - Posição (S-PLUS iDR4): objeto com distância máxima de 1 arcsec de algum objeto do S-PLUS
   - PhotoZ (S-PLUS iDR4): $z_{{nominal}} - \\epsilon_2 < z_{{photo}} < z_{{nominal}} + \\epsilon_2$, com $\\epsilon_2 = 0.04$
   - Redshift (Tabela Erick): $z_{{nominal}} - \\epsilon_1 < z_{{spec}} < z_{{nominal}} + \\epsilon_1$, com $\\epsilon_1 = 0.02$
@@ -51,7 +51,7 @@ Todos os clusters da tabela chinesa presentes no S-PLUS.
   - Clusters com redshift espectroscópico nominal no intervalo: $0.02 < z_{{nominal}} < 0.1$
 
 - Restrições na seleção dos objetos de cada cluster:
-  - Raio de busca (S-PLUS iDR4): 15 Mpc
+  - Raio de busca (S-PLUS iDR4): 15 Mpc do centro nominal do cluster
   - Posição (S-PLUS iDR4): objeto com distância máxima de 1 arcsec de algum objeto do S-PLUS
   - PhotoZ (S-PLUS iDR4): $z_{{nominal}} - \\epsilon_2 < z_{{photo}} < z_{{nominal}} + \\epsilon_2$, com $\\epsilon_2 = 0.04$
   - Redshift (Tabela Erick): $z_{{nominal}} - \\epsilon_1 < z_{{spec}} < z_{{nominal}} + \\epsilon_1$, com $\\epsilon_1 = 0.02$
