@@ -87,7 +87,7 @@ def load_table(path: Union[Path, str], columns=None) -> pd.DataFrame:
 
 
 
-def save_table(data: pd.DataFrame, path: Union[Path, str], default: bool = True):
+def save_table(data: pd.DataFrame, path: Union[Path, str]):
   path = Path(path)
   if path.suffix in ('.fit', '.fits'):
     Table.from_pandas(data).write(path, overwrite=True)
