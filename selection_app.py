@@ -60,8 +60,6 @@ Todos os clusters da tabela chinesa presentes no S-PLUS.
   '''.strip(),
 }
 
-print(os.environ)
-
 
 @st.cache_data
 def load_spec_data(url: str) -> pd.DataFrame:
@@ -155,7 +153,6 @@ def main():
   with sel_col1:
     option = st.selectbox(label='Table', options=['clusters_v1', 'clusters_v2', 'clusters_v3'])
     selected_table = URL_MAP[option]
-    print(selected_table)
     
     if 'spec_df' not in st.session_state or st.session_state.get('selected_table') != option:
       st.session_state.spec_df = load_spec_data(selected_table)
