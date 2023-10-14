@@ -11,6 +11,7 @@ import plotly.express as px
 import plotly.figure_factory as ff
 import plotly.graph_objs as go
 import streamlit as st
+from streamlit.components.v1 import html
 
 SPEC_DATA_V1_URL = 'public/clusters_v1.csv'
 SPEC_DATA_V2_URL = 'public/clusters_v2.csv'
@@ -343,53 +344,53 @@ def main():
     
   
   
-  img_col1, img_col2, img_col3 = st.columns([1, 1, 1])
+  img_col1, img_col2 = st.columns([2/3, 1/3])
   with img_col1:
-    with st.form('img_form'):
-      st.markdown('##### Legacy DR10')
-      stamp_ra = st.number_input(label='RA', value=cluster_ra, format='%.6f')
-      stamp_dec = st.number_input(label='DEC', value=cluster_dec, format='%.6f')
-      stamp_pixscale = st.number_input(
-        label='Pixel Scale [arcsec/pixel] (Legacy Only)', 
-        min_value=0.1, 
-        max_value=30.0, 
-        value=1.1, 
-        step=0.1
-      )
-      fov_leg = f"""$
-      \\displaystyle
-      \\begin{{aligned}}
-        FOV_{{legacy}} &= \\left({stamp_pixscale:.2f}\\frac{{arcsec}}{{pixel}}\\right) \\left(500\\ pixel \\right) =\\\\
-        &= {(stamp_pixscale * 500):.0f}\\ arcsec = {(stamp_pixscale * 500 / 60):.3f}\\ arcmin = {(stamp_pixscale * 500 / 60 / 60):.3f}^{{\\circ}}
-      \\end{{aligned}}
-      $"""
-      fov_splus = f"""$
-      \\displaystyle
-      \\begin{{aligned}}
-        FOV_{{splus}} &= \\left(0.55\\frac{{arcsec}}{{pixel}}\\right) \\left(1000\\ pixel \\right) =\\\\
-        &= 550\\ arcsec = 9.167\\ arcmin = 0.153^{{\\circ}}
-      \\end{{aligned}}
-      $"""
-      st.write(fov_leg)
-      st.write(fov_splus)
-      st.form_submit_button('Reload Stamp')
-      
-  with img_col2:
-    legacy_url = (
-      f'https://www.legacysurvey.org/viewer/jpeg-cutout?layer=ls-dr10&'
-      f'ra={stamp_ra}&dec={stamp_dec}&pixscale={stamp_pixscale}&size=500'
-    )
-    st.image(image=legacy_url, use_column_width=True, caption=f'{sel_cluster_name} Legacy Stamp')
+    st.header('Aladin Legacy DR10 & Spec-Redshift')
+    aladin_script = '''
+      <div id="aladin-lite-div" style="width:100%; height:600px"></div>
+      <script src='https://aladin.cds.unistra.fr/AladinLite/api/v3/latest/aladin.js' charset='utf-8'></script>
+      <script>
+        var aladin;
+        A.init.then(() => {{
+            aladin = A.aladin('#aladin-lite-div', {{
+              survey: 'CDS/P/DESI-Legacy-Surveys/DR10/color', 
+              target: '{ra} {dec}', 
+              fov: {fov},
+              cooFrame: 'ICRSd',
+              showFullscreenControl: false,
+              fullScreen: true,
+            }});
+            const cat_url = 'http://cdsxmatch.u-strasbg.fr/QueryCat/QueryCat?catName=SIMBAD&mode=cone&pos={ra}%20{dec}&r=1.5deg&format=votable&limit=4000'
+            var cat = A.catalogFromURL(cat_url, {{
+              name: 'Object Info',
+              sourceSize:12, 
+              color: '#f72525', 
+              displayLabel: true, 
+              labelColumn: 'redshift', 
+              labelColor: '#31c3f7', 
+              labelFont: '14px sans-serif', 
+              onClick: 'showPopup', 
+              shape: 'circle'
+            }});
+            aladin.addCatalog(cat);
+        }});
+      </script>
+    '''
+    html(aladin_script.format(ra=cluster_ra, dec=cluster_dec, fov=0.3), height=616)
     
-  with img_col3:
+  with img_col2:
     xray_path = Path('public') / 'xray_images' / f'{sel_cluster_name}.png'
     if xray_path.is_file():
+      st.header('X-Ray Image')
       st.image(image=str(xray_path), use_column_width=True, caption=f'{sel_cluster_name} X-Ray')
     else:
+      st.header('S-PLUS Stamp')
       splus_url=(
         f'https://checker-melted-forsythia.glitch.me/img?'
-        f'ra={stamp_ra}&dec={stamp_dec}&size=1000'
+        f'ra={cluster_ra}&dec={cluster_dec}&size=1000'
       )
       st.image(image=splus_url, use_column_width=True, caption=f'{sel_cluster_name} S-PLUS Stamp')
-  
+
+
 main()
