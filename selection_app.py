@@ -349,6 +349,9 @@ def main():
       <script src='https://aladin.cds.unistra.fr/AladinLite/api/v3/latest/aladin.js' charset='utf-8'></script>
       <script>
         var aladin;
+        const catFilter = (source) => {{
+          return !isNaN(parseFloat(source.data['redshift']))
+        }}
         A.init.then(() => {{
             aladin = A.aladin('#aladin-lite-div', {{
               survey: 'CDS/P/DESI-Legacy-Surveys/DR10/color', 
@@ -370,6 +373,7 @@ def main():
               labelFont: '14px sans-serif', 
               onClick: 'showPopup', 
               shape: 'circle',
+              filter: catFilter,
             }});
             aladin.addCatalog(cat);
         }});
