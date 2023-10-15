@@ -361,9 +361,9 @@ def main():
               showFullscreenControl: false,
               fullScreen: true,
               showProjectionControl: false,
-            }});
+            }})
             const cat_url = 'http://cdsxmatch.u-strasbg.fr/QueryCat/QueryCat?catName=SIMBAD&mode=cone&pos={ra}%20{dec}&r=2.5deg&format=votable&limit=4000'
-            var cat = A.catalogFromURL(cat_url, {{
+            const cat = A.catalogFromURL(cat_url, {{
               name: 'Object Info',
               sourceSize:12, 
               color: '#f72525', 
@@ -374,8 +374,8 @@ def main():
               onClick: 'showPopup', 
               shape: 'circle',
               filter: catFilter,
-            }});
-            aladin.addCatalog(cat);
+            }})
+            aladin.addCatalog(cat)
         }});
       </script>
     '''
