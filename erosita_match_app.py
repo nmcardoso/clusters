@@ -30,6 +30,7 @@ def main():
       include_sep=True
     )
     df_match['separation'] = (df_match['separation'].values * u.deg).to(u.arcmin).value
+    df_match = df_match.sort_values('separation')
     df_match = df_match.rename(columns={'separation': 'separation (arcmin)'})
     
     st.dataframe(df_match)
