@@ -47,14 +47,17 @@ def search_calalog(df: pd.DataFrame, position: SkyCoord, radius: float, coords: 
 def main():
   st.set_page_config(layout='wide', page_title='Clusters Radial Search', page_icon='🔭')
   with st.form('position'):
-    col1, col2, col3 = st.columns(3)
+    col1, col2, col3, col4 = st.columns(4, gap='medium')
     with col1:
-      ra = st.number_input('RA (decimal)', format='%.6f')
+      ra = st.number_input('Cluster Center - RA (decimal)', format='%.6f')
     with col2:
-      dec = st.number_input('DEC (decimal)', format='%.6f')
+      dec = st.number_input('Cluster Center - DEC (decimal)', format='%.6f')
     with col3:
       radius = st.number_input('Search Radius (arcmin)', format='%.3f')
-    submit = st.form_submit_button('Submit')
+    with col4:
+      st.text('')
+      st.text('')
+      submit = st.form_submit_button('Submit', use_container_width=True)
   
   if submit:
     pos = SkyCoord(ra=ra, dec=dec, unit='deg', frame='icrs')
