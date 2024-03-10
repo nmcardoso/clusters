@@ -128,3 +128,17 @@ dual_g.Field = 'STRIPE82-0110' OR
 dual_g.Field = 'STRIPE82-0112' OR
 dual_g.Field = 'STRIPE82-0114' OR
 dual_g.Field = 'STRIPE82-0116'
+
+
+
+-----------
+
+
+
+SELECT u.name, ref.ra, ref.dec, ref.field, u.z 
+FROM "idr4_dual"."idr4_detection_image" AS ref 
+JOIN TAP_UPLOAD.upload AS u
+ON 1=CONTAINS(
+  POINT('ICRS', ref.ra, ref.dec), 
+  CIRCLE('ICRS', u.ra, u.dec, 30*0.000277777777778)
+)
