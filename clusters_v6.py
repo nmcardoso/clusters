@@ -1563,9 +1563,10 @@ class WebsitePagesStage(PipelineStage):
     return ' &nbsp;&bullet;&nbsp; '.join(links)
   
   def make_index(self):
-    page = f'''
+    page = f'''<!DOCTYPE html>
     <html>
     <head>
+      <link rel="icon" href="data:image/svg+xml,<svg xmlns=%22http://www.w3.org/2000/svg%22 viewBox=%220 0 100 100%22><text y=%22.9em%22 font-size=%2290%22>🌌</text></svg>">
       <title>Clusters Index</title>
       <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/lightbox2/2.11.4/css/lightbox.min.css" />
     </head>
@@ -1604,9 +1605,10 @@ class WebsitePagesStage(PipelineStage):
       f'<a href="{img}.{self.fmt}" class="gallery" data-lightbox="images"><img src="{img}.{self.fmt}" width="{width}" height="{height}" /></a>'
       for img in images
     ]
-    page = f'''
+    page = f'''<!DOCTYPE html>
     <html>
     <head>
+      <link rel="icon" href="data:image/svg+xml,<svg xmlns=%22http://www.w3.org/2000/svg%22 viewBox=%220 0 100 100%22><text y=%22.9em%22 font-size=%2290%22>🌌</text></svg>">
       <title>{cls_name}</title>
       <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/lightbox2/2.11.4/css/lightbox.min.css" />
       <style type="text/css">
@@ -2092,8 +2094,8 @@ def main():
   # heasarc_plot_pipeline(True)
   # magdiff_outliers_pipeline(True)
   # velocity_plots_pipeline(True)
-  # website_pipeline(False)
-  all_sky_plot()
+  website_pipeline(False)
+  # all_sky_plot()
   
   
   
