@@ -922,7 +922,7 @@ class ClusterPlotStage(PipelineStage):
       out = WEBSITE_PATH / 'clusters' / cls_name / f'specz.{self.fmt}'
       if self.overwrite or not out.exists():
         out.parent.mkdir(parents=True, exist_ok=True)
-        fig = plt.figure(figsize=(7.5, 8.2), dpi=150)
+        fig = plt.figure(figsize=(7.5, 7.5), dpi=150)
         ax = fig.add_subplot(projection=wcs)
         self.plot_specz(
           cls_ra=cls_ra, 
@@ -937,14 +937,13 @@ class ClusterPlotStage(PipelineStage):
           df_specz_radial=df_specz_radial,
           ax=ax,
         )
-        fig.suptitle(title, size=10)
         plt.savefig(out, bbox_inches='tight', pad_inches=0.1)
         plt.close(fig)
         
       out = WEBSITE_PATH / 'clusters' / cls_name / f'photoz.{self.fmt}'
       if self.overwrite or not out.exists():
         out.parent.mkdir(parents=True, exist_ok=True)
-        fig = plt.figure(figsize=(7.5, 8.2), dpi=150)
+        fig = plt.figure(figsize=(7.5, 7.5), dpi=150)
         ax = fig.add_subplot(projection=wcs)
         self.plot_photoz(
           cls_ra=cls_ra, 
@@ -958,14 +957,13 @@ class ClusterPlotStage(PipelineStage):
           z_photo_range=z_photo_range,
           ax=ax,
         )
-        fig.suptitle(title, size=10)
         plt.savefig(out, bbox_inches='tight', pad_inches=0.1)
         plt.close(fig)
         
       out = WEBSITE_PATH / 'clusters' / cls_name / f'photoz_specz.{self.fmt}'
       if self.overwrite or not out.exists():
         out.parent.mkdir(parents=True, exist_ok=True)
-        fig = plt.figure(figsize=(7.5, 8.2), dpi=150)
+        fig = plt.figure(figsize=(7.5, 7.5), dpi=150)
         ax = fig.add_subplot(projection=wcs)
         self.plot_photoz_specz(
           cls_ra=cls_ra, 
@@ -980,7 +978,6 @@ class ClusterPlotStage(PipelineStage):
           z_photo_range=z_photo_range,
           ax=ax,
         )
-        fig.suptitle(title, size=10)
         plt.savefig(out, bbox_inches='tight', pad_inches=0.1)
         plt.close(fig)
     else:
@@ -1135,14 +1132,44 @@ class VelocityPlotStage(PipelineStage):
   def plot_velocity(self, df_members: pd.DataFrame, df_interlopers: pd.DataFrame, ax: plt.Axes):
     ax.scatter(df_members.radius_Mpc, df_members.v_offset, c='tab:red', s=5, label='Members', rasterized=True)  
     ax.scatter(df_interlopers.radius_Mpc, df_interlopers.v_offset, c='tab:blue', s=5, label='Interlopers', rasterized=True)
-    # ax.invert_xaxis()
     ax.legend()
-    # ax.set_aspect('equal')
     ax.grid('on', color='k', linestyle='--', alpha=.5)
     ax.tick_params(direction='in')
     ax.set_xlabel('R [Mpc]')
     ax.set_ylabel('$\\Delta v [km/s]$')
-  
+    ax.set_title('Spectroscoptic velocity x distance')
+    
+  def plot_specz(self, df_members: pd.DataFrame, df_interlopers: pd.DataFrame, cls_z: float, ax: plt.Axes):
+    df_members['z_offset'] = df_members['z'] - cls_z
+    df_interlopers['z_offset'] = df_interlopers['z'] - cls_z
+    ax.scatter(df_members.radius_Mpc, df_members.z_offset, c='tab:red', s=5, label='Members', rasterized=True)  
+    ax.scatter(df_interlopers.radius_Mpc, df_interlopers.z_offset, c='tab:blue', s=5, label='Interlopers', rasterized=True)
+    ax.legend()
+    ax.grid('on', color='k', linestyle='--', alpha=.5)
+    ax.tick_params(direction='in')
+    ax.set_xlabel('R [Mpc]')
+    ax.set_ylabel('$\\Delta z_{{spec}}$')
+    ax.set_title('Spectroscoptic redshift x distance')
+    ymin = min(df_members.z_offset.min(), df_interlopers.z_offset.min()) - 0.0015
+    ymax = max(df_members.z_offset.max(), df_interlopers.z_offset.max()) + 0.0015
+    ax.set_ylim(ymin, ymax)
+    
+  def plot_photoz(self, df_members: pd.DataFrame, df_interlopers: pd.DataFrame, df_photoz_radial: pd.DataFrame, cls_z: float, ax: plt.Axes):
+    df_members_match = fast_crossmatch(df_members, df_photoz_radial)
+    df_interlopers_match = fast_crossmatch(df_interlopers, df_photoz_radial)
+    df_members_match['zml_offset'] = df_members_match['zml'] - cls_z
+    df_interlopers_match['zml_offset'] = df_interlopers_match['zml'] - cls_z
+    ax.scatter(df_members_match.radius_Mpc, df_members_match.zml_offset, c='tab:red', s=5, label='Members', rasterized=True)  
+    ax.scatter(df_interlopers_match.radius_Mpc, df_interlopers_match.zml_offset, c='tab:blue', s=5, label='Interlopers', rasterized=True)
+    ax.legend()
+    ax.grid('on', color='k', linestyle='--', alpha=.5)
+    ax.tick_params(direction='in')
+    ax.set_xlabel('R [Mpc]')
+    ax.set_ylabel('$\\Delta z_{{photo}}$')
+    ax.set_title('Photometric redshift x distance')
+    ymin = min(df_members.z_offset.min(), df_interlopers.z_offset.min()) - 0.0015
+    ymax = max(df_members.z_offset.max(), df_interlopers.z_offset.max()) + 0.0015
+    ax.set_ylim(ymin, ymax)
   
   def plot_ra_dec(
     self, 
@@ -1194,6 +1221,7 @@ class VelocityPlotStage(PipelineStage):
     ax.set_xlabel('RA')
     ax.set_ylabel('DEC')
     ax.legend()
+    ax.set_title('Spatial distribution of spectroscopic members')
   
   
   def run(
@@ -1211,6 +1239,7 @@ class VelocityPlotStage(PipelineStage):
     z_spec_range: Tuple[float, float],
     df_members: pd.DataFrame,
     df_interlopers: pd.DataFrame,
+    df_photoz_radial: pd.DataFrame,
   ):
     wcs_spec =  {
       # 'CDELT1': -1.0,
@@ -1239,21 +1268,37 @@ class VelocityPlotStage(PipelineStage):
       out = WEBSITE_PATH / 'clusters' / cls_name / f'spec_velocity.{self.fmt}'
       if self.overwrite or not out.exists():
         out.parent.mkdir(parents=True, exist_ok=True)
-        fig = plt.figure(figsize=(7.5, 8.2), dpi=150)
+        fig = plt.figure(figsize=(7.5, 7.5), dpi=150)
         ax = fig.add_subplot()
         self.plot_velocity(df_members, df_interlopers, ax)
-        fig.suptitle(title, size=10)
+        plt.savefig(out, bbox_inches='tight', pad_inches=0.1)
+        plt.close(fig)
+        
+      out = WEBSITE_PATH / 'clusters' / cls_name / f'specz_distance.{self.fmt}'
+      if self.overwrite or not out.exists():
+        out.parent.mkdir(parents=True, exist_ok=True)
+        fig = plt.figure(figsize=(7.5, 7.5), dpi=150)
+        ax = fig.add_subplot()
+        self.plot_specz(df_members, df_interlopers, cls_z, ax)
+        plt.savefig(out, bbox_inches='tight', pad_inches=0.1)
+        plt.close(fig)
+        
+      out = WEBSITE_PATH / 'clusters' / cls_name / f'photoz_distance.{self.fmt}'
+      if self.overwrite or not out.exists():
+        out.parent.mkdir(parents=True, exist_ok=True)
+        fig = plt.figure(figsize=(7.5, 7.5), dpi=150)
+        ax = fig.add_subplot()
+        self.plot_photoz(df_members, df_interlopers, df_photoz_radial, cls_z, ax)
         plt.savefig(out, bbox_inches='tight', pad_inches=0.1)
         plt.close(fig)
         
       out = WEBSITE_PATH / 'clusters' / cls_name / f'spec_velocity_position.{self.fmt}'
       if self.overwrite or not out.exists():
         out.parent.mkdir(parents=True, exist_ok=True)
-        fig = plt.figure(figsize=(7.5, 8.2), dpi=150)
+        fig = plt.figure(figsize=(7.5, 7.5), dpi=150)
         ax = fig.add_subplot(projection=wcs)
         self.plot_ra_dec(cls_ra, cls_dec, cls_r200_deg, cls_r200_Mpc, cls_r500_deg, 
                          cls_r500_Mpc, cls_15Mpc_deg, df_members, df_interlopers, ax)
-        fig.suptitle(title, size=10)
         plt.savefig(out, bbox_inches='tight', pad_inches=0.1)
         plt.close(fig)
     else:
@@ -1339,6 +1384,7 @@ class MagDiffPlotStage(PipelineStage):
     ax.grid('on', color='k', linestyle='--', alpha=.2)
     ax.tick_params(direction='in')
     ax.legend()
+    ax.set_title('SP-LS r-mag difference')
     
   def plot_histogram(
     self,
@@ -1349,10 +1395,12 @@ class MagDiffPlotStage(PipelineStage):
   ):
     ax.hist(x, bins=60, range=xrange)
     ax.set_xlabel(xlabel)
+    ax.set_ylabel('Number of galaxies')
     if xrange is not None:
       ax.set_xlim(*xrange)
     ax.grid('on', color='k', linestyle='--', alpha=.2)
     ax.tick_params(direction='in')
+    ax.set_title('SP-LS r-mag difference distribution')
   
   def run(
     self, 
@@ -1386,18 +1434,16 @@ class MagDiffPlotStage(PipelineStage):
       out = WEBSITE_PATH / 'clusters' / cls_name / f'mag_diff.{self.fmt}'
       if self.overwrite or not out.exists():
         out.parent.mkdir(parents=True, exist_ok=True)
-        fig, axs = plt.subplots(figsize=(7.5, 8.2), dpi=150)
+        fig, axs = plt.subplots(figsize=(7.5, 7.5), dpi=150)
         self.plot_mag_diff(df, 'r_auto', 'mag_r', axs, '$iDR5_r$', '$iDR5_r - LS10_r$')
-        plt.title(title, size=10)
         plt.savefig(out, bbox_inches='tight', pad_inches=0.1)
         plt.close(fig)
       
       out = WEBSITE_PATH / 'clusters' / cls_name / f'mag_diff_hist.{self.fmt}'
       if self.overwrite or not out.exists():
         out.parent.mkdir(parents=True, exist_ok=True)
-        fig, axs = plt.subplots(figsize=(7.5, 8.2), dpi=150)
+        fig, axs = plt.subplots(figsize=(7.5, 7.5), dpi=150)
         self.plot_histogram(df['r_auto'] - df['mag_r'], axs, '$iDR5_r - LS10_r$')
-        plt.title(title, size=10)
         plt.savefig(out, bbox_inches='tight', pad_inches=0.1)
         plt.close(fig)
     else:
@@ -1534,12 +1580,23 @@ class WebsitePagesStage(PipelineStage):
     index_path.parent.mkdir(parents=True, exist_ok=True)
     index_path.write_text(page)
   
-  def run(self, cls_name: str):
+  def run(
+    self, 
+    cls_name: str, 
+    cls_ra: float, 
+    cls_dec: float, 
+    cls_z: float,
+    cls_15Mpc_deg: float,
+    cls_r200_deg: float,
+    z_spec_range: Tuple[float, float],
+    z_photo_range: Tuple[float, float],
+  ):
     width = 400
     height = 400
     images = [
-      'photoz', 'specz', 'photoz_specz', 'spec_velocity', 
-      'spec_velocity_position', 'mag_diff', 'mag_diff_hist'
+      'specz', 'photoz', 'photoz_specz', 'spec_velocity_position', 
+      'spec_velocity', 'specz_distance', 'photoz_distance', 
+      'mag_diff', 'mag_diff_hist',
     ]
     gallery = [
       f'<a href="{img}.{self.fmt}" class="gallery" data-lightbox="images"><img src="{img}.{self.fmt}" width="{width}" height="{height}" /></a>'
@@ -1563,7 +1620,28 @@ class WebsitePagesStage(PipelineStage):
       {self.get_paginator()}
       <hr />
       <h2>Cluster: {cls_name}</h2>
+      <i>
+        RA: {cls_ra:.4f}&deg;, DEC: {cls_dec:.4f}&deg;,
+        z: {cls_z:.4f} &bullet; search radius: 15Mpc ({cls_15Mpc_deg:.3f}&deg;)
+      </i>
+      <br />
+      <i>
+        Spec Z Range: z<sub>cluster</sub> &plusmn; 0.007 = [{z_spec_range[0]:.4f}, {z_spec_range[1]:.4f}]
+      </i>
+      <br />
+      <i>
+        Good Photo Z: z<sub>cluster</sub> &plusmn; 0.015 = [{z_photo_range[0]:.4f}, {z_photo_range[1]:.4f}]
+      </i>
+      <br />
+      <i>
+        R Mag Range: [13, 22] &bullet; spec class = GALAXY*
+      </i>
+      <br />
+      <p><b>Gallery</b></p>
       {' '.join(gallery)}
+      <p><b>Legacy DR10</b></p>
+      <div id='aladin-lite-div' style='width: 850px; height: 700px; margin:0 auto;'></div>
+      
       <script src="https://cdnjs.cloudflare.com/ajax/libs/lightbox2/2.11.4/js/lightbox-plus-jquery.min.js"></script>
       <script>
       lightbox.option({{
@@ -1573,6 +1651,46 @@ class WebsitePagesStage(PipelineStage):
         'wrapAround': true,
         'fitImagesInViewport': true,
       }})
+      </script>
+      
+      <script src='https://aladin.cds.unistra.fr/AladinLite/api/v3/latest/aladin.js' charset='utf-8'></script>
+      <script>
+      const catFilter = (source) => {{
+        return !isNaN(parseFloat(source.data['redshift'])) && (source.data['redshift'] > {z_spec_range[0]}) && (source.data['redshift'] < {z_spec_range[1]})
+      }}
+      
+      var aladin;
+      A.init.then(() => {{
+        // Init Aladin
+        aladin = A.aladin('#aladin-lite-div', {{
+          source: 'CDS/P/DESI-Legacy-Surveys/DR10/color',
+          target: '{cls_ra:.6f} {cls_dec:.6f}', 
+          fov: {5*cls_r200_deg + 0.3},
+          cooFrame: 'ICRSd',
+        }});
+        aladin.setImageSurvey('CDS/P/DESI-Legacy-Surveys/DR10/color');
+        
+        // Add 5R200 Circle
+        var overlay = A.graphicOverlay({{color: '#ee2345', lineWidth: 2}});
+        aladin.addOverlay(overlay);
+        overlay.add(A.ellipse({cls_ra:.6f}, {cls_dec:.6f}, {2.5*cls_r200_deg}, {2.5*cls_r200_deg}, 0));
+        
+        // Add redshift catalog
+        const cat_url = 'http://cdsxmatch.u-strasbg.fr/QueryCat/QueryCat?catName=SIMBAD&mode=cone&pos={cls_ra:.6f}%20{cls_dec:.6f}&r={5*cls_r200_deg:.3f}deg&format=votable&limit=6000'
+        const cat = A.catalogFromURL(cat_url, {{
+          name: 'redshift',
+          sourceSize:12, 
+          color: '#f72525', 
+          displayLabel: true, 
+          labelColumn: 'redshift', 
+          labelColor: '#31c3f7', 
+          labelFont: '14px sans-serif', 
+          onClick: 'showPopup', 
+          shape: 'circle',
+          filter: catFilter,
+        }})
+        aladin.addCatalog(cat)
+      }});
       </script>
     </body>
     </html>
@@ -1927,7 +2045,7 @@ def main():
   # heasarc_plot_pipeline(True)
   # magdiff_outliers_pipeline(True)
   # velocity_plots_pipeline(True)
-  website_pipeline(True)
+  website_pipeline(False)
   
   
   
