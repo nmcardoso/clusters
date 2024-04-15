@@ -1,7 +1,9 @@
+from datetime import datetime, timedelta
 from pathlib import Path
-from typing import List, Literal, Tuple
+from typing import List, Literal, Sequence, Tuple
 
 import matplotlib.pyplot as plt
+import mpl_scatter_density
 import numpy as np
 import pandas as pd
 from astromodule.distance import mpc2arcsec
@@ -13,22 +15,71 @@ from astromodule.table import (concat_tables, crossmatch, fast_crossmatch,
 from astropy import units as u
 from astropy.coordinates import SkyCoord
 from astropy.wcs import WCS
+from matplotlib.colors import LinearSegmentedColormap
 from matplotlib.patches import Circle
 from tqdm import tqdm
 
 PHOTOZ_TABLE_PATH = Path('/mnt/hd/natanael/astrodata/idr5_photoz_clean.parquet')
 SPEC_TABLE_PATH = Path('/mnt/hd/natanael/astrodata/SpecZ_Catalogue_20240124.parquet')
 ERASS_TABLE_PATH = Path('/mnt/hd/natanael/astrodata/liana_erass.csv')
+FULL_ERASS_TABLE_PATH = Path('/mnt/hd/natanael/astrodata/eRASS1_min.parquet')
+HEASARC_TABLE_PATH = Path('public/heasarc_all.parquet')
 TABLES_PATH = Path('clusters_members')
 MEMBERS_FOLDER = Path('clusters_members/clusters')
 OUT_PATH = Path('outputs_v6')
+WEBSITE_PATH = Path('docs')
 PLOTS_FOLDER = OUT_PATH / 'plots'
+VELOCITY_PLOTS_FOLDER = OUT_PATH / 'velocity_plots'
+MAGDIFF_PLOTS_FOLDER = OUT_PATH / 'magdiff_plots'
+MAGDIFF_OUTLIERS_FOLDER = OUT_PATH / 'magdiff_outliers'
 LEG_PHOTO_FOLDER = OUT_PATH / 'legacy'
-PHOTOZ_FOLDER = OUT_PATH / 'photo'
-SPECZ_FOLDER = OUT_PATH / 'spec'
+PHOTOZ_FOLDER = OUT_PATH / 'photoz'
+SPECZ_FOLDER = OUT_PATH / 'specz'
+PHOTOZ_SPECZ_LEG_FOLDER = OUT_PATH / 'photoz+specz+legacy'
+MAG_COMP_FOLDER = OUT_PATH / 'mag_comp'
 Z_PHOTO_DELTA = 0.015
 Z_SPEC_DELTA = 0.007
 MAG_RANGE = (13, 22)
+
+
+class Timming:
+  def __init__(self, start: bool = True):
+    self.start_time = None
+    self.end_time = None
+    if start:
+      self.start()
+
+
+  def __repr__(self) -> str:
+    return self.duration()
+
+
+  def start(self):
+    self.start_time = datetime.now()
+
+
+  def end(self) -> str:
+    self.end_time = datetime.now()
+    return self.duration()
+
+
+  def duration(self) -> str:
+    if not self.end_time:
+      duration = self.end_time - self.start_time
+    else:
+      end_time = datetime.now()
+      duration = end_time - self.start_time
+
+    return self._format_time(duration)
+
+
+  def _format_time(self, dt: timedelta) -> str:
+    hours, remainder = divmod(dt.seconds, 3600)
+    minutes, seconds = divmod(remainder, 60)
+    return '{:02}:{:02}:{:02}'.format(int(hours), int(minutes), int(seconds))
+
+
+
 
 def load_clusters():
   df_clusters = read_table(TABLES_PATH / 'index.dat')
@@ -71,8 +122,72 @@ def load_photoz(coords: bool = True):
 
 def load_eRASS():
   df_erass = read_table(ERASS_TABLE_PATH)
-  df_erass['Cluster'].str.replace(' ', '_')
   return df_erass
+
+
+def load_full_eRASS():
+  df_full_eras = read_table(FULL_ERASS_TABLE_PATH)
+  return df_full_eras
+
+
+def load_heasarc():
+  df = read_table(HEASARC_TABLE_PATH)
+  df['name'] = df.name.str.replace(' ', '')
+  df['name'] = df.name.str.replace(r'^ABELL0+', 'A', regex=True)
+  df['name'] = df.name.str.replace(r'^ABELL', 'A', regex=True)
+  df['name'] = df.name.str.replace(r'^Abell0+', 'A', regex=True)
+  df['name'] = df.name.str.replace(r'^Abell', 'A', regex=True)
+  df['name'] = df.name.str.replace(r'^A0+', 'A', regex=True)
+  df['name'] = df.name.str.replace(r'^AS', 'A', regex=True)
+  df['name'] = df.name.str.replace(r'^ACO', 'A', regex=True)
+  df['name'] = df.name.str.replace(r'^A(\d+)\w*', r'A\1', regex=True)
+  df['name'] = df.name.str.replace(r'^RXC', 'MCXC', regex=True)
+  df['name'] = df.name.str.replace(r'^MKW0+', 'MKW', regex=True)
+  df = df.drop_duplicates('name', keep='last')
+  return df
+
+
+
+class LoadHeasarcInfoStage(PipelineStage):
+  products = [
+    'cls_name', 'cls_z', 'cls_ra', 'cls_dec', 'cls_15Mpc_deg',
+    'cls_r500_Mpc', 'cls_r500_deg', 'cls_r200_Mpc', 'cls_r200_deg',
+    'z_photo_range', 'z_spec_range', 'df_members', 'df_interlopers',
+  ]
+  
+  def __init__(
+    self,
+    df_heasarc: pd.DataFrame,
+    cls_name: str = None,
+  ):
+    self.df = df_heasarc
+    self.cls_name = cls_name
+    
+  def run(self, cls_name: str = None):
+    cls_name = cls_name or self.cls_name
+    cluster = self.df[self.df.name == cls_name]
+    ra = cluster['ra'].values[0]
+    dec = cluster['dec'].values[0]
+    z = cluster['redshift'].values[0]
+    r15Mpc_deg = mpc2arcsec(15, z).to(u.deg).value
+    print('Cluster Name:', cls_name)
+    print(f'RA: {ra:.3f}, DEC: {dec:.3f}, z: {z:.2f}, search radius: {r15Mpc_deg:.2f}')
+    return {
+      'cls_name': cls_name,
+      'cls_z': z,
+      'cls_ra': ra,
+      'cls_dec': dec,
+      'cls_15Mpc_deg': r15Mpc_deg,
+      'cls_r500_Mpc': None,
+      'cls_r500_deg': None,
+      'cls_r200_Mpc': None,
+      'cls_r200_deg': None,
+      'z_photo_range': (z - Z_PHOTO_DELTA, z + Z_PHOTO_DELTA),
+      'z_spec_range': (z - Z_SPEC_DELTA, z + Z_SPEC_DELTA),
+      'df_members': None,
+      'df_interlopers': None,
+    }
+    
 
 
 class LoadClusterInfoStage(PipelineStage):
@@ -102,7 +217,10 @@ class LoadClusterInfoStage(PipelineStage):
     r200_Mpc = cluster['R200_Mpc'].values[0]
     r500_deg = mpc2arcsec(r500_Mpc, z).to(u.deg).value
     r200_deg = mpc2arcsec(r200_Mpc, z).to(u.deg).value
-    r15Mpc_deg = min(mpc2arcsec(15, z).to(u.deg).value, 10.17)
+    r15Mpc_deg = mpc2arcsec(15, z).to(u.deg).value
+    if r15Mpc_deg > 17:
+      print(f'Cluster angular radius @ 15Mpc = {r15Mpc_deg:.2f} deg, limiting to 17 deg')
+      r15Mpc_deg = min(r15Mpc_deg, 17)
     paulo_path = MEMBERS_FOLDER / f'cluster.gals.sel.shiftgap.iter.{str(cls_id).zfill(5)}'
     col_names = [
       'ra', 'dec', 'z', 'z_err', 'v', 'v_err', 'radius_deg', 
@@ -111,6 +229,8 @@ class LoadClusterInfoStage(PipelineStage):
     df_paulo = read_table(paulo_path, fmt='dat', col_names=col_names)
     df_members = df_paulo[df_paulo.flag_member == 0]
     df_interlopers = df_paulo[df_paulo.flag_member == 1]
+    print('Cluster Name:', name)
+    print(f'RA: {ra:.3f}, DEC: {dec:.3f}, z: {z:.2f}, search radius: {r15Mpc_deg:.2f}')
     return {
       'cls_name': name,
       'cls_z': z,
@@ -146,7 +266,9 @@ class LoadERASSInfoStage(PipelineStage):
     dec = cluster['DEC_OPT'].values[0]
     r500_Mpc = cluster['R500_Mpc'].values[0]
     r500_deg = cluster['R500_deg'].values[0]
-    r15Mpc_deg = min(mpc2arcsec(15, z).to(u.deg).value, 10.17)
+    r15Mpc_deg = min(mpc2arcsec(15, z).to(u.deg).value, 17)
+    print('Cluster Name:', cls_name)
+    print(f'RA: {ra:.3f}, DEC: {dec:.3f}, z: {z:.2f}, search radius: {r15Mpc_deg:.2f}')
     return {
       'cls_name': cls_name,
       'cls_z': z,
@@ -164,11 +286,48 @@ class LoadERASSInfoStage(PipelineStage):
     }
 
 
+class LoadDataFrameStage(PipelineStage):
+  def __init__(self, key: str, base_path: str | Path):
+    self.key = key
+    self.base_path = base_path
+    self.products = [key]
+    
+  def run(self, cls_name: str):
+    t = Timming()
+    df = read_table(self.base_path / f'{cls_name}.parquet')
+    print(f'Table loaded. Duration: {t.end()}. Number of objects: {len(df)}')
+    return {self.key: df}
+
+
+class LoadLegacyRadialStage(LoadDataFrameStage):
+  def __init__(self):
+    super().__init__('df_legacy_radial', LEG_PHOTO_FOLDER)
+
+
+class LoadPhotozRadialStage(LoadDataFrameStage):
+  def __init__(self):
+    super().__init__('df_photoz_radial', PHOTOZ_FOLDER)
+  
+  
+class LoadSpeczRadialStage(LoadDataFrameStage):
+  def __init__(self):
+    super().__init__('df_specz_radial', SPECZ_FOLDER)
+
+
+class LoadAllRadialStage(LoadDataFrameStage):
+  def __init__(self):
+    super().__init__('df_all_radial', PHOTOZ_SPECZ_LEG_FOLDER)
+    
+
+class LoadMagRadialStage(LoadDataFrameStage):
+  def __init__(self):
+    super().__init__('df_mag_radial', MAG_COMP_FOLDER)
+
+
 class RadialSearchStage(PipelineStage):
   def __init__(
     self, 
     df_name: str,
-    out_key: str, 
     radius_key: str, 
     save_folder: str | Path,
     kind: Literal['spec', 'photo'],
@@ -176,8 +335,6 @@ class RadialSearchStage(PipelineStage):
     skycoord_name: str = None,
   ):
     self.df_name = df_name
-    self.out_key = out_key
-    self.products = [out_key]
     self.radius_key = radius_key
     self.save_folder = Path(save_folder)
     self.overwrite = overwrite
@@ -194,31 +351,37 @@ class RadialSearchStage(PipelineStage):
   ):
     out_path = self.save_folder / f'{cls_name}.parquet'
     if not self.overwrite and out_path.exists():
-      df_search = read_table(out_path)
-    else:
-      pos = SkyCoord(ra=cls_ra, dec=cls_dec, unit=u.deg, frame='icrs')
-      radius = self.get_data(self.radius_key)
-      df_search = radial_search(
-        position=pos, 
-        table=self.get_data(self.df_name), 
-        radius=radius*u.deg,
-        cached_catalog=self.get_data(self.skycoord_name),
-      )
-      
-      if self.kind == 'spec':
-        df_search = df_search[
-          df_search.z.between(*z_spec_range) &
-          df_search.class_spec.str.startswith('GALAXY')
-        ]
-      elif self.kind == 'photo':
-        df_search = df_search[
-          # df_search.zml.between(*z_photo_range) &
-          df_search.r_auto.between(*MAG_RANGE)
-        ]
-        
-      if self.save_folder:
-        write_table(df_search, self.save_folder / f'{cls_name}.parquet')
-    return {self.out_key: df_search}
+      if self.get_data('cls_15Mpc_deg') < 10.17:
+        return
+    
+    radius = self.get_data(self.radius_key)
+    t = Timming()
+    print(f'Starting radial search with radius: {radius:.2f} deg')
+    pos = SkyCoord(ra=cls_ra, dec=cls_dec, unit=u.deg, frame='icrs')
+    df_search = radial_search(
+      position=pos, 
+      table=self.get_data(self.df_name), 
+      radius=radius*u.deg,
+      cached_catalog=self.get_data(self.skycoord_name),
+    )
+    
+    if self.kind == 'spec':
+      df_search = df_search[
+        df_search.z.between(*z_spec_range) &
+        df_search.class_spec.str.startswith('GALAXY')
+      ]
+    elif self.kind == 'photo':
+      df_search = df_search[
+        # df_search.zml.between(*z_photo_range) &
+        df_search.r_auto.between(*MAG_RANGE)
+      ]
+    
+    print(f'Radial search finished. Elapsed time: {t.end()}')
+    
+    if self.save_folder:
+      table_name = f'{cls_name}.parquet'
+      write_table(df_search, self.save_folder / table_name)
+      print(f'Table "{table_name}" saved')
 
 
 
@@ -230,8 +393,7 @@ class SpecZRadialSearchStage(RadialSearchStage):
     overwrite: bool = False,
   ):
     super().__init__(
-      df_name='df_spec', 
-      out_key='df_spec_radial', 
+      df_name='df_spec',
       radius_key=radius_key, 
       save_folder=save_folder, 
       kind='spec', 
@@ -248,8 +410,7 @@ class PhotoZRadialSearchStage(RadialSearchStage):
     overwrite: bool = False,
   ):
     super().__init__(
-      df_name='df_photoz', 
-      out_key='df_photoz_radial', 
+      df_name='df_photoz',
       radius_key=radius_key, 
       save_folder=save_folder, 
       kind='photo', 
@@ -260,7 +421,7 @@ class PhotoZRadialSearchStage(RadialSearchStage):
 
 
 
-class CrossmatchStage(PipelineStage):
+class FastCrossmatchStage(PipelineStage):
   def __init__(
     self, 
     left_table: str,
@@ -276,9 +437,18 @@ class CrossmatchStage(PipelineStage):
     
   def run(self):
     df_left = self.get_data(self.left_table)
-    df_match = fast_crossmatch(df_left, self.df_spec, join=self.join)
+    df_right = self.get_data(self.right_table)
+    df_match = fast_crossmatch(df_left, df_right, join=self.join)
     return {self.out_key: df_match}
 
+
+
+class StarsRemovalStage(PipelineStage):
+  products = ['df_photoz_radial']
+  def run(self, df_photoz_radial: pd.DataFrame, df_legacy_radial: pd.DataFrame):
+    df_legacy_gal = df_legacy_radial[df_legacy_radial.type != 'PSF']
+    df = fast_crossmatch(df_photoz_radial, df_legacy_gal, include_sep=False)
+    return {'df_photoz_radial': df}
 
 
 
@@ -289,11 +459,10 @@ class DownloadLegacyCatalogStage(PipelineStage):
     self.workers = workers
     
   def run(self, cls_ra: float, cls_dec: float, cls_name: str):
-    out_path = LEG_PHOTO_FOLDER / f'{cls_name}+leg.parquet'
+    out_path = LEG_PHOTO_FOLDER / f'{cls_name}.parquet'
     if not self.overwrite and out_path.exists():
-      # df = read_table(out_path)
-      # return {'df_ls10': df}
-      return
+      if self.get_data('cls_15Mpc_deg') < 10.17:
+        return
     
     sql = """
       SELECT t.ra, t.dec, t.type, t.mag_r
@@ -302,7 +471,8 @@ class DownloadLegacyCatalogStage(PipelineStage):
       (dec BETWEEN {dec_min} AND {dec_max}) AND 
       (brick_primary = 1) AND 
       (mag_r BETWEEN {r_min:.2f} AND {r_max:.2f})
-    """
+    """.strip()
+    
     radius = self.get_data(self.radius_key)
     queries = [
       sql.format(
@@ -313,20 +483,117 @@ class DownloadLegacyCatalogStage(PipelineStage):
         r_min=_r,
         r_max=_r+.05
       )
-      for _r in np.arange(13, 22, .05)
+      for _r in np.arange(*MAG_RANGE, .05)
     ]
-    service = LegacyService(replace=self.overwrite, workers=self.workers)
+    service = LegacyService(replace=True, workers=self.workers)
     service.batch_sync_query(
       queries=queries, 
       save_paths=out_path, 
       join_outputs=True, 
       workers=self.workers
     )
-    
 
-class ClusterPlotStage(PipelineStage):
+
+
+class PhotozSpeczLegacyMatchStage(PipelineStage):
   def __init__(self, overwrite: bool = False):
     self.overwrite = overwrite
+    
+  def run(
+    self, 
+    cls_name: str, 
+    df_specz_radial: pd.DataFrame,
+    df_photoz_radial: pd.DataFrame, 
+    df_legacy_radial: pd.DataFrame
+  ):
+    out_path = PHOTOZ_SPECZ_LEG_FOLDER / f'{cls_name}.parquet'
+    if out_path.exists() and not self.overwrite:
+      if self.get_data('cls_15Mpc_deg') < 10.17:
+        return
+    
+    df_specz_radial['f_z'] = df_specz_radial['f_z'].astype('str')
+    df_specz_radial['original_class_spec'] = df_specz_radial['original_class_spec'].astype('str')
+    
+    print('Photo-z objects:', len(df_photoz_radial))
+    print('Spec-z objects:', len(df_specz_radial))
+    print('Legacy objects:', len(df_legacy_radial))
+    print('Starting first crossmatch: photo-z UNION spec-z')
+    
+    t = Timming()
+    df = crossmatch(
+      table1=df_photoz_radial,
+      table2=df_specz_radial,
+      join='1or2',
+    )
+    df['ra_1'].fillna(df['RA_2'], inplace=True)
+    df['dec_1'].fillna(df['DEC_2'], inplace=True)
+    
+    print(f'First crossmatch finished. Duration: {t.end()}')
+    print('Objects with photo-z only:', len(df[~df.zml.isna() & df.z.isna()]))
+    print('Objects with spec-z only:', len(df[df.zml.isna() & ~df.z.isna()]))
+    print('Objects with photo-z and spec-z:', len(df[~df.zml.isna() & ~df.z.isna()]))
+    print('Total of objects after first match:', len(df))
+    print('starting second crossmatch: match-1 LEFT OUTER JOIN legacy')
+    
+    t = Timming()
+    df = crossmatch(
+      table1=df,
+      table2=df_legacy_radial,
+      join='all1',
+      ra1='ra_1',
+      dec1='dec_1',
+    )
+    
+    print(f'Second crossmatch finished. Duration: {t.end()}')
+    print('Objects with legacy:', len(df[~df.type.isna()]))
+    print('Objects without legacy:', len(df[df.type.isna()]))
+    print('Galaxies:', len(df[df.type != 'PSF']), ', Stars:', len(df[df.type == 'PSF']))
+    print('Total of objects after second match:', len(df))
+    
+    del df['ra'] # legacy ra
+    del df['dec'] # legacy dec
+    df = df.rename(columns={'ra_1': 'ra', 'dec_1': 'dec'}) # use photoz ra/dec
+    
+    photoz_cols = ['ra', 'dec', 'zml', 'odds', 'r_auto', 'field']
+    specz_cols = ['z', 'e_z', 'f_z', 'class_spec']
+    legacy_cols = ['mag_r', 'type']
+    cols = photoz_cols + specz_cols + legacy_cols
+    df = df[cols]
+    
+    write_table(df, out_path)
+
+    
+
+
+def get_plot_title(
+  cls_name: str,
+  cls_ra: float,
+  cls_dec: float,
+  cls_z: float,
+  cls_15Mpc_deg: float,
+  z_spec_range: Tuple[float, float],
+  z_photo_range: Tuple[float, float],
+):
+  return (
+    f'Cluster: {cls_name} (RA: {cls_ra:.5f}, DEC: {cls_dec:.5f})\n'
+    f'Search Radius: 15Mpc = {cls_15Mpc_deg:.3f}$^\\circ$ ($z_{{cluster}}={cls_z:.4f}$)\n'
+    f'Spec Z Range: $z_{{cluster}} \pm 0.007$ = [{z_spec_range[0]:.4f}, {z_spec_range[1]:.4f}]\n'
+    f'Good Photo Z: $z_{{cluster}} \pm 0.015$ = [{z_photo_range[0]:.4f}, {z_photo_range[1]:.4f}]\n'
+    f'R Mag Range: [13, 22] $\cdot$ Spec Class = GALAXY*\n'
+  )
+
+
+
+class ClusterPlotStage(PipelineStage):
+  def __init__(
+    self, 
+    fmt: Literal['pdf', 'jpg', 'png'] = 'pdf', 
+    overwrite: bool = False, 
+    separated: bool = False,
+  ):
+    self.fmt = fmt
+    self.overwrite = overwrite
+    self.separated = separated
     
   def add_circle(
     self, 
@@ -403,6 +670,212 @@ class ClusterPlotStage(PipelineStage):
       label='Cluster Center'
     )
     
+  def plot_specz(
+    self,
+    cls_ra: float, 
+    cls_dec: float, 
+    cls_r200_deg: float, 
+    cls_r500_deg: float, 
+    cls_r200_Mpc: float, 
+    cls_r500_Mpc: float, 
+    cls_15Mpc_deg: float,
+    df_specz_radial: pd.DataFrame,
+    df_members: pd.DataFrame,
+    df_interlopers: pd.DataFrame,
+    ax: plt.Axes,
+  ):
+    ra_col, dec_col = guess_coords_columns(df_specz_radial)
+    if df_members is not None and df_interlopers is not None:
+      ax.scatter(
+        df_specz_radial[ra_col].values, 
+        df_specz_radial[dec_col].values, 
+        c='tab:red', 
+        s=6, 
+        rasterized=True, 
+        transform=ax.get_transform('icrs'),
+        label=f'Spec Unclassif.'
+      )
+      ra_col, dec_col = guess_coords_columns(df_members)
+      ax.scatter(
+        df_members[ra_col].values, 
+        df_members[dec_col].values, 
+        c='tab:blue', 
+        s=6, 
+        rasterized=True, 
+        transform=ax.get_transform('icrs'),
+        label=f'Spec Member ({len(df_members)})'
+      )
+      ax.scatter(
+        df_interlopers[ra_col].values, 
+        df_interlopers[dec_col].values, 
+        c='tab:orange', 
+        s=6, 
+        rasterized=True, 
+        transform=ax.get_transform('icrs'),
+        label=f'Spec Interloper ({len(df_interlopers)})'
+      )
+    else:
+      ax.scatter(
+        df_specz_radial[ra_col].values, 
+        df_specz_radial[dec_col].values, 
+        c='tab:blue', 
+        s=6, 
+        rasterized=True, 
+        transform=ax.get_transform('icrs'),
+        label=f'Spec Z'
+      )
+    self.add_cluster_center(cls_ra, cls_dec, ax)
+    self.add_all_circles(
+      cls_ra=cls_ra, 
+      cls_dec=cls_dec, 
+      r200_deg=cls_r200_deg, 
+      r200_Mpc=cls_r200_Mpc, 
+      r500_deg=cls_r500_deg, 
+      r500_Mpc=cls_r500_Mpc, 
+      r15Mpc_deg=cls_15Mpc_deg,
+      ax=ax
+    )
+    ax.set_title(f'Spec Z Only - Objects: {len(df_specz_radial)}')
+    ax.invert_xaxis()
+    ax.legend(loc='upper left')
+    ax.set_aspect('equal')
+    ax.grid('on', color='k', linestyle='--', alpha=.5)
+    ax.tick_params(direction='in')
+    ax.set_xlabel('RA')
+    ax.set_ylabel('DEC')
+  
+  def plot_photoz(
+    self,
+    cls_ra: float, 
+    cls_dec: float, 
+    cls_r200_deg: float, 
+    cls_r500_deg: float, 
+    cls_r200_Mpc: float, 
+    cls_r500_Mpc: float, 
+    cls_15Mpc_deg: float,
+    df_photoz_radial: pd.DataFrame,
+    z_photo_range: Tuple[float, float],
+    ax: plt.Axes,
+  ):
+    df_photoz_radial.loc[:,'idx'] = range(len(df_photoz_radial))
+    df_photoz_good = df_photoz_radial[df_photoz_radial.zml.between(*z_photo_range)]
+    df_photoz_bad = df_photoz_radial[~df_photoz_radial.zml.between(*z_photo_range)]
+    ra_col, dec_col = guess_coords_columns(df_photoz_radial)
+    if len(df_photoz_bad) > 0:
+      ax.scatter(
+        df_photoz_bad[ra_col].values, 
+        df_photoz_bad[dec_col].values, 
+        c='silver', 
+        s=6, 
+        alpha=0.5, 
+        rasterized=True, 
+        transform=ax.get_transform('icrs'),
+        label=f'Bad Photo Z ({len(df_photoz_bad)} obj)'
+      )
+    if len(df_photoz_good) > 0:
+      ax.scatter(
+        df_photoz_good[ra_col].values, 
+        df_photoz_good[dec_col].values,
+        c='tab:blue', 
+        s=6, 
+        rasterized=True, 
+        transform=ax.get_transform('icrs'),
+        label=f'Good Photo Z ({len(df_photoz_good)} obj)'
+      )
+    self.add_cluster_center(cls_ra, cls_dec, ax)
+    self.add_all_circles(
+      cls_ra=cls_ra, 
+      cls_dec=cls_dec, 
+      r200_deg=cls_r200_deg, 
+      r200_Mpc=cls_r200_Mpc, 
+      r500_deg=cls_r500_deg, 
+      r500_Mpc=cls_r500_Mpc, 
+      r15Mpc_deg=cls_15Mpc_deg,
+      ax=ax
+    )
+    ax.set_title(f'S-PLUS Photo Z Only - Objects: {len(df_photoz_radial)}')
+    ax.invert_xaxis()
+    ax.legend(loc='upper left')
+    ax.set_aspect('equal')
+    ax.grid('on', color='k', linestyle='--', alpha=.5)
+    ax.tick_params(direction='in')
+    ax.set_xlabel('RA')
+    ax.set_ylabel('DEC')
+  
+  def plot_photoz_specz(
+    self,
+    cls_ra: float, 
+    cls_dec: float, 
+    cls_r200_deg: float, 
+    cls_r500_deg: float, 
+    cls_r200_Mpc: float, 
+    cls_r500_Mpc: float, 
+    cls_15Mpc_deg: float,
+    df_specz_radial: pd.DataFrame,
+    df_photoz_radial: pd.DataFrame,
+    z_photo_range: Tuple[float, float],
+    ax: plt.Axes,
+  ):
+    if not 'idx' in df_photoz_radial.columns:
+      df_photoz_radial.loc[:,'idx'] = range(len(df_photoz_radial))
+    df_photoz_good = df_photoz_radial[df_photoz_radial.zml.between(*z_photo_range)]
+    
+    if len(df_specz_radial) > 0 and len(df_photoz_radial) > 0:
+      df_match = fast_crossmatch(df_specz_radial, df_photoz_radial)
+      df_photoz_good_with_spec = df_match[df_match.zml.between(*z_photo_range)]
+      df_photoz_good_wo_spec = df_photoz_good[~df_photoz_good.idx.isin(df_match.idx)]
+      df_photoz_bad_with_spec = df_match[~df_match.zml.between(*z_photo_range)]
+      ra_col, dec_col = guess_coords_columns(df_photoz_radial)
+      if len(df_photoz_good_wo_spec) > 0:
+        ax.scatter(
+          df_photoz_good_wo_spec[ra_col].values, 
+          df_photoz_good_wo_spec[dec_col].values, 
+          c='tab:olive', 
+          s=6, 
+          rasterized=True, 
+          transform=ax.get_transform('icrs'),
+          label=f'Good Photo Z wo/ Spec Z ({len(df_photoz_good_wo_spec)} obj)'
+        )
+      if len(df_photoz_bad_with_spec) > 0:
+        ax.scatter(
+          df_photoz_bad_with_spec[ra_col].values, 
+          df_photoz_bad_with_spec[dec_col].values, 
+          c='tab:orange', 
+          s=6, 
+          rasterized=True, 
+          transform=ax.get_transform('icrs'),
+          label=f'Bad Photo Z w/ Spec Z ({len(df_photoz_bad_with_spec)} obj)'
+        )
+      if len(df_photoz_good_with_spec) > 0:
+        ax.scatter(
+          df_photoz_good_with_spec[ra_col].values, 
+          df_photoz_good_with_spec[dec_col].values, 
+          c='tab:blue', 
+          s=6, 
+          rasterized=True, 
+          transform=ax.get_transform('icrs'),
+          label=f'Good Photo Z w/ Spec Z ({len(df_photoz_good_with_spec)} obj)'
+        )
+    self.add_cluster_center(cls_ra, cls_dec, ax)
+    self.add_all_circles(
+      cls_ra=cls_ra, 
+      cls_dec=cls_dec, 
+      r200_deg=cls_r200_deg, 
+      r200_Mpc=cls_r200_Mpc, 
+      r500_deg=cls_r500_deg, 
+      r500_Mpc=cls_r500_Mpc, 
+      r15Mpc_deg=cls_15Mpc_deg,
+      ax=ax
+    )
+    ax.set_title(f'Photo Z $\\cap$ Spec Z (CrossMatch Distance: 1 arcsec)')
+    ax.invert_xaxis()
+    ax.legend(loc='upper left')
+    ax.set_aspect('equal')
+    ax.grid('on', color='k', linestyle='--', alpha=.5)
+    ax.tick_params(direction='in')
+    ax.set_xlabel('RA')
+    ax.set_ylabel('DEC')
+    
   def run(
     self, 
     cls_name: str,
@@ -417,14 +890,595 @@ class ClusterPlotStage(PipelineStage):
     z_photo_range: Tuple[float, float],
     z_spec_range: Tuple[float, float],
     df_photoz_radial: pd.DataFrame,
-    df_spec_radial: pd.DataFrame,
+    df_specz_radial: pd.DataFrame,
     df_members: pd.DataFrame,
     df_interlopers: pd.DataFrame,
   ):
-    out_path = PLOTS_FOLDER / f'cls_{cls_name}.pdf'
-    if not self.overwrite and out_path.exists():
+    wcs_spec =  {
+      # 'CDELT1': -1.0,
+      # 'CDELT2': 1.0,
+      # 'CRPIX1': 8.5,
+      # 'CRPIX2': 8.5,
+      'CRVAL1': cls_ra,
+      'CRVAL2': cls_dec,
+      'CTYPE1': 'RA---AIT',
+      'CTYPE2': 'DEC--AIT',
+      'CUNIT1': 'deg',
+      'CUNIT2': 'deg'
+    }
+    wcs = WCS(wcs_spec)
+    
+    title = get_plot_title(
+        cls_name=cls_name,
+        cls_ra=cls_ra,
+        cls_dec=cls_dec,
+        cls_z=cls_z,
+        cls_15Mpc_deg=cls_15Mpc_deg,
+        z_spec_range=z_spec_range,
+        z_photo_range=z_photo_range,
+      )
+    
+    if self.separated:
+      out = WEBSITE_PATH / 'clusters' / cls_name / f'specz.{self.fmt}'
+      if self.overwrite or not out.exists():
+        out.parent.mkdir(parents=True, exist_ok=True)
+        fig = plt.figure(figsize=(7.5, 8.2), dpi=150)
+        ax = fig.add_subplot(projection=wcs)
+        self.plot_specz(
+          cls_ra=cls_ra, 
+          cls_dec=cls_dec,
+          cls_r200_deg=cls_r200_deg, 
+          cls_r500_deg=cls_r500_deg, 
+          cls_r200_Mpc=cls_r200_Mpc, 
+          cls_r500_Mpc=cls_r500_Mpc, 
+          cls_15Mpc_deg=cls_15Mpc_deg,
+          df_members=df_members,
+          df_interlopers=df_interlopers,
+          df_specz_radial=df_specz_radial,
+          ax=ax,
+        )
+        fig.suptitle(title, size=10)
+        plt.savefig(out, bbox_inches='tight', pad_inches=0.1)
+        plt.close(fig)
+        
+      out = WEBSITE_PATH / 'clusters' / cls_name / f'photoz.{self.fmt}'
+      if self.overwrite or not out.exists():
+        out.parent.mkdir(parents=True, exist_ok=True)
+        fig = plt.figure(figsize=(7.5, 8.2), dpi=150)
+        ax = fig.add_subplot(projection=wcs)
+        self.plot_photoz(
+          cls_ra=cls_ra, 
+          cls_dec=cls_dec,
+          cls_r200_deg=cls_r200_deg, 
+          cls_r500_deg=cls_r500_deg, 
+          cls_r200_Mpc=cls_r200_Mpc, 
+          cls_r500_Mpc=cls_r500_Mpc, 
+          cls_15Mpc_deg=cls_15Mpc_deg,
+          df_photoz_radial=df_photoz_radial,
+          z_photo_range=z_photo_range,
+          ax=ax,
+        )
+        fig.suptitle(title, size=10)
+        plt.savefig(out, bbox_inches='tight', pad_inches=0.1)
+        plt.close(fig)
+        
+      out = WEBSITE_PATH / 'clusters' / cls_name / f'photoz_specz.{self.fmt}'
+      if self.overwrite or not out.exists():
+        out.parent.mkdir(parents=True, exist_ok=True)
+        fig = plt.figure(figsize=(7.5, 8.2), dpi=150)
+        ax = fig.add_subplot(projection=wcs)
+        self.plot_photoz_specz(
+          cls_ra=cls_ra, 
+          cls_dec=cls_dec,
+          cls_r200_deg=cls_r200_deg, 
+          cls_r500_deg=cls_r500_deg, 
+          cls_r200_Mpc=cls_r200_Mpc, 
+          cls_r500_Mpc=cls_r500_Mpc, 
+          cls_15Mpc_deg=cls_15Mpc_deg,
+          df_specz_radial=df_specz_radial,
+          df_photoz_radial=df_photoz_radial,
+          z_photo_range=z_photo_range,
+          ax=ax,
+        )
+        fig.suptitle(title, size=10)
+        plt.savefig(out, bbox_inches='tight', pad_inches=0.1)
+        plt.close(fig)
+    else:
+      out_path = self.output_folder / f'cls_{cls_name}.{self.fmt}'
+      if not self.overwrite and out_path.exists():
+        return
+      
+      fig, axs = plt.subplots(
+        nrows=3, 
+        ncols=1, 
+        figsize=(12, 27), 
+        subplot_kw={'projection': wcs}, 
+        dpi=300
+      )
+      
+      self.plot_specz(
+        cls_ra=cls_ra, 
+        cls_dec=cls_dec,
+        cls_r200_deg=cls_r200_deg, 
+        cls_r500_deg=cls_r500_deg, 
+        cls_r200_Mpc=cls_r200_Mpc, 
+        cls_r500_Mpc=cls_r500_Mpc, 
+        cls_15Mpc_deg=cls_15Mpc_deg,
+        df_members=df_members,
+        df_interlopers=df_interlopers,
+        df_specz_radial=df_specz_radial,
+        ax=axs[0],
+      )
+      
+      self.plot_photoz(
+        cls_ra=cls_ra, 
+        cls_dec=cls_dec,
+        cls_r200_deg=cls_r200_deg, 
+        cls_r500_deg=cls_r500_deg, 
+        cls_r200_Mpc=cls_r200_Mpc, 
+        cls_r500_Mpc=cls_r500_Mpc, 
+        cls_15Mpc_deg=cls_15Mpc_deg,
+        df_photoz_radial=df_photoz_radial,
+        z_photo_range=z_photo_range,
+        ax=axs[1],
+      )
+      
+      self.plot_photoz_specz(
+        cls_ra=cls_ra, 
+        cls_dec=cls_dec,
+        cls_r200_deg=cls_r200_deg, 
+        cls_r500_deg=cls_r500_deg, 
+        cls_r200_Mpc=cls_r200_Mpc, 
+        cls_r500_Mpc=cls_r500_Mpc, 
+        cls_15Mpc_deg=cls_15Mpc_deg,
+        df_specz_radial=df_specz_radial,
+        df_photoz_radial=df_photoz_radial,
+        z_photo_range=z_photo_range,
+        ax=axs[2],
+      )
+      
+      fig.suptitle(title, size=18)
+      plt.savefig(out_path, bbox_inches='tight', pad_inches=0.1)
+      plt.close(fig)
+
+
+
+
+class VelocityPlotStage(PipelineStage):
+  def __init__(
+    self, 
+    overwrite: bool = False, 
+    fmt: Literal['pdf', 'jpg', 'png'] = 'pdf',
+    separated: bool = False,
+  ):
+    self.overwrite = overwrite
+    self.separated = separated
+    self.fmt = fmt
+    
+    
+  def add_circle(
+    self, 
+    ra: float, 
+    dec: float, 
+    radius: float,
+    color: str,
+    ax,
+    label: str = '',
+    ls: str = '-',
+  ):
+    circle = Circle(
+      (ra, dec), 
+      radius,
+      fc='none', 
+      lw=2, 
+      linestyle=ls,
+      ec=color, 
+      transform=ax.get_transform('icrs'), 
+      label=label,
+    )
+    ax.add_patch(circle)
+    
+  def add_all_circles(
+    self,
+    cls_ra: float,
+    cls_dec: float,
+    r200_deg: float,
+    r200_Mpc: float,
+    r500_deg: float,
+    r500_Mpc: float,
+    r15Mpc_deg: float,
+    ax,
+  ):
+    if r200_deg:
+      self.add_circle(
+        ra=cls_ra,
+        dec=cls_dec,
+        radius=5*r200_deg,
+        color='tab:green',
+        label=f'5 $\\times$ R200 ({5*r200_Mpc:.2f}Mpc)',
+        ax=ax
+      )
+    if r500_deg:
+      self.add_circle(
+        ra=cls_ra,
+        dec=cls_dec,
+        radius=5*r500_deg,
+        color='tab:green',
+        ls='--',
+        label=f'5 $\\times$ R500 ({5*r500_Mpc:.2f}Mpc)',
+        ax=ax
+      )
+    if r15Mpc_deg:
+      self.add_circle(
+        ra=cls_ra,
+        dec=cls_dec,
+        radius=r15Mpc_deg,
+        color='tab:brown',
+        label=f'15Mpc',
+        ax=ax
+      )
+    
+  def add_cluster_center(self, ra: float, dec: float, ax):
+    ax.scatter(
+      ra, 
+      dec, 
+      marker='+', 
+      linewidths=1.5, 
+      s=80, 
+      c='k', 
+      rasterized=True, 
+      transform=ax.get_transform('icrs'),
+      label='Cluster Center'
+    )
+    
+  
+  def plot_velocity(self, df_members: pd.DataFrame, df_interlopers: pd.DataFrame, ax: plt.Axes):
+    ax.scatter(df_members.radius_Mpc, df_members.v_offset, c='tab:red', s=5, label='Members', rasterized=True)  
+    ax.scatter(df_interlopers.radius_Mpc, df_interlopers.v_offset, c='tab:blue', s=5, label='Interlopers', rasterized=True)
+    # ax.invert_xaxis()
+    ax.legend()
+    # ax.set_aspect('equal')
+    ax.grid('on', color='k', linestyle='--', alpha=.5)
+    ax.tick_params(direction='in')
+    ax.set_xlabel('R [Mpc]')
+    ax.set_ylabel('$\\Delta v [km/s]$')
+  
+  
+  def plot_ra_dec(
+    self, 
+    cls_ra: float,
+    cls_dec: float,
+    cls_r200_deg: float,
+    cls_r200_Mpc: float,
+    cls_r500_deg: float,
+    cls_r500_Mpc: float,
+    cls_15Mpc_deg: float,
+    df_members: pd.DataFrame, 
+    df_interlopers: pd.DataFrame, 
+    ax: plt.Axes
+  ):
+    # ax.set_title(f'Spec Z Only - Objects: {len(df_specz_radial)}')
+    self.add_all_circles(
+      cls_ra=cls_ra, 
+      cls_dec=cls_dec, 
+      r200_deg=cls_r200_deg, 
+      r200_Mpc=cls_r200_Mpc, 
+      r500_deg=cls_r500_deg, 
+      r500_Mpc=cls_r500_Mpc, 
+      r15Mpc_deg=cls_15Mpc_deg,
+      ax=ax
+    )
+    ax.scatter(
+      df_members.ra, 
+      df_members.dec, 
+      c='tab:red', 
+      s=5,
+      label='Members', 
+      transform=ax.get_transform('icrs'), 
+      rasterized=True,
+    )
+    ax.scatter(
+      df_interlopers.ra, 
+      df_interlopers.dec, 
+      c='tab:blue', 
+      s=5,
+      label='Interlopers', 
+      transform=ax.get_transform('icrs'), 
+      rasterized=True,
+    )
+    self.add_cluster_center(cls_ra, cls_dec, ax)
+    ax.invert_xaxis()
+    ax.set_aspect('equal', adjustable='datalim', anchor='C')
+    ax.grid('on', color='k', linestyle='--', alpha=.5)
+    ax.tick_params(direction='in')
+    ax.set_xlabel('RA')
+    ax.set_ylabel('DEC')
+    ax.legend()
+  
+  
+  def run(
+    self, 
+    cls_name: str, 
+    cls_ra: float, 
+    cls_dec: float, 
+    cls_z: float,
+    cls_15Mpc_deg: float,
+    cls_r200_deg: float,
+    cls_r200_Mpc: float,
+    cls_r500_deg: float,
+    cls_r500_Mpc: float,
+    z_photo_range: Tuple[float, float],
+    z_spec_range: Tuple[float, float],
+    df_members: pd.DataFrame,
+    df_interlopers: pd.DataFrame,
+  ):
+    wcs_spec =  {
+      # 'CDELT1': -1.0,
+      # 'CDELT2': 1.0,
+      # 'CRPIX1': 8.5,
+      # 'CRPIX2': 8.5,
+      'CRVAL1': cls_ra,
+      'CRVAL2': cls_dec,
+      'CTYPE1': 'RA---AIT',
+      'CTYPE2': 'DEC--AIT',
+      'CUNIT1': 'deg',
+      'CUNIT2': 'deg'
+    }
+    wcs = WCS(wcs_spec)
+    title = get_plot_title(
+      cls_name=cls_name,
+      cls_ra=cls_ra,
+      cls_dec=cls_dec,
+      cls_z=cls_z,
+      cls_15Mpc_deg=cls_15Mpc_deg,
+      z_spec_range=z_spec_range,
+      z_photo_range=z_photo_range,
+    )
+      
+    if self.separated:
+      out = WEBSITE_PATH / 'clusters' / cls_name / f'spec_velocity.{self.fmt}'
+      if self.overwrite or not out.exists():
+        out.parent.mkdir(parents=True, exist_ok=True)
+        fig = plt.figure(figsize=(7.5, 8.2), dpi=150)
+        ax = fig.add_subplot()
+        self.plot_velocity(df_members, df_interlopers, ax)
+        fig.suptitle(title, size=10)
+        plt.savefig(out, bbox_inches='tight', pad_inches=0.1)
+        plt.close(fig)
+        
+      out = WEBSITE_PATH / 'clusters' / cls_name / f'spec_velocity_position.{self.fmt}'
+      if self.overwrite or not out.exists():
+        out.parent.mkdir(parents=True, exist_ok=True)
+        fig = plt.figure(figsize=(7.5, 8.2), dpi=150)
+        ax = fig.add_subplot(projection=wcs)
+        self.plot_ra_dec(cls_ra, cls_dec, cls_r200_deg, cls_r200_Mpc, cls_r500_deg, 
+                         cls_r500_Mpc, cls_15Mpc_deg, df_members, df_interlopers, ax)
+        fig.suptitle(title, size=10)
+        plt.savefig(out, bbox_inches='tight', pad_inches=0.1)
+        plt.close(fig)
+    else:
+      out_path = VELOCITY_PLOTS_FOLDER / f'cls_{cls_name}.{self.fmt}'
+      if not self.overwrite and out_path.exists():
+        return
+      
+      fig = plt.figure(figsize=(7.5, 16), dpi=300)
+      ax1 = fig.add_subplot(211)
+      ax2 = fig.add_subplot(212, projection=wcs)
+      self.plot_velocity(df_members, df_interlopers, ax1)
+      self.plot_ra_dec(cls_ra, cls_dec, cls_r200_deg, cls_r200_Mpc, cls_r500_deg, 
+                      cls_r500_Mpc, cls_15Mpc_deg, df_members, df_interlopers, ax2)
+      
+      fig.suptitle(title, size=18)
+      plt.savefig(out_path, bbox_inches='tight', pad_inches=0.1)
+      plt.close(fig)
+
+
+
+
+class MagDiffPlotStage(PipelineStage):
+  def __init__(
+    self, 
+    overwrite: bool = False, 
+    fmt: Literal['pdf', 'jpg', 'png'] = 'pdf', 
+    separated: bool = False
+  ):
+    self.overwrite = overwrite
+    self.separated = separated
+    self.fmt = fmt
+    self.white_viridis = LinearSegmentedColormap.from_list(
+      'white_viridis', 
+      [
+        (0, '#ffffff'),
+        (1e-20, '#440053'),
+        (0.2, '#404388'),
+        (0.4, '#2a788e'),
+        (0.6, '#21a784'),
+        (0.8, '#78d151'),
+        (1, '#fde624'),
+      ], 
+      N=256
+    )
+    
+  def plot_mag_diff(
+    self,
+    df: pd.DataFrame,
+    mag1: str, 
+    mag2: str, 
+    ax: plt.Axes, 
+    xlabel: str = None,
+    ylabel: str = None,
+    xlim: Tuple[float, float] = None,
+    ylim: Tuple[float, float] = None,
+  ):
+    df_spec = df[~df.z.isna()]
+    df_photo = df[df.z.isna()]
+    ax.scatter(
+      df_photo[mag1], 
+      df_photo[mag1] - df_photo[mag2], 
+      s=0.8, 
+      label=f'Without Spec ({len(df_photo)})', 
+      color='tab:blue', 
+      alpha=0.8, 
+      rasterized=True
+    )
+    ax.scatter(
+      df_spec[mag1], 
+      df_spec[mag1] - df_spec[mag2], 
+      s=0.8, 
+      label=f'With Spec ({len(df_spec)})', 
+      color='tab:red', 
+      alpha=0.8,
+      rasterized=True
+    )
+    ax.set_xlabel(xlabel)
+    ax.set_ylabel(ylabel)
+    if ylim is not None:
+      ax.set_ylim(*ylim)
+    if xlim is not None:
+      ax.set_xlim(*xlim)
+    ax.grid('on', color='k', linestyle='--', alpha=.2)
+    ax.tick_params(direction='in')
+    ax.legend()
+    
+  def plot_histogram(
+    self,
+    x: np.ndarray | pd.Series | pd.DataFrame,
+    ax: plt.Axes,
+    xlabel: str = '',
+    xrange: Tuple[float, float] = None,
+  ):
+    ax.hist(x, bins=60, range=xrange)
+    ax.set_xlabel(xlabel)
+    if xrange is not None:
+      ax.set_xlim(*xrange)
+    ax.grid('on', color='k', linestyle='--', alpha=.2)
+    ax.tick_params(direction='in')
+  
+  def run(
+    self, 
+    df_all_radial: pd.DataFrame, 
+    cls_ra: float, 
+    cls_dec: float, 
+    cls_name: str, 
+    cls_z: float, 
+    z_spec_range: Tuple[float, float], 
+    z_photo_range: Tuple[float, float], 
+    cls_15Mpc_deg: float
+  ):
+    df = df_all_radial[
+      (df_all_radial.type != 'PSF') & 
+      df_all_radial.r_auto.between(*MAG_RANGE) & 
+      df_all_radial.mag_r.between(*MAG_RANGE) &
+      (df_all_radial.z.between(*z_spec_range) | df_all_radial.z.isna()) &
+      df_all_radial.zml.between(*z_photo_range)
+    ]
+    title = get_plot_title(
+      cls_name=cls_name,
+      cls_ra=cls_ra,
+      cls_dec=cls_dec,
+      cls_z=cls_z,
+      cls_15Mpc_deg=cls_15Mpc_deg,
+      z_spec_range=z_spec_range,
+      z_photo_range=z_photo_range,
+    )
+    
+    if self.separated:
+      out = WEBSITE_PATH / 'clusters' / cls_name / f'mag_diff.{self.fmt}'
+      if self.overwrite or not out.exists():
+        out.parent.mkdir(parents=True, exist_ok=True)
+        fig, axs = plt.subplots(figsize=(7.5, 8.2), dpi=150)
+        self.plot_mag_diff(df, 'r_auto', 'mag_r', axs, '$iDR5_r$', '$iDR5_r - LS10_r$')
+        plt.title(title, size=10)
+        plt.savefig(out, bbox_inches='tight', pad_inches=0.1)
+        plt.close(fig)
+      
+      out = WEBSITE_PATH / 'clusters' / cls_name / f'mag_diff_hist.{self.fmt}'
+      if self.overwrite or not out.exists():
+        out.parent.mkdir(parents=True, exist_ok=True)
+        fig, axs = plt.subplots(figsize=(7.5, 8.2), dpi=150)
+        self.plot_histogram(df['r_auto'] - df['mag_r'], axs, '$iDR5_r - LS10_r$')
+        plt.title(title, size=10)
+        plt.savefig(out, bbox_inches='tight', pad_inches=0.1)
+        plt.close(fig)
+    else:
+      out_path = MAGDIFF_PLOTS_FOLDER / f'cls_{cls_name}.pdf'
+      if not self.overwrite and out_path.exists():
+        return
+
+      fig, axs = plt.subplots(
+        nrows=2, 
+        ncols=1, 
+        figsize=(5, 9),
+        dpi=300,
+        # subplot_kw={'projection': 'scatter_density'}, 
+      )
+      self.plot_mag_diff(df, 'r_auto', 'mag_r', axs[0], '$iDR5_r$', '$iDR5_r - LS10_r$')
+      self.plot_histogram(df['r_auto'] - df['mag_r'], axs[1], '$iDR5_r - LS10_r$')
+      plt.suptitle(title, size=10)
+      plt.savefig(out_path, bbox_inches='tight', pad_inches=0.1)
+      plt.close(fig)
+
+
+class MagdiffOutlierStage(PipelineStage):
+  def __init__(self, overwrite: bool = False):
+    self.overwrite = overwrite
+    
+  def run(
+    self, 
+    df_all_radial: pd.DataFrame, 
+    cls_name: str, 
+    z_spec_range: Tuple[float, float], 
+    z_photo_range: Tuple[float, float]
+  ):
+    out_path = MAGDIFF_OUTLIERS_FOLDER / f'{cls_name}.csv'
+    if out_path.exists() and not self.overwrite:
       return
     
+    df_all_radial['idr5_r-ls10_r'] = df_all_radial['r_auto'] - df_all_radial['mag_r']
+    df = df_all_radial[
+      (df_all_radial.type != 'PSF') & 
+      df_all_radial.r_auto.between(13, 19) & 
+      # df_all_radial.mag_r.between(*MAG_RANGE) &
+      (df_all_radial.z.between(*z_spec_range) | df_all_radial.z.isna()) &
+      df_all_radial.zml.between(*z_photo_range)
+    ]
+    df = df[(df['idr5_r-ls10_r'] > -0.2) & (df['idr5_r-ls10_r'] < 0.5)]
+    df = df.sort_values('idr5_r-ls10_r')
+    write_table(df, out_path)
+
+
+
+
+class MagnitudeCrossmatch(PipelineStage):
+  def __init__(self, overwrite: bool = False):
+    self.overwrite = overwrite
+    
+  def run(self, cls_name: str, df_magnitudes: pd.DataFrame, df_photoz_radial: pd.DataFrame):
+    out_path = MAG_COMP_FOLDER / f'{cls_name}.parquet'
+    if out_path.exists() and not self.overwrite:
+      if self.get_data('cls_15Mpc_deg') < 10.17:
+        return 
+    
+    df = fast_crossmatch(
+      left=df_photoz_radial,
+      right=df_magnitudes,
+      include_sep=False
+    )
+    del df['RA_1']
+    del df['DEC_1']
+    df = df.rename(columns={'ra_1': 'ra', 'dec_1': 'dec'})
+    write_table(df, out_path)
+    print('Crossmatch objects:', len(df))
+    
+
+
+
+
+class MagnitudePlotStage(PipelineStage):
+  def plot_mag_diff(self, ax: plt.Axes):
+    pass
+  
+  def run(self, cls_ra: float, cls_dec: float):
     wcs_spec =  {
       # 'CDELT1': -1.0,
       # 'CDELT2': 1.0,
@@ -439,189 +1493,98 @@ class ClusterPlotStage(PipelineStage):
     }
     wcs = WCS(wcs_spec)
     fig, axs = plt.subplots(
-      nrows=3, 
-      ncols=1, 
+      nrows=1, 
+      ncols=2, 
       figsize=(12, 27), 
-      subplot_kw={'projection': WCS(wcs_spec)}, 
-      dpi=300
+      subplot_kw={'projection': WCS(wcs)}, 
+      dpi=150
     )
+    
+    
 
-    ra_col, dec_col = guess_coords_columns(df_spec_radial)
-    if df_members is not None and df_interlopers is not None:
-      axs[0].scatter(
-        df_spec_radial[ra_col].values, 
-        df_spec_radial[dec_col].values, 
-        c='tab:red', 
-        s=6, 
-        rasterized=True, 
-        transform=axs[0].get_transform('icrs'),
-        label=f'Spec Unclassif.'
-      )
-      ra_col, dec_col = guess_coords_columns(df_members)
-      axs[0].scatter(
-        df_members[ra_col].values, 
-        df_members[dec_col].values, 
-        c='tab:blue', 
-        s=6, 
-        rasterized=True, 
-        transform=axs[0].get_transform('icrs'),
-        label=f'Spec Member ({len(df_members)})'
-      )
-      axs[0].scatter(
-        df_interlopers[ra_col].values, 
-        df_interlopers[dec_col].values, 
-        c='tab:orange', 
-        s=6, 
-        rasterized=True, 
-        transform=axs[0].get_transform('icrs'),
-        label=f'Spec Interloper ({len(df_interlopers)})'
-      )
+
+class WebsitePagesStage(PipelineStage):
+  def __init__(self, clusters: Sequence[str], fmt: str = 'png'):
+    self.clusters = sorted(clusters)
+    self.fmt = fmt
+  
+  def get_paginator(self, back: bool = True):
+    if back:
+      links = [f'<a href="../{name}/index.html">{name}</a>' for name in self.clusters]
     else:
-      axs[0].scatter(
-        df_spec_radial[ra_col].values, 
-        df_spec_radial[dec_col].values, 
-        c='tab:blue', 
-        s=6, 
-        rasterized=True, 
-        transform=axs[0].get_transform('icrs'),
-        label=f'Spec Z'
-      )
-    self.add_cluster_center(cls_ra, cls_dec, axs[0])
-    self.add_all_circles(
-      cls_ra=cls_ra, 
-      cls_dec=cls_dec, 
-      r200_deg=cls_r200_deg, 
-      r200_Mpc=cls_r200_Mpc, 
-      r500_deg=cls_r500_deg, 
-      r500_Mpc=cls_r500_Mpc, 
-      r15Mpc_deg=cls_15Mpc_deg,
-      ax=axs[0]
-    )
-    axs[0].set_title(f'Spec Z Only - Objects: {len(df_spec_radial)}')
-    axs[0].invert_xaxis()
-    axs[0].legend(loc='upper left')
-    axs[0].set_aspect('equal')
-    axs[0].grid('on', color='k', linestyle='--', alpha=.5)
-    axs[0].tick_params(direction='in')
-    axs[0].set_xlabel('RA')
-    axs[0].set_ylabel('DEC')
+      links = [f'<a href="clusters/{name}/index.html">{name}</a>' for name in self.clusters]
+      
+    return ' &nbsp;&bullet;&nbsp; '.join(links)
+  
+  def make_index(self):
+    page = f'''
+    <html>
+    <head>
+      <title>Clusters Index</title>
+      <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/lightbox2/2.11.4/css/lightbox.min.css" />
+    </head>
+    <body>
+      <h2>Clusters Index</h2>
+      {self.get_paginator(back=False)}
+      <script src="https://cdnjs.cloudflare.com/ajax/libs/lightbox2/2.11.4/js/lightbox-plus-jquery.min.js"></script>
+    </body>
+    </html>
+    '''
+    index_path = WEBSITE_PATH / 'index.html'
+    index_path.parent.mkdir(parents=True, exist_ok=True)
+    index_path.write_text(page)
+  
+  def run(self, cls_name: str):
+    width = 400
+    height = 400
+    images = [
+      'photoz', 'specz', 'photoz_specz', 'spec_velocity', 
+      'spec_velocity_position', 'mag_diff', 'mag_diff_hist'
+    ]
+    gallery = [
+      f'<a href="{img}.{self.fmt}" class="gallery" data-lightbox="images"><img src="{img}.{self.fmt}" width="{width}" height="{height}" /></a>'
+      for img in images
+    ]
+    page = f'''
+    <html>
+    <head>
+      <title>{cls_name}</title>
+      <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/lightbox2/2.11.4/css/lightbox.min.css" />
+      <style type="text/css">
+      a.gallery:hover {{
+        cursor: -moz-zoom-in; 
+        cursor: -webkit-zoom-in;
+        cursor: zoom-in;
+      }}
+      </style>
+    </head>
+    <body>
+      <b>Clusters Index</b><br />
+      {self.get_paginator()}
+      <hr />
+      <h2>Cluster: {cls_name}</h2>
+      {' '.join(gallery)}
+      <script src="https://cdnjs.cloudflare.com/ajax/libs/lightbox2/2.11.4/js/lightbox-plus-jquery.min.js"></script>
+      <script>
+      lightbox.option({{
+        'resizeDuration': 0,
+        'fadeDuration': 0,
+        'imageFadeDuration': 0,
+        'wrapAround': true,
+        'fitImagesInViewport': true,
+      }})
+      </script>
+    </body>
+    </html>
+    '''
+    index_path = WEBSITE_PATH / 'clusters' / cls_name / 'index.html'
+    index_path.parent.mkdir(parents=True, exist_ok=True)
+    index_path.write_text(page)
     
-    
-    df_photoz_radial.loc[:,'idx'] = range(len(df_photoz_radial))
-    df_photoz_good = df_photoz_radial[df_photoz_radial.zml.between(*z_photo_range)]
-    df_photoz_bad = df_photoz_radial[~df_photoz_radial.zml.between(*z_photo_range)]
-    ra_col, dec_col = guess_coords_columns(df_photoz_radial)
-    if len(df_photoz_bad) > 0:
-      axs[1].scatter(
-        df_photoz_bad[ra_col].values, 
-        df_photoz_bad[dec_col].values, 
-        c='silver', 
-        s=6, 
-        alpha=0.5, 
-        rasterized=True, 
-        transform=axs[1].get_transform('icrs'),
-        label=f'Bad Photo Z ({len(df_photoz_bad)} obj)'
-      )
-    if len(df_photoz_good) > 0:
-      axs[1].scatter(
-        df_photoz_good[ra_col].values, 
-        df_photoz_good[dec_col].values,
-        c='tab:blue', 
-        s=6, 
-        rasterized=True, 
-        transform=axs[1].get_transform('icrs'),
-        label=f'Good Photo Z ({len(df_photoz_good)} obj)'
-      )
-    self.add_cluster_center(cls_ra, cls_dec, axs[1])
-    self.add_all_circles(
-      cls_ra=cls_ra, 
-      cls_dec=cls_dec, 
-      r200_deg=cls_r200_deg, 
-      r200_Mpc=cls_r200_Mpc, 
-      r500_deg=cls_r500_deg, 
-      r500_Mpc=cls_r500_Mpc, 
-      r15Mpc_deg=cls_15Mpc_deg,
-      ax=axs[1]
-    )
-    axs[1].set_title(f'S-PLUS Photo Z Only - Objects: {len(df_photoz_radial)}')
-    axs[1].invert_xaxis()
-    axs[1].legend(loc='upper left')
-    axs[1].set_aspect('equal')
-    axs[1].grid('on', color='k', linestyle='--', alpha=.5)
-    axs[1].tick_params(direction='in')
-    axs[1].set_xlabel('RA')
-    axs[1].set_ylabel('DEC')
-    
-    
-    if len(df_spec_radial) > 0 and len(df_photoz_radial) > 0:
-      df_match = fast_crossmatch(df_spec_radial, df_photoz_radial)
-      df_photoz_good_with_spec = df_match[df_match.zml.between(*z_photo_range)]
-      df_photoz_good_wo_spec = df_photoz_good[~df_photoz_good.idx.isin(df_match.idx)]
-      df_photoz_bad_with_spec = df_match[~df_match.zml.between(*z_photo_range)]
-      ra_col, dec_col = guess_coords_columns(df_photoz_radial)
-      if len(df_photoz_good_wo_spec) > 0:
-        axs[2].scatter(
-          df_photoz_good_wo_spec[ra_col].values, 
-          df_photoz_good_wo_spec[dec_col].values, 
-          c='tab:olive', 
-          s=6, 
-          rasterized=True, 
-          transform=axs[2].get_transform('icrs'),
-          label=f'Good Photo Z wo/ Spec Z ({len(df_photoz_good_wo_spec)} obj)'
-        )
-      if len(df_photoz_bad_with_spec) > 0:
-        axs[2].scatter(
-          df_photoz_bad_with_spec[ra_col].values, 
-          df_photoz_bad_with_spec[dec_col].values, 
-          c='tab:orange', 
-          s=6, 
-          rasterized=True, 
-          transform=axs[2].get_transform('icrs'),
-          label=f'Bad Photo Z w/ Spec Z ({len(df_photoz_bad_with_spec)} obj)'
-        )
-      if len(df_photoz_good_with_spec) > 0:
-        axs[2].scatter(
-          df_photoz_good_with_spec[ra_col].values, 
-          df_photoz_good_with_spec[dec_col].values, 
-          c='tab:blue', 
-          s=6, 
-          rasterized=True, 
-          transform=axs[2].get_transform('icrs'),
-          label=f'Good Photo Z w/ Spec Z ({len(df_photoz_good_with_spec)} obj)'
-        )
-    self.add_cluster_center(cls_ra, cls_dec, axs[2])
-    self.add_all_circles(
-      cls_ra=cls_ra, 
-      cls_dec=cls_dec, 
-      r200_deg=cls_r200_deg, 
-      r200_Mpc=cls_r200_Mpc, 
-      r500_deg=cls_r500_deg, 
-      r500_Mpc=cls_r500_Mpc, 
-      r15Mpc_deg=cls_15Mpc_deg,
-      ax=axs[2]
-    )
-    axs[2].set_title(f'Photo Z $\\cap$ Spec Z (CrossMatch Distance: 1 arcsec)')
-    axs[2].invert_xaxis()
-    axs[2].legend(loc='upper left')
-    axs[2].set_aspect('equal')
-    axs[2].grid('on', color='k', linestyle='--', alpha=.5)
-    axs[2].tick_params(direction='in')
-    axs[2].set_xlabel('RA')
-    axs[2].set_ylabel('DEC')
-    
-    title = (
-      f'Cluster: {cls_name} (RA: {cls_ra:.5f}, DEC: {cls_dec:.5f})\n'
-      f'Search Radius: 15Mpc = {cls_15Mpc_deg:.3f}$^\\circ$ ($z_{{cluster}}={cls_z:.4f}$)\n'
-      f'Spec Z Range: [$z_{{cluster}} - 0.007$, $z_{{cluster}} + 0.007$] = [{z_spec_range[0]:.4f}, {z_spec_range[1]:.4f}]\n'
-      f'Good Photo Z: [$z_{{cluster}} - 0.015$, $z_{{cluster}} + 0.015$] = [{z_photo_range[0]:.4f}, {z_photo_range[1]:.4f}]\n'
-      f'R Mag Range: [13, 22] | Spec Class = GALAXY*\n'
-    )
-    fig.suptitle(title, size=18)
-    plt.savefig(out_path, bbox_inches='tight', pad_inches=0.1)
-    plt.close(fig)
 
 
-
+    
+    
 
 def prepare_idr5():
   fields_path = Path('/mnt/hd/natanael/astrodata/idr5_fields/')
@@ -639,18 +1602,30 @@ def prepare_idr5():
 
 
 
-def download_legacy_pipeline():
+def download_legacy_pipeline(clear: bool = False):
   df_clusters = load_clusters()
-  df_index = load_index()
+  
+  if clear:
+    for p in LEG_PHOTO_FOLDER.glob('*.parquet'):
+      if p.stat().st_size < 650:
+        p.unlink()
+        
   ls10_pipe = Pipeline(
-    LoadClusterInfoStage(df_clusters, df_index),
+    LoadClusterInfoStage(df_clusters),
     DownloadLegacyCatalogStage('cls_15Mpc_deg', overwrite=False, workers=8)
   )
   ls10_pipe.map_run('cls_id', df_clusters.clsid.values, workers=1)
 
 
-def download_legacy_erass_pipeline():
+
+def download_legacy_erass_pipeline(clear: bool = False):
   df_clusters = load_eRASS()
+  
+  if clear:
+    for p in LEG_PHOTO_FOLDER.glob('*.parquet'):
+      if p.stat().st_size < 650:
+        p.unlink()
+        
   ls10_pipe = Pipeline(
     LoadERASSInfoStage(df_clusters),
     DownloadLegacyCatalogStage('cls_15Mpc_deg', overwrite=False, workers=8)
@@ -659,29 +1634,122 @@ def download_legacy_erass_pipeline():
 
 
 
+def match_all_pipeline():
+  df_clusters = load_clusters()
+  
+  pipe = Pipeline(
+    LoadClusterInfoStage(df_clusters),
+    LoadPhotozRadialStage(),
+    LoadSpeczRadialStage(),
+    LoadLegacyRadialStage(),
+    PhotozSpeczLegacyMatchStage(overwrite=False),
+  )
+  
+  pipe.map_run('cls_id', df_clusters.clsid.values, workers=1)
+  
+  
+def match_all_erosita_pipeline():
+  df_clusters = load_eRASS()
+  
+  pipe = Pipeline(
+    LoadERASSInfoStage(df_clusters),
+    LoadPhotozRadialStage(),
+    LoadSpeczRadialStage(),
+    LoadLegacyRadialStage(),
+    PhotozSpeczLegacyMatchStage(overwrite=False),
+  )
+  
+  pipe.map_run('cls_name', df_clusters.Cluster.values, workers=1)
+
+
+
+def photoz_pipeline(overwrite: bool = False):
+  df_clusters = load_clusters()
+  df_photoz, photoz_skycoord = load_photoz()
+  
+  pipe = Pipeline(
+    LoadClusterInfoStage(df_clusters),
+    PhotoZRadialSearchStage(overwrite=overwrite),
+  )
+  
+  PipelineStorage().write('df_photoz', df_photoz)
+  PipelineStorage().write('photoz_skycoord', photoz_skycoord)
+  
+  pipe.map_run('cls_id', df_clusters.clsid.values, workers=1)
+
+
+
+def spec_pipeline(overwrite: bool = False):
+  df_clusters = load_clusters()
+  df_spec, specz_skycoord = load_spec()
+  
+  pipe = Pipeline(
+    LoadClusterInfoStage(df_clusters),
+    SpecZRadialSearchStage(overwrite=overwrite),
+  )
+  
+  PipelineStorage().write('df_spec', df_spec)
+  PipelineStorage().write('specz_skycoord', specz_skycoord)
+  
+  pipe.map_run('cls_id', df_clusters.clsid.values, workers=1)
+  
+
+
 def spec_plots_pipeline():
   df_clusters = load_clusters()
-  df_index = load_index()
   df_photoz, photoz_skycoord = load_photoz()
   df_spec, specz_skycoord = load_spec()
   
   pipe = Pipeline(
-    LoadClusterInfoStage(df_clusters, df_index),
-    PhotoZRadialSearchStage(overwrite=False),
+    LoadClusterInfoStage(df_clusters),
+    PhotoZRadialSearchStage(overwrite=True),
     SpecZRadialSearchStage(overwrite=False),
-    # RadialSearchStage('df_photoz', 'df_photoz_radial', 'cls_15Mpc_deg', 'outputs_v6/photo', 'photo'),
-    # RadialSearchStage('df_spec', 'df_spec_radial', 'cls_15Mpc_deg', 'outputs_v6/spec', 'spec'),
-    ClusterPlotStage(overwrite=False)
+    ClusterPlotStage(overwrite=True)
   )
   PipelineStorage().write('df_photoz', df_photoz)
   PipelineStorage().write('photoz_skycoord', photoz_skycoord)
   PipelineStorage().write('df_spec', df_spec)
   PipelineStorage().write('specz_skycoord', specz_skycoord)
+  
   pipe.map_run('cls_id', df_clusters.clsid.values, workers=1)
   df2 = df_clusters.sort_values('ra')
   plot_paths = [PLOTS_FOLDER / f'cls_{c}.pdf' for c in df2.name.values]
   concat_plot_path = PLOTS_FOLDER / 'clusters_v6_RA.pdf'
   merge_pdf(plot_paths, concat_plot_path)
+
+
+
+
+def photoz_erass_pipeline(overwrite: bool = False):
+  df_clusters = load_eRASS()
+  df_photoz, photoz_skycoord = load_photoz()
+  
+  pipe = Pipeline(
+    LoadERASSInfoStage(df_clusters),
+    PhotoZRadialSearchStage(overwrite=overwrite),
+  )
+  
+  PipelineStorage().write('df_photoz', df_photoz)
+  PipelineStorage().write('photoz_skycoord', photoz_skycoord)
+  
+  pipe.map_run('cls_name', df_clusters.Cluster.values, workers=1)
+
+
+  
+def spec_erass_pipeline(overwrite: bool = False):
+  df_clusters = load_eRASS()
+  df_spec, specz_skycoord = load_spec()
+  
+  pipe = Pipeline(
+    LoadERASSInfoStage(df_clusters),
+    SpecZRadialSearchStage(overwrite=overwrite)
+  )
+  
+  PipelineStorage().write('df_spec', df_spec)
+  PipelineStorage().write('specz_skycoord', specz_skycoord)
+  
+  pipe.map_run('cls_name', df_clusters.Cluster.values, workers=1)
+
 
 
 def erass_plots_pipeline():
@@ -712,12 +1780,154 @@ def erass_plots_pipeline():
 
 
 
+def erass_website_plots_pipeline():
+  # df_clusters = load_full_eRASS()
+  df_clusters = load_eRASS()
+  df_photoz, photoz_skycoord = load_photoz()
+  df_spec, specz_skycoord = load_spec()
+  
+  pipe = Pipeline(
+    LoadERASSInfoStage(df_clusters),
+    PhotoZRadialSearchStage(overwrite=False),
+    SpecZRadialSearchStage(overwrite=False),
+    LoadLegacyRadialStage(),
+    StarsRemovalStage(),
+    ClusterPlotStage(overwrite=False, fmt='jpg', output_folder='outputs_v6/website_plots')
+  )
+  
+  PipelineStorage().write('df_photoz', df_photoz)
+  PipelineStorage().write('photoz_skycoord', photoz_skycoord)
+  PipelineStorage().write('df_spec', df_spec)
+  PipelineStorage().write('specz_skycoord', specz_skycoord)
+  
+  pipe.map_run('cls_name', df_clusters.Cluster.values, workers=1, validate=False)
+
+
+
+
+def magdiff_pipeline(overwrite: bool = False):
+  df_clusters = load_clusters()
+  # df_erass = load_eRASS()
+  
+  pipe = Pipeline(
+    LoadClusterInfoStage(df_clusters),
+    LoadAllRadialStage(),
+    MagDiffPlotStage(overwrite=overwrite),
+  )
+  pipe.map_run('cls_id', df_clusters.clsid.values, workers=1)
+  
+  
+  # pipe = Pipeline(
+  #   LoadERASSInfoStage(df_erass),
+  #   LoadAllRadialStage(),
+  #   MagDiffPlotStage(overwrite=overwrite),
+  # )
+  # pipe.map_run('cls_name', df_erass.Cluster.values, workers=1)
+  
+  plot_paths = sorted(MAGDIFF_PLOTS_FOLDER.glob('cls_*.pdf'))
+  concat_plot_path = MAGDIFF_PLOTS_FOLDER / 'magdiff_v2.pdf'
+  merge_pdf(plot_paths, concat_plot_path)
+
+
+
+
+def heasarc_plot_pipeline(overwrite: bool = False):
+  df_heasarc = load_heasarc()
+  df_photoz, photoz_skycoord = load_photoz()
+  df_spec, specz_skycoord = load_spec()
+  
+  pipe = Pipeline(
+    LoadHeasarcInfoStage(df_heasarc),
+    PhotoZRadialSearchStage(overwrite=overwrite),
+    SpecZRadialSearchStage(overwrite=overwrite),
+    DownloadLegacyCatalogStage('cls_15Mpc_deg', overwrite=overwrite),
+    LoadPhotozRadialStage(),
+    LoadSpeczRadialStage(),
+    LoadLegacyRadialStage(),
+    PhotozSpeczLegacyMatchStage(),
+    LoadAllRadialStage(),
+    ClusterPlotStage(),
+  )
+  
+  PipelineStorage().write('df_photoz', df_photoz)
+  PipelineStorage().write('photoz_skycoord', photoz_skycoord)
+  PipelineStorage().write('df_spec', df_spec)
+  PipelineStorage().write('specz_skycoord', specz_skycoord)
+  
+  pipe.map_run('cls_name', ['[YMV2007]1854', '[YMV2007]337642', 'ACT-CLJ0006.9-0041', '[YMV2007]15744', '[YMV2007]337638',], workers=1)
+
+
+
+
+def magdiff_outliers_pipeline(overwrite: bool = False):
+  df_clusters = load_clusters()
+  
+  pipe = Pipeline(
+    LoadClusterInfoStage(df_clusters),
+    LoadAllRadialStage(),
+    MagdiffOutlierStage(overwrite),
+  )
+  
+  pipe.map_run('cls_id', [12, 27], workers=1)
+
+
+
+def velocity_plots_pipeline(overwrite: bool = False):
+  df_clusters = load_clusters()
+  
+  pipe = Pipeline(
+    LoadClusterInfoStage(df_clusters),
+    VelocityPlotStage(overwrite=overwrite)
+  )
+  
+  pipe.map_run('cls_id', df_clusters.clsid.values, workers=1)
+  
+  plot_paths = sorted(VELOCITY_PLOTS_FOLDER.glob('cls_*.pdf'))
+  concat_plot_path = VELOCITY_PLOTS_FOLDER / 'velocity_plots_v1.pdf'
+  merge_pdf(plot_paths, concat_plot_path)
+
+
+
+def website_pipeline(overwrite: bool = False):
+  df_clusters = load_clusters()
+  
+  pipe = Pipeline(
+    LoadClusterInfoStage(df_clusters),
+    LoadPhotozRadialStage(),
+    LoadSpeczRadialStage(),
+    LoadAllRadialStage(),
+    ClusterPlotStage(overwrite=overwrite, fmt='jpg', separated=True),
+    VelocityPlotStage(overwrite=overwrite, fmt='jpg', separated=True),
+    MagDiffPlotStage(overwrite=overwrite, fmt='jpg', separated=True),
+    WebsitePagesStage(clusters=df_clusters.name.values, fmt='jpg'),
+  )
+  
+  pipe.map_run('cls_id', df_clusters.clsid.values, workers=1)
+  
+  WebsitePagesStage(clusters=df_clusters.name.values).make_index()
+
+
+
+
 def main():
   # prepare_idr5()
-  # download_legacy_erass_pipeline()
-  spec_plots_pipeline()
+  # download_legacy_erass_pipeline(clear=True)
+  # download_legacy_pipeline(clear=True)
+  # spec_pipeline()
+  # spec_erass_pipeline()
+  # photoz_pipeline()
+  # photoz_erass_pipeline()
+  # match_all_pipeline()
+  # match_all_erosita_pipeline()
+  # spec_plots_pipeline()
   # erass_plots_pipeline()
+  # erass_website_plots_pipeline()
   # print(load_clusters())
+  # magdiff_pipeline(False)
+  # heasarc_plot_pipeline(True)
+  # magdiff_outliers_pipeline(True)
+  # velocity_plots_pipeline(True)
+  website_pipeline(True)
   
   
   
