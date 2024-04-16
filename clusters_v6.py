@@ -634,7 +634,7 @@ class ClusterPlotStage(PipelineStage):
         dec=cls_dec,
         radius=5*r200_deg,
         color='tab:green',
-        label=f'5 $\\times$ R200 ({5*r200_Mpc:.2f}Mpc)',
+        label=f'5$\\times$R200 ({5*r200_Mpc:.2f}Mpc $\\bullet$ {5*r200_deg:.2f}$^\\circ$)',
         ax=ax
       )
     if r500_deg:
@@ -644,7 +644,7 @@ class ClusterPlotStage(PipelineStage):
         radius=5*r500_deg,
         color='tab:green',
         ls='--',
-        label=f'5 $\\times$ R500 ({5*r500_Mpc:.2f}Mpc)',
+        label=f'5$\\times$R500 ({5*r500_Mpc:.2f}Mpc $\\bullet$ {5*r500_deg:.2f}$^\\circ$)',
         ax=ax
       )
     if r15Mpc_deg:
@@ -653,7 +653,7 @@ class ClusterPlotStage(PipelineStage):
         dec=cls_dec,
         radius=r15Mpc_deg,
         color='tab:brown',
-        label=f'15Mpc',
+        label=f'15Mpc ({r15Mpc_deg:.3f}$^\\circ$)',
         ax=ax
       )
     
@@ -1092,7 +1092,7 @@ class VelocityPlotStage(PipelineStage):
         dec=cls_dec,
         radius=5*r200_deg,
         color='tab:green',
-        label=f'5 $\\times$ R200 ({5*r200_Mpc:.2f}Mpc)',
+        label=f'5$\\times$R200 ({5*r200_Mpc:.2f}Mpc $\\bullet$ {5*r200_deg:.2f}$^\\circ$)',
         ax=ax
       )
     if r500_deg:
@@ -1102,7 +1102,7 @@ class VelocityPlotStage(PipelineStage):
         radius=5*r500_deg,
         color='tab:green',
         ls='--',
-        label=f'5 $\\times$ R500 ({5*r500_Mpc:.2f}Mpc)',
+        label=f'5$\\times$R500 ({5*r500_Mpc:.2f}Mpc $\\bullet$ {5*r500_deg:.2f}$^\\circ$)',
         ax=ax
       )
     if r15Mpc_deg:
@@ -1111,7 +1111,7 @@ class VelocityPlotStage(PipelineStage):
         dec=cls_dec,
         radius=r15Mpc_deg,
         color='tab:brown',
-        label=f'15Mpc',
+        label=f'15Mpc ({r15Mpc_deg:.3f}$^\\circ$)',
         ax=ax
       )
     
@@ -1150,26 +1150,24 @@ class VelocityPlotStage(PipelineStage):
     ax.set_xlabel('R [Mpc]')
     ax.set_ylabel('$\\Delta z_{{spec}}$')
     ax.set_title('Spectroscoptic redshift x distance')
-    ymin = min(df_members.z_offset.min(), df_interlopers.z_offset.min()) - 0.0015
-    ymax = max(df_members.z_offset.max(), df_interlopers.z_offset.max()) + 0.0015
-    ax.set_ylim(ymin, ymax)
+    ax.set_ylim(-0.03, 0.03)
     
   def plot_photoz(self, df_members: pd.DataFrame, df_interlopers: pd.DataFrame, df_photoz_radial: pd.DataFrame, cls_z: float, ax: plt.Axes):
     df_members_match = fast_crossmatch(df_members, df_photoz_radial)
     df_interlopers_match = fast_crossmatch(df_interlopers, df_photoz_radial)
     df_members_match['zml_offset'] = df_members_match['zml'] - cls_z
     df_interlopers_match['zml_offset'] = df_interlopers_match['zml'] - cls_z
-    ax.scatter(df_members_match.radius_Mpc, df_members_match.zml_offset, c='tab:red', s=5, label='Members', rasterized=True)  
-    ax.scatter(df_interlopers_match.radius_Mpc, df_interlopers_match.zml_offset, c='tab:blue', s=5, label='Interlopers', rasterized=True)
+    df_members_match2 = df_members_match[df_members_match['odds'] > 0.95]
+    df_interlopers_match2 = df_interlopers_match[df_interlopers_match['odds'] > 0.95]
+    ax.scatter(df_members_match2.radius_Mpc, df_members_match2.zml_offset, c='tab:red', s=5, label='Members', rasterized=True)  
+    ax.scatter(df_interlopers_match2.radius_Mpc, df_interlopers_match2.zml_offset, c='tab:blue', s=5, label='Interlopers', rasterized=True)
     ax.legend()
     ax.grid('on', color='k', linestyle='--', alpha=.5)
     ax.tick_params(direction='in')
     ax.set_xlabel('R [Mpc]')
     ax.set_ylabel('$\\Delta z_{{photo}}$')
     ax.set_title('Photometric redshift x distance')
-    ymin = min(df_members.z_offset.min(), df_interlopers.z_offset.min()) - 0.0015
-    ymax = max(df_members.z_offset.max(), df_interlopers.z_offset.max()) + 0.0015
-    ax.set_ylim(ymin, ymax)
+    ax.set_ylim(-0.03, 0.03)
   
   def plot_ra_dec(
     self, 
@@ -2017,8 +2015,8 @@ def website_pipeline(overwrite: bool = False):
     LoadPhotozRadialStage(),
     LoadSpeczRadialStage(),
     LoadAllRadialStage(),
-    ClusterPlotStage(overwrite=overwrite, fmt='jpg', separated=True),
-    VelocityPlotStage(overwrite=overwrite, fmt='jpg', separated=True),
+    ClusterPlotStage(overwrite=True, fmt='jpg', separated=True),
+    VelocityPlotStage(overwrite=True, fmt='jpg', separated=True),
     MagDiffPlotStage(overwrite=overwrite, fmt='jpg', separated=True),
     WebsitePagesStage(clusters=df_clusters.name.values, fmt='jpg'),
   )
