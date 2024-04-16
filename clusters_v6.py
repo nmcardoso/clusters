@@ -1566,14 +1566,14 @@ class WebsitePagesStage(PipelineStage):
     <head>
       <link rel="icon" href="data:image/svg+xml,<svg xmlns=%22http://www.w3.org/2000/svg%22 viewBox=%220 0 100 100%22><text y=%22.9em%22 font-size=%2290%22>🌌</text></svg>">
       <title>S-PLUS Clusters Catalog</title>
-      <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/lightbox2/2.11.4/css/lightbox.min.css" />
+      <link rel="stylesheet" href="lightbox.min.css" />
     </head>
     <body>
       <h2>Clusters Index</h2>
       {self.get_paginator(back=False)}
       <br /><br /><br />
       <img src="all_sky.png" width="80%" style="display: block; margin: 0 auto;" />
-      <script src="https://cdnjs.cloudflare.com/ajax/libs/lightbox2/2.11.4/js/lightbox-plus-jquery.min.js"></script>
+      <script src="lightbox-plus-jquery.min.js"></script>
     </body>
     </html>
     '''
@@ -1608,7 +1608,7 @@ class WebsitePagesStage(PipelineStage):
     <head>
       <link rel="icon" href="data:image/svg+xml,<svg xmlns=%22http://www.w3.org/2000/svg%22 viewBox=%220 0 100 100%22><text y=%22.9em%22 font-size=%2290%22>🌌</text></svg>">
       <title>{cls_name}</title>
-      <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/lightbox2/2.11.4/css/lightbox.min.css" />
+      <link rel="stylesheet" href="../../lightbox.min.css" />
       <style type="text/css">
       a.gallery:hover {{
         cursor: -moz-zoom-in; 
@@ -1642,9 +1642,9 @@ class WebsitePagesStage(PipelineStage):
       <p><b>Gallery</b></p>
       {' '.join(gallery)}
       <p><b>Legacy DR10</b></p>
-      <div id='aladin-lite-div' style='width: 850px; height: 700px; margin:0 auto;'></div>
+      <div id="aladin-lite-div" style="width: 850px; height: 700px; margin:0 auto;"></div>
       
-      <script src="https://cdnjs.cloudflare.com/ajax/libs/lightbox2/2.11.4/js/lightbox-plus-jquery.min.js"></script>
+      <script src="../../lightbox-plus-jquery.min.js"></script>
       <script>
       lightbox.option({{
         'resizeDuration': 0,
@@ -1655,44 +1655,46 @@ class WebsitePagesStage(PipelineStage):
       }})
       </script>
       
-      <script src='https://aladin.cds.unistra.fr/AladinLite/api/v3/latest/aladin.js' charset='utf-8'></script>
+      <script src='../../aladin.js' charset='utf-8'></script>
       <script>
       const catFilter = (source) => {{
         return !isNaN(parseFloat(source.data['redshift'])) && (source.data['redshift'] > {z_spec_range[0]}) && (source.data['redshift'] < {z_spec_range[1]})
       }}
       
       var aladin;
-      A.init.then(() => {{
-        // Init Aladin
-        aladin = A.aladin('#aladin-lite-div', {{
-          source: 'CDS/P/DESI-Legacy-Surveys/DR10/color',
-          target: '{cls_ra:.6f} {cls_dec:.6f}', 
-          fov: {5*cls_r200_deg + 0.3},
-          cooFrame: 'ICRSd',
+      window.addEventListener("load", () => {{
+        A.init.then(() => {{
+          // Init Aladin
+          aladin = A.aladin('#aladin-lite-div', {{
+            source: 'CDS/P/DESI-Legacy-Surveys/DR10/color',
+            target: '{cls_ra:.6f} {cls_dec:.6f}', 
+            fov: {5*cls_r200_deg + 0.3},
+            cooFrame: 'ICRSd',
+          }});
+          aladin.setImageSurvey('CDS/P/DESI-Legacy-Surveys/DR10/color');
+          
+          // Add 5R200 Circle
+          var overlay = A.graphicOverlay({{color: '#ee2345', lineWidth: 2}});
+          aladin.addOverlay(overlay);
+          overlay.add(A.ellipse({cls_ra:.6f}, {cls_dec:.6f}, {2.5*cls_r200_deg}, {2.5*cls_r200_deg}, 0));
+          
+          // Add redshift catalog
+          const cat_url = 'http://cdsxmatch.u-strasbg.fr/QueryCat/QueryCat?catName=SIMBAD&mode=cone&pos={cls_ra:.6f}%20{cls_dec:.6f}&r={5*cls_r200_deg:.3f}deg&format=votable&limit=6000'
+          const cat = A.catalogFromURL(cat_url, {{
+            name: 'redshift',
+            sourceSize:12, 
+            color: '#f72525', 
+            displayLabel: true, 
+            labelColumn: 'redshift', 
+            labelColor: '#31c3f7', 
+            labelFont: '14px sans-serif', 
+            onClick: 'showPopup', 
+            shape: 'circle',
+            filter: catFilter,
+          }})
+          aladin.addCatalog(cat)
         }});
-        aladin.setImageSurvey('CDS/P/DESI-Legacy-Surveys/DR10/color');
-        
-        // Add 5R200 Circle
-        var overlay = A.graphicOverlay({{color: '#ee2345', lineWidth: 2}});
-        aladin.addOverlay(overlay);
-        overlay.add(A.ellipse({cls_ra:.6f}, {cls_dec:.6f}, {2.5*cls_r200_deg}, {2.5*cls_r200_deg}, 0));
-        
-        // Add redshift catalog
-        const cat_url = 'http://cdsxmatch.u-strasbg.fr/QueryCat/QueryCat?catName=SIMBAD&mode=cone&pos={cls_ra:.6f}%20{cls_dec:.6f}&r={5*cls_r200_deg:.3f}deg&format=votable&limit=6000'
-        const cat = A.catalogFromURL(cat_url, {{
-          name: 'redshift',
-          sourceSize:12, 
-          color: '#f72525', 
-          displayLabel: true, 
-          labelColumn: 'redshift', 
-          labelColor: '#31c3f7', 
-          labelFont: '14px sans-serif', 
-          onClick: 'showPopup', 
-          shape: 'circle',
-          filter: catFilter,
-        }})
-        aladin.addCatalog(cat)
-      }});
+      }})
       </script>
     </body>
     </html>
@@ -2015,8 +2017,8 @@ def website_pipeline(overwrite: bool = False):
     LoadPhotozRadialStage(),
     LoadSpeczRadialStage(),
     LoadAllRadialStage(),
-    ClusterPlotStage(overwrite=True, fmt='jpg', separated=True),
-    VelocityPlotStage(overwrite=True, fmt='jpg', separated=True),
+    ClusterPlotStage(overwrite=overwrite, fmt='jpg', separated=True),
+    VelocityPlotStage(overwrite=overwrite, fmt='jpg', separated=True),
     MagDiffPlotStage(overwrite=overwrite, fmt='jpg', separated=True),
     WebsitePagesStage(clusters=df_clusters.name.values, fmt='jpg'),
   )

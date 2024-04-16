@@ -3,7 +3,7 @@
     <head>
       <link rel="icon" href="data:image/svg+xml,<svg xmlns=%22http://www.w3.org/2000/svg%22 viewBox=%220 0 100 100%22><text y=%22.9em%22 font-size=%2290%22>🌌</text></svg>">
       <title>NGC1132</title>
-      <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/lightbox2/2.11.4/css/lightbox.min.css" />
+      <link rel="stylesheet" href="../../lightbox.min.css" />
       <style type="text/css">
       a.gallery:hover {
         cursor: -moz-zoom-in; 
@@ -37,9 +37,9 @@
       <p><b>Gallery</b></p>
       <a href="specz.jpg" class="gallery" data-lightbox="images"><img src="specz.jpg" width="400" height="400" /></a> <a href="photoz.jpg" class="gallery" data-lightbox="images"><img src="photoz.jpg" width="400" height="400" /></a> <a href="photoz_specz.jpg" class="gallery" data-lightbox="images"><img src="photoz_specz.jpg" width="400" height="400" /></a> <a href="spec_velocity_position.jpg" class="gallery" data-lightbox="images"><img src="spec_velocity_position.jpg" width="400" height="400" /></a> <a href="spec_velocity.jpg" class="gallery" data-lightbox="images"><img src="spec_velocity.jpg" width="400" height="400" /></a> <a href="specz_distance.jpg" class="gallery" data-lightbox="images"><img src="specz_distance.jpg" width="400" height="400" /></a> <a href="photoz_distance.jpg" class="gallery" data-lightbox="images"><img src="photoz_distance.jpg" width="400" height="400" /></a> <a href="mag_diff.jpg" class="gallery" data-lightbox="images"><img src="mag_diff.jpg" width="400" height="400" /></a> <a href="mag_diff_hist.jpg" class="gallery" data-lightbox="images"><img src="mag_diff_hist.jpg" width="400" height="400" /></a>
       <p><b>Legacy DR10</b></p>
-      <div id='aladin-lite-div' style='width: 850px; height: 700px; margin:0 auto;'></div>
+      <div id="aladin-lite-div" style="width: 850px; height: 700px; margin:0 auto;"></div>
       
-      <script src="https://cdnjs.cloudflare.com/ajax/libs/lightbox2/2.11.4/js/lightbox-plus-jquery.min.js"></script>
+      <script src="../../lightbox-plus-jquery.min.js"></script>
       <script>
       lightbox.option({
         'resizeDuration': 0,
@@ -50,44 +50,46 @@
       })
       </script>
       
-      <script src='https://aladin.cds.unistra.fr/AladinLite/api/v3/latest/aladin.js' charset='utf-8'></script>
+      <script src='../../aladin.js' charset='utf-8'></script>
       <script>
       const catFilter = (source) => {
         return !isNaN(parseFloat(source.data['redshift'])) && (source.data['redshift'] > 0.0161) && (source.data['redshift'] < 0.0301)
       }
       
       var aladin;
-      A.init.then(() => {
-        // Init Aladin
-        aladin = A.aladin('#aladin-lite-div', {
-          source: 'CDS/P/DESI-Legacy-Surveys/DR10/color',
-          target: '43.213227 -1.271903', 
-          fov: 1.2078360050866885,
-          cooFrame: 'ICRSd',
+      window.addEventListener("load", () => {
+        A.init.then(() => {
+          // Init Aladin
+          aladin = A.aladin('#aladin-lite-div', {
+            source: 'CDS/P/DESI-Legacy-Surveys/DR10/color',
+            target: '43.213227 -1.271903', 
+            fov: 1.2078360050866885,
+            cooFrame: 'ICRSd',
+          });
+          aladin.setImageSurvey('CDS/P/DESI-Legacy-Surveys/DR10/color');
+          
+          // Add 5R200 Circle
+          var overlay = A.graphicOverlay({color: '#ee2345', lineWidth: 2});
+          aladin.addOverlay(overlay);
+          overlay.add(A.ellipse(43.213227, -1.271903, 0.4539180025433443, 0.4539180025433443, 0));
+          
+          // Add redshift catalog
+          const cat_url = 'http://cdsxmatch.u-strasbg.fr/QueryCat/QueryCat?catName=SIMBAD&mode=cone&pos=43.213227%20-1.271903&r=0.908deg&format=votable&limit=6000'
+          const cat = A.catalogFromURL(cat_url, {
+            name: 'redshift',
+            sourceSize:12, 
+            color: '#f72525', 
+            displayLabel: true, 
+            labelColumn: 'redshift', 
+            labelColor: '#31c3f7', 
+            labelFont: '14px sans-serif', 
+            onClick: 'showPopup', 
+            shape: 'circle',
+            filter: catFilter,
+          })
+          aladin.addCatalog(cat)
         });
-        aladin.setImageSurvey('CDS/P/DESI-Legacy-Surveys/DR10/color');
-        
-        // Add 5R200 Circle
-        var overlay = A.graphicOverlay({color: '#ee2345', lineWidth: 2});
-        aladin.addOverlay(overlay);
-        overlay.add(A.ellipse(43.213227, -1.271903, 0.4539180025433443, 0.4539180025433443, 0));
-        
-        // Add redshift catalog
-        const cat_url = 'http://cdsxmatch.u-strasbg.fr/QueryCat/QueryCat?catName=SIMBAD&mode=cone&pos=43.213227%20-1.271903&r=0.908deg&format=votable&limit=6000'
-        const cat = A.catalogFromURL(cat_url, {
-          name: 'redshift',
-          sourceSize:12, 
-          color: '#f72525', 
-          displayLabel: true, 
-          labelColumn: 'redshift', 
-          labelColor: '#31c3f7', 
-          labelFont: '14px sans-serif', 
-          onClick: 'showPopup', 
-          shape: 'circle',
-          filter: catFilter,
-        })
-        aladin.addCatalog(cat)
-      });
+      })
       </script>
     </body>
     </html>
