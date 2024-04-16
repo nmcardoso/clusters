@@ -1589,6 +1589,9 @@ class WebsitePagesStage(PipelineStage):
     cls_z: float,
     cls_15Mpc_deg: float,
     cls_r200_deg: float,
+    cls_r200_Mpc: float,
+    cls_r500_deg: float,
+    cls_r500_Mpc: float,
     z_spec_range: Tuple[float, float],
     z_photo_range: Tuple[float, float],
   ):
@@ -1623,20 +1626,21 @@ class WebsitePagesStage(PipelineStage):
       <hr />
       <h2>Cluster: {cls_name}</h2>
       <i>
-        RA: {cls_ra:.4f}&deg;, DEC: {cls_dec:.4f}&deg;,
-        z: {cls_z:.4f} &bullet; search radius: 15Mpc ({cls_15Mpc_deg:.3f}&deg;)
+        <b>RA:</b> {cls_ra:.4f}&deg; &nbsp;&nbsp;&nbsp;  
+        <b>DEC:</b> {cls_dec:.4f}&deg; &nbsp;&nbsp;&nbsp;  
+        <b>z<sub>cluster</sub>:</b> {cls_z:.4f} &nbsp;&nbsp;&nbsp; 
+        <b>search radius:</b> 15Mpc ({cls_15Mpc_deg:.3f}&deg;) &nbsp;&nbsp;&nbsp; 
+        <b>5&times;R200:</b> {5*cls_r200_Mpc:.3f}Mpc ({5*cls_r200_deg:.3f}&deg) &nbsp;&nbsp;&nbsp;
+        <b>5&times;R500:</b> {5*cls_r500_Mpc:.3f}Mpc ({5*cls_r500_deg:.3f}&deg)
       </i>
       <br />
       <i>
-        Spec Z Range: z<sub>cluster</sub> &plusmn; 0.007 = [{z_spec_range[0]:.4f}, {z_spec_range[1]:.4f}]
+        <b>z<sub>spec</sub>:</b> z<sub>cluster</sub> &plusmn; 0.007 = [{z_spec_range[0]:.4f}, {z_spec_range[1]:.4f}] &nbsp;&nbsp;&nbsp;
+        <b>z<sub>photo</sub>:</b> z<sub>cluster</sub> &plusmn; 0.015 = [{z_photo_range[0]:.4f}, {z_photo_range[1]:.4f}]
       </i>
       <br />
       <i>
-        Good Photo Z: z<sub>cluster</sub> &plusmn; 0.015 = [{z_photo_range[0]:.4f}, {z_photo_range[1]:.4f}]
-      </i>
-      <br />
-      <i>
-        R Mag Range: [13, 22] &bullet; spec class = GALAXY*
+        <b>mag<sub>r</sub>:</b> [13, 22] &nbsp;&nbsp;&nbsp; <b>class<sub>spec</sub>:</b> GALAXY*
       </i>
       <br />
       <p><b>Gallery</b></p>
