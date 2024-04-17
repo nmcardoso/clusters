@@ -21,9 +21,9 @@
         <b>RA:</b> 316.8098&deg; &nbsp;&nbsp;&nbsp;  
         <b>DEC:</b> -25.4391&deg; &nbsp;&nbsp;&nbsp;  
         <b>z<sub>cluster</sub>:</b> 0.0375 &nbsp;&nbsp;&nbsp; 
-        <b>search radius:</b> 15Mpc (5.415&deg;) &nbsp;&nbsp;&nbsp;  
-        <b>5&times;R200:</b> 2.939Mpc (1.061&deg) &nbsp;&nbsp;&nbsp; 
-        <b>5&times;R500:</b> 2.238Mpc (0.808&deg)
+        <b>search radius:</b> 15Mpc (5.601&deg;) &nbsp;&nbsp;&nbsp;  
+        <b>5&times;R200:</b> 2.939Mpc (1.097&deg) &nbsp;&nbsp;&nbsp; 
+        <b>5&times;R500:</b> 2.238Mpc (0.836&deg)
       </i>
       <br />
       <i>
@@ -32,8 +32,15 @@
         <b>mag<sub>r</sub>:</b> [13, 22] &nbsp;&nbsp;&nbsp; <b>class<sub>spec</sub>:</b> GALAXY*
       </i>
       <br />
+      <i>
+        Cosmology: 
+        <b>H<sub>0</sub>:</b> 70 km Mpc<sup>-1</sup> s<sup>-1</sup> &nbsp;&nbsp;&nbsp; 
+        <b>&Omega;<sub>m</sub>:</b> 0.3 &nbsp;&nbsp;&nbsp; 
+        <b>&Omega;<sub>&Lambda;</sub>:</b> 0.7
+      </i>
+      <br />
       <p><b>Gallery</b></p>
-      <a href="specz.jpg" class="gallery" data-lightbox="images"><img src="specz.jpg" width="400" height="400" /></a> <a href="photoz.jpg" class="gallery" data-lightbox="images"><img src="photoz.jpg" width="400" height="400" /></a> <a href="photoz_specz.jpg" class="gallery" data-lightbox="images"><img src="photoz_specz.jpg" width="400" height="400" /></a> <a href="spec_velocity_position.jpg" class="gallery" data-lightbox="images"><img src="spec_velocity_position.jpg" width="400" height="400" /></a> <a href="spec_velocity.jpg" class="gallery" data-lightbox="images"><img src="spec_velocity.jpg" width="400" height="400" /></a> <a href="specz_distance.jpg" class="gallery" data-lightbox="images"><img src="specz_distance.jpg" width="400" height="400" /></a> <a href="photoz_distance.jpg" class="gallery" data-lightbox="images"><img src="photoz_distance.jpg" width="400" height="400" /></a> <a href="mag_diff.jpg" class="gallery" data-lightbox="images"><img src="mag_diff.jpg" width="400" height="400" /></a> <a href="mag_diff_hist.jpg" class="gallery" data-lightbox="images"><img src="mag_diff_hist.jpg" width="400" height="400" /></a>
+      <a href="specz.jpg" class="gallery" data-lightbox="images"><img src="specz.jpg" width="400" height="400" /></a> <a href="photoz.jpg" class="gallery" data-lightbox="images"><img src="photoz.jpg" width="400" height="400" /></a> <a href="photoz_specz.jpg" class="gallery" data-lightbox="images"><img src="photoz_specz.jpg" width="400" height="400" /></a> <a href="spec_velocity_position.jpg" class="gallery" data-lightbox="images"><img src="spec_velocity_position.jpg" width="400" height="400" /></a> <a href="spec_velocity_rel_position.jpg" class="gallery" data-lightbox="images"><img src="spec_velocity_rel_position.jpg" width="400" height="400" /></a> <a href="spec_velocity.jpg" class="gallery" data-lightbox="images"><img src="spec_velocity.jpg" width="400" height="400" /></a> <a href="specz_distance.jpg" class="gallery" data-lightbox="images"><img src="specz_distance.jpg" width="400" height="400" /></a> <a href="photoz_distance.jpg" class="gallery" data-lightbox="images"><img src="photoz_distance.jpg" width="400" height="400" /></a> <a href="mag_diff.jpg" class="gallery" data-lightbox="images"><img src="mag_diff.jpg" width="400" height="400" /></a> <a href="mag_diff_hist.jpg" class="gallery" data-lightbox="images"><img src="mag_diff_hist.jpg" width="400" height="400" /></a>
       <p><b>Legacy DR10</b></p>
       <div id="aladin-lite-div" style="width: 850px; height: 700px; margin:0 auto;"></div>
       
@@ -61,7 +68,7 @@
           aladin = A.aladin('#aladin-lite-div', {
             source: 'CDS/P/DESI-Legacy-Surveys/DR10/color',
             target: '316.809819 -25.439131', 
-            fov: 1.3608995907626873,
+            fov: 1.3972459018056311,
             cooFrame: 'ICRSd',
           });
           aladin.setImageSurvey('CDS/P/DESI-Legacy-Surveys/DR10/color');
@@ -69,10 +76,10 @@
           // Add 5R200 Circle
           var overlay = A.graphicOverlay({color: '#ee2345', lineWidth: 2});
           aladin.addOverlay(overlay);
-          overlay.add(A.ellipse(316.809819, -25.439131, 0.5304497953813436, 0.5304497953813436, 0));
+          overlay.add(A.ellipse(316.809819, -25.439131, 0.5486229509028155, 0.5486229509028155, 0));
           
           // Add redshift catalog
-          const cat_url = 'http://cdsxmatch.u-strasbg.fr/QueryCat/QueryCat?catName=SIMBAD&mode=cone&pos=316.809819%20-25.439131&r=1.061deg&format=votable&limit=6000'
+          const cat_url = 'http://cdsxmatch.u-strasbg.fr/QueryCat/QueryCat?catName=SIMBAD&mode=cone&pos=316.809819%20-25.439131&r=1.097deg&format=votable&limit=6000'
           const cat = A.catalogFromURL(cat_url, {
             name: 'redshift',
             sourceSize:12, 

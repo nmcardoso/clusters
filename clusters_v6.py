@@ -14,6 +14,7 @@ from astromodule.table import (concat_tables, crossmatch, fast_crossmatch,
                                guess_coords_columns, radial_search, selfmatch)
 from astropy import units as u
 from astropy.coordinates import SkyCoord
+from astropy.cosmology import LambdaCDM
 from astropy.wcs import WCS
 from matplotlib.colors import LinearSegmentedColormap
 from matplotlib.patches import Circle
@@ -169,7 +170,8 @@ class LoadHeasarcInfoStage(PipelineStage):
     ra = cluster['ra'].values[0]
     dec = cluster['dec'].values[0]
     z = cluster['redshift'].values[0]
-    r15Mpc_deg = mpc2arcsec(15, z).to(u.deg).value
+    cosmo = LambdaCDM(H0=70, Om0=0.3, Ode0=0.7)
+    r15Mpc_deg = mpc2arcsec(15, z, cosmo).to(u.deg).value
     print('Cluster Name:', cls_name)
     print(f'RA: {ra:.3f}, DEC: {dec:.3f}, z: {z:.2f}, search radius: {r15Mpc_deg:.2f}')
     return {
@@ -215,9 +217,10 @@ class LoadClusterInfoStage(PipelineStage):
     z = cluster['z_spec'].values[0]
     r500_Mpc = cluster['R500_Mpc'].values[0]
     r200_Mpc = cluster['R200_Mpc'].values[0]
-    r500_deg = mpc2arcsec(r500_Mpc, z).to(u.deg).value
-    r200_deg = mpc2arcsec(r200_Mpc, z).to(u.deg).value
-    r15Mpc_deg = mpc2arcsec(15, z).to(u.deg).value
+    cosmo = LambdaCDM(H0=70, Om0=0.3, Ode0=0.7)
+    r500_deg = mpc2arcsec(r500_Mpc, z, cosmo).to(u.deg).value
+    r200_deg = mpc2arcsec(r200_Mpc, z, cosmo).to(u.deg).value
+    r15Mpc_deg = mpc2arcsec(15, z, cosmo).to(u.deg).value
     if r15Mpc_deg > 17:
       print(f'Cluster angular radius @ 15Mpc = {r15Mpc_deg:.2f} deg, limiting to 17 deg')
       r15Mpc_deg = min(r15Mpc_deg, 17)
@@ -266,7 +269,8 @@ class LoadERASSInfoStage(PipelineStage):
     dec = cluster['DEC_OPT'].values[0]
     r500_Mpc = cluster['R500_Mpc'].values[0]
     r500_deg = cluster['R500_deg'].values[0]
-    r15Mpc_deg = min(mpc2arcsec(15, z).to(u.deg).value, 17)
+    cosmo = LambdaCDM(H0=70, Om0=0.3, Ode0=0.7)
+    r15Mpc_deg = min(mpc2arcsec(15, z, cosmo).to(u.deg).value, 17)
     print('Cluster Name:', cls_name)
     print(f'RA: {ra:.3f}, DEC: {dec:.3f}, z: {z:.2f}, search radius: {r15Mpc_deg:.2f}')
     return {
@@ -1070,7 +1074,7 @@ class VelocityPlotStage(PipelineStage):
       lw=2, 
       linestyle=ls,
       ec=color, 
-      transform=ax.get_transform('icrs'), 
+      transform=ax.get_transform('icrs'),
       label=label,
     )
     ax.add_patch(circle)
@@ -1093,7 +1097,7 @@ class VelocityPlotStage(PipelineStage):
         radius=5*r200_deg,
         color='tab:green',
         label=f'5$\\times$R200 ({5*r200_Mpc:.2f}Mpc $\\bullet$ {5*r200_deg:.2f}$^\\circ$)',
-        ax=ax
+        ax=ax,
       )
     if r500_deg:
       self.add_circle(
@@ -1103,7 +1107,7 @@ class VelocityPlotStage(PipelineStage):
         color='tab:green',
         ls='--',
         label=f'5$\\times$R500 ({5*r500_Mpc:.2f}Mpc $\\bullet$ {5*r500_deg:.2f}$^\\circ$)',
-        ax=ax
+        ax=ax,
       )
     if r15Mpc_deg:
       self.add_circle(
@@ -1112,7 +1116,7 @@ class VelocityPlotStage(PipelineStage):
         radius=r15Mpc_deg,
         color='tab:brown',
         label=f'15Mpc ({r15Mpc_deg:.3f}$^\\circ$)',
-        ax=ax
+        ax=ax,
       )
     
   def add_cluster_center(self, ra: float, dec: float, ax):
@@ -1157,8 +1161,8 @@ class VelocityPlotStage(PipelineStage):
     df_interlopers_match = fast_crossmatch(df_interlopers, df_photoz_radial)
     df_members_match['zml_offset'] = df_members_match['zml'] - cls_z
     df_interlopers_match['zml_offset'] = df_interlopers_match['zml'] - cls_z
-    df_members_match2 = df_members_match[df_members_match['odds'] > 0.95]
-    df_interlopers_match2 = df_interlopers_match[df_interlopers_match['odds'] > 0.95]
+    df_members_match2 = df_members_match[df_members_match['odds'] > 0.9]
+    df_interlopers_match2 = df_interlopers_match[df_interlopers_match['odds'] > 0.9]
     ax.scatter(df_members_match2.radius_Mpc, df_members_match2.zml_offset, c='tab:red', s=5, label='Members', rasterized=True)  
     ax.scatter(df_interlopers_match2.radius_Mpc, df_interlopers_match2.zml_offset, c='tab:blue', s=5, label='Interlopers', rasterized=True)
     ax.legend()
@@ -1166,7 +1170,7 @@ class VelocityPlotStage(PipelineStage):
     ax.tick_params(direction='in')
     ax.set_xlabel('R [Mpc]')
     ax.set_ylabel('$\\Delta z_{{photo}}$')
-    ax.set_title('Photometric redshift x distance')
+    ax.set_title('Photometric redshift x distance ($z_{{photo}} odds > 0.9$)')
     ax.set_ylim(-0.03, 0.03)
   
   def plot_ra_dec(
@@ -1182,7 +1186,6 @@ class VelocityPlotStage(PipelineStage):
     df_interlopers: pd.DataFrame, 
     ax: plt.Axes
   ):
-    # ax.set_title(f'Spec Z Only - Objects: {len(df_specz_radial)}')
     self.add_all_circles(
       cls_ra=cls_ra, 
       cls_dec=cls_dec, 
@@ -1198,7 +1201,7 @@ class VelocityPlotStage(PipelineStage):
       df_members.dec, 
       c='tab:red', 
       s=5,
-      label='Members', 
+      label=f'Members ({len(df_members)})', 
       transform=ax.get_transform('icrs'), 
       rasterized=True,
     )
@@ -1207,7 +1210,7 @@ class VelocityPlotStage(PipelineStage):
       df_interlopers.dec, 
       c='tab:blue', 
       s=5,
-      label='Interlopers', 
+      label=f'Interlopers ({len(df_interlopers)})', 
       transform=ax.get_transform('icrs'), 
       rasterized=True,
     )
@@ -1216,10 +1219,90 @@ class VelocityPlotStage(PipelineStage):
     ax.set_aspect('equal', adjustable='datalim', anchor='C')
     ax.grid('on', color='k', linestyle='--', alpha=.5)
     ax.tick_params(direction='in')
+    ax.legend()
     ax.set_xlabel('RA')
     ax.set_ylabel('DEC')
-    ax.legend()
     ax.set_title('Spatial distribution of spectroscopic members')
+    
+  
+  def plot_ra_dec_relative(
+    self, 
+    cls_ra: float,
+    cls_dec: float,
+    cls_r200_deg: float,
+    cls_r200_Mpc: float,
+    cls_r500_deg: float,
+    cls_r500_Mpc: float,
+    cls_15Mpc_deg: float,
+    df_members: pd.DataFrame, 
+    df_interlopers: pd.DataFrame, 
+    ax: plt.Axes
+  ):
+    circle = Circle(
+      (0, 0), 
+      5,
+      fc='none', 
+      lw=2, 
+      linestyle='-',
+      ec='tab:green',
+      label='5$\\times$R200',
+    )
+    ax.add_patch(circle)
+    circle = Circle(
+      (0, 0), 
+      5*(cls_r500_deg/cls_r200_deg),
+      fc='none', 
+      lw=2, 
+      linestyle='--',
+      ec='tab:green',
+      label='5$\\times$R500',
+    )
+    ax.add_patch(circle)
+    circle = Circle(
+      (0, 0), 
+      cls_15Mpc_deg/cls_r200_deg,
+      fc='none', 
+      lw=2, 
+      linestyle='-',
+      ec='tab:brown',
+      label='15Mpc',
+    )
+    ax.add_patch(circle)
+    ax.scatter(
+      (df_members.ra - cls_ra) / cls_r200_deg, 
+      (df_members.dec - cls_dec) / cls_r200_deg, 
+      c='tab:red', 
+      s=5,
+      label=f'Members ({len(df_members)})', 
+      # transform=ax.get_transform('icrs'), 
+      rasterized=True,
+    )
+    ax.scatter(
+      (df_interlopers.ra - cls_ra) / cls_r200_deg, 
+      (df_interlopers.dec - cls_dec) / cls_r200_deg, 
+      c='tab:blue', 
+      s=5,
+      label=f'Interlopers ({len(df_interlopers)})', 
+      # transform=ax.get_transform('icrs'), 
+      rasterized=True,
+    )
+    ax.scatter(
+      0, 0,
+      marker='+', 
+      linewidths=1.5, 
+      s=80, 
+      c='k', 
+      rasterized=True, 
+      label='Cluster Center'
+    )
+    ax.invert_xaxis()
+    ax.legend()
+    ax.set_aspect('equal', adjustable='datalim', anchor='C')
+    ax.grid('on', color='k', linestyle='--', alpha=.5)
+    ax.tick_params(direction='in')
+    ax.set_xlabel('$\Delta$RA/R200')
+    ax.set_ylabel('$\Delta$DEC/R200')
+    ax.set_title('Relative spatial distribution of spectroscopic members')
   
   
   def run(
@@ -1296,6 +1379,16 @@ class VelocityPlotStage(PipelineStage):
         fig = plt.figure(figsize=(7.5, 7.5), dpi=150)
         ax = fig.add_subplot(projection=wcs)
         self.plot_ra_dec(cls_ra, cls_dec, cls_r200_deg, cls_r200_Mpc, cls_r500_deg, 
+                         cls_r500_Mpc, cls_15Mpc_deg, df_members, df_interlopers, ax)
+        plt.savefig(out, bbox_inches='tight', pad_inches=0.1)
+        plt.close(fig)
+        
+      out = WEBSITE_PATH / 'clusters' / cls_name / f'spec_velocity_rel_position.{self.fmt}'
+      if self.overwrite or not out.exists():
+        out.parent.mkdir(parents=True, exist_ok=True)
+        fig = plt.figure(figsize=(7.5, 7.5), dpi=150)
+        ax = fig.add_subplot()
+        self.plot_ra_dec_relative(cls_ra, cls_dec, cls_r200_deg, cls_r200_Mpc, cls_r500_deg, 
                          cls_r500_Mpc, cls_15Mpc_deg, df_members, df_interlopers, ax)
         plt.savefig(out, bbox_inches='tight', pad_inches=0.1)
         plt.close(fig)
@@ -1598,7 +1691,8 @@ class WebsitePagesStage(PipelineStage):
     width = 400
     height = 400
     images = [
-      'specz', 'photoz', 'photoz_specz', 'spec_velocity_position', 
+      'specz', 'photoz', 'photoz_specz', 
+      'spec_velocity_position', 'spec_velocity_rel_position', 
       'spec_velocity', 'specz_distance', 'photoz_distance', 
       'mag_diff', 'mag_diff_hist',
     ]
@@ -1638,6 +1732,13 @@ class WebsitePagesStage(PipelineStage):
         <b>z<sub>spec</sub>:</b> z<sub>cluster</sub> &plusmn; 0.007 = [{z_spec_range[0]:.4f}, {z_spec_range[1]:.4f}] &nbsp;&nbsp;&nbsp; 
         <b>z<sub>photo</sub>:</b> z<sub>cluster</sub> &plusmn; 0.015 = [{z_photo_range[0]:.4f}, {z_photo_range[1]:.4f}] &nbsp;&nbsp;&nbsp; 
         <b>mag<sub>r</sub>:</b> [13, 22] &nbsp;&nbsp;&nbsp; <b>class<sub>spec</sub>:</b> GALAXY*
+      </i>
+      <br />
+      <i>
+        Cosmology: 
+        <b>H<sub>0</sub>:</b> 70 km Mpc<sup>-1</sup> s<sup>-1</sup> &nbsp;&nbsp;&nbsp; 
+        <b>&Omega;<sub>m</sub>:</b> 0.3 &nbsp;&nbsp;&nbsp; 
+        <b>&Omega;<sub>&Lambda;</sub>:</b> 0.7
       </i>
       <br />
       <p><b>Gallery</b></p>
@@ -2018,7 +2119,7 @@ def website_pipeline(overwrite: bool = False):
     LoadPhotozRadialStage(),
     LoadSpeczRadialStage(),
     LoadAllRadialStage(),
-    ClusterPlotStage(overwrite=overwrite, fmt='jpg', separated=True),
+    ClusterPlotStage(overwrite=True, fmt='jpg', separated=True),
     VelocityPlotStage(overwrite=overwrite, fmt='jpg', separated=True),
     MagDiffPlotStage(overwrite=overwrite, fmt='jpg', separated=True),
     WebsitePagesStage(clusters=df_clusters.name.values, fmt='jpg'),
