@@ -1,11 +1,15 @@
+import subprocess
 from datetime import datetime, timedelta
+from io import BytesIO
 from pathlib import Path
+from shutil import copy
 from typing import List, Literal, Sequence, Tuple
 
 import matplotlib.pyplot as plt
 import mpl_scatter_density
 import numpy as np
 import pandas as pd
+import requests
 from astromodule.distance import mpc2arcsec
 from astromodule.io import merge_pdf, read_table, write_table
 from astromodule.legacy import LegacyService
@@ -18,6 +22,7 @@ from astropy.cosmology import LambdaCDM
 from astropy.wcs import WCS
 from matplotlib.colors import LinearSegmentedColormap
 from matplotlib.patches import Circle
+from PIL import Image, ImageChops
 from tqdm import tqdm
 
 PHOTOZ_TABLE_PATH = Path('/mnt/hd/natanael/astrodata/idr5_photoz_clean.parquet')
@@ -32,6 +37,7 @@ WEBSITE_PATH = Path('docs')
 PLOTS_FOLDER = OUT_PATH / 'plots'
 VELOCITY_PLOTS_FOLDER = OUT_PATH / 'velocity_plots'
 MAGDIFF_PLOTS_FOLDER = OUT_PATH / 'magdiff_plots'
+XRAY_PLOTS_FOLDER = OUT_PATH / 'xray_plots'
 MAGDIFF_OUTLIERS_FOLDER = OUT_PATH / 'magdiff_outliers'
 LEG_PHOTO_FOLDER = OUT_PATH / 'legacy'
 PHOTOZ_FOLDER = OUT_PATH / 'photoz'
@@ -1641,9 +1647,8 @@ class MagnitudePlotStage(PipelineStage):
 
 
 class WebsitePagesStage(PipelineStage):
-  def __init__(self, clusters: Sequence[str], fmt: str = 'png'):
+  def __init__(self, clusters: Sequence[str]):
     self.clusters = sorted(clusters)
-    self.fmt = fmt
   
   def get_paginator(self, back: bool = True):
     if back:
@@ -1690,15 +1695,22 @@ class WebsitePagesStage(PipelineStage):
   ):
     width = 400
     height = 400
+    folder_path = WEBSITE_PATH / 'clusters' / cls_name
     images = [
       'specz', 'photoz', 'photoz_specz', 
       'spec_velocity_position', 'spec_velocity_rel_position', 
       'spec_velocity', 'specz_distance', 'photoz_distance', 
-      'mag_diff', 'mag_diff_hist',
+      'mag_diff', 'mag_diff_hist', 'xray',
     ]
+    img_paths = []
+    for i in images:
+      candidates = list(folder_path.glob(f'{i}.*'))
+      if len(candidates) > 0:
+        img_paths.append(str(candidates[0].name))
+        
     gallery = [
-      f'<a href="{img}.{self.fmt}" class="gallery" data-lightbox="images"><img src="{img}.{self.fmt}" width="{width}" height="{height}" /></a>'
-      for img in images
+      f'<a href="{img}" class="gallery" data-lightbox="images"><img src="{img}" width="{width}" height="{height}" /></a>'
+      for img in img_paths
     ]
     page = f'''<!DOCTYPE html>
     <html>
@@ -1803,10 +1815,46 @@ class WebsitePagesStage(PipelineStage):
     </body>
     </html>
     '''
-    index_path = WEBSITE_PATH / 'clusters' / cls_name / 'index.html'
+    index_path = folder_path / 'index.html'
     index_path.parent.mkdir(parents=True, exist_ok=True)
     index_path.write_text(page)
     
+
+
+
+class DownloadXRayStage(PipelineStage):
+  def __init__(self, overwrite: bool = False, fmt: str = 'png'):
+    self.fmt = fmt
+    self.overwrite = overwrite
+    self.base_url = 'http://zmtt.bao.ac.cn/galaxy_clusters/dyXimages/image_all/'
+
+  def run(self, cls_name: str):
+    eps_path = XRAY_PLOTS_FOLDER / f'{cls_name}.eps'
+    raster_path = XRAY_PLOTS_FOLDER / f'{cls_name}.{self.fmt}'
+    if not eps_path.exists():
+      url = self.base_url + cls_name + '_image.eps'
+      r = requests.get(url)
+      if r.ok:
+        eps_path.write_bytes(r.content)
+    if eps_path.exists() and (not raster_path.exists() or self.overwrite):
+      subprocess.run([
+        'convert', '-density', '300', str(eps_path.absolute()), 
+        '-trim', '-rotate', '90', str(raster_path.absolute())
+      ])
+
+
+
+
+class CopyXrayStage(PipelineStage):
+  def __init__(self, overwrite: bool = False, fmt: str = 'png'):
+    self.overwrite = overwrite
+    self.fmt = fmt
+    
+  def run(self, cls_name: str):
+    src = XRAY_PLOTS_FOLDER / f'{cls_name}.{self.fmt}'
+    dst = WEBSITE_PATH / 'clusters' / cls_name / f'xray.{self.fmt}'
+    if (not dst.exists() or self.overwrite) and src.exists(): 
+      copy(src, dst)
 
 
     
@@ -2124,12 +2172,26 @@ def website_pipeline(overwrite: bool = False):
     ClusterPlotStage(overwrite=overwrite, fmt='jpg', separated=True),
     VelocityPlotStage(overwrite=overwrite, fmt='jpg', separated=True),
     MagDiffPlotStage(overwrite=overwrite, fmt='jpg', separated=True),
-    WebsitePagesStage(clusters=df_clusters.name.values, fmt='jpg'),
+    CopyXrayStage(overwrite=True, fmt='png'),
+    WebsitePagesStage(clusters=df_clusters.name.values),
   )
   
   pipe.map_run('cls_id', df_clusters.clsid.values, workers=1)
   
   WebsitePagesStage(clusters=df_clusters.name.values).make_index()
+
+
+
+def download_xray_pipeline(overwrite: bool = False):
+  df_clusters = load_clusters()
+  
+  pipe = Pipeline(
+    LoadClusterInfoStage(df_clusters),
+    DownloadXRayStage(overwrite=overwrite, fmt='png')
+  )
+  
+  pipe.map_run('cls_id', df_clusters.clsid.values, workers=1)
+
 
 
 def all_sky_plot():
@@ -2198,6 +2260,7 @@ def main():
   # heasarc_plot_pipeline(True)
   # magdiff_outliers_pipeline(True)
   # velocity_plots_pipeline(True)
+  # download_xray_pipeline(True)
   website_pipeline(False)
   # all_sky_plot()
   
