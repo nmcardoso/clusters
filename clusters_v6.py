@@ -1720,15 +1720,17 @@ class WebsitePagesStage(PipelineStage):
       <hr />
       <h2>Cluster: {cls_name}</h2>
       <i>
+        Measures: 
         <b>RA:</b> {cls_ra:.4f}&deg; &nbsp;&nbsp;&nbsp;  
         <b>DEC:</b> {cls_dec:.4f}&deg; &nbsp;&nbsp;&nbsp;  
         <b>z<sub>cluster</sub>:</b> {cls_z:.4f} &nbsp;&nbsp;&nbsp; 
         <b>search radius:</b> 15Mpc ({cls_15Mpc_deg:.3f}&deg;) &nbsp;&nbsp;&nbsp;  
-        <b>5&times;R200:</b> {5*cls_r200_Mpc:.3f}Mpc ({5*cls_r200_deg:.3f}&deg) &nbsp;&nbsp;&nbsp; 
-        <b>5&times;R500:</b> {5*cls_r500_Mpc:.3f}Mpc ({5*cls_r500_deg:.3f}&deg)
+        <b>5&times;R200:</b> {5*cls_r200_Mpc:.3f}Mpc ({5*cls_r200_deg:.3f}&deg;) &nbsp;&nbsp;&nbsp; 
+        <b>5&times;R500:</b> {5*cls_r500_Mpc:.3f}Mpc ({5*cls_r500_deg:.3f}&deg;)
       </i>
       <br />
       <i>
+        Constraints: 
         <b>z<sub>spec</sub>:</b> z<sub>cluster</sub> &plusmn; 0.007 = [{z_spec_range[0]:.4f}, {z_spec_range[1]:.4f}] &nbsp;&nbsp;&nbsp; 
         <b>z<sub>photo</sub>:</b> z<sub>cluster</sub> &plusmn; 0.015 = [{z_photo_range[0]:.4f}, {z_photo_range[1]:.4f}] &nbsp;&nbsp;&nbsp; 
         <b>mag<sub>r</sub>:</b> [13, 22] &nbsp;&nbsp;&nbsp; <b>class<sub>spec</sub>:</b> GALAXY*
@@ -2119,7 +2121,7 @@ def website_pipeline(overwrite: bool = False):
     LoadPhotozRadialStage(),
     LoadSpeczRadialStage(),
     LoadAllRadialStage(),
-    ClusterPlotStage(overwrite=True, fmt='jpg', separated=True),
+    ClusterPlotStage(overwrite=overwrite, fmt='jpg', separated=True),
     VelocityPlotStage(overwrite=overwrite, fmt='jpg', separated=True),
     MagDiffPlotStage(overwrite=overwrite, fmt='jpg', separated=True),
     WebsitePagesStage(clusters=df_clusters.name.values, fmt='jpg'),
