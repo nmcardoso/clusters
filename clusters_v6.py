@@ -600,10 +600,12 @@ class ClusterPlotStage(PipelineStage):
     fmt: Literal['pdf', 'jpg', 'png'] = 'pdf', 
     overwrite: bool = False, 
     separated: bool = False,
+    photoz_odds: float = 0.9,
   ):
     self.fmt = fmt
     self.overwrite = overwrite
     self.separated = separated
+    self.photoz_odds = photoz_odds
     
   def add_circle(
     self, 
@@ -703,7 +705,7 @@ class ClusterPlotStage(PipelineStage):
         s=6, 
         rasterized=True, 
         transform=ax.get_transform('icrs'),
-        label=f'Spec Unclassif.'
+        label=f'Unclassified'
       )
       ra_col, dec_col = guess_coords_columns(df_members)
       ax.scatter(
@@ -713,7 +715,7 @@ class ClusterPlotStage(PipelineStage):
         s=6, 
         rasterized=True, 
         transform=ax.get_transform('icrs'),
-        label=f'Spec Member ({len(df_members)})'
+        label=f'Member ({len(df_members)})'
       )
       ax.scatter(
         df_interlopers[ra_col].values, 
@@ -722,7 +724,7 @@ class ClusterPlotStage(PipelineStage):
         s=6, 
         rasterized=True, 
         transform=ax.get_transform('icrs'),
-        label=f'Spec Interloper ({len(df_interlopers)})'
+        label=f'Interloper ({len(df_interlopers)})'
       )
     else:
       ax.scatter(
@@ -732,7 +734,7 @@ class ClusterPlotStage(PipelineStage):
         s=6, 
         rasterized=True, 
         transform=ax.get_transform('icrs'),
-        label=f'Spec Z'
+        label=f'$z_{{spec}}$'
       )
     self.add_cluster_center(cls_ra, cls_dec, ax)
     self.add_all_circles(
@@ -745,7 +747,7 @@ class ClusterPlotStage(PipelineStage):
       r15Mpc_deg=cls_15Mpc_deg,
       ax=ax
     )
-    ax.set_title(f'Spec Z Only - Objects: {len(df_specz_radial)}')
+    ax.set_title(f'$z_{{spec}}$ - Objects: {len(df_specz_radial)}')
     ax.invert_xaxis()
     ax.legend(loc='upper left')
     ax.set_aspect('equal')
@@ -767,30 +769,17 @@ class ClusterPlotStage(PipelineStage):
     z_photo_range: Tuple[float, float],
     ax: plt.Axes,
   ):
-    df_photoz_radial.loc[:,'idx'] = range(len(df_photoz_radial))
-    df_photoz_good = df_photoz_radial[df_photoz_radial.zml.between(*z_photo_range)]
-    df_photoz_bad = df_photoz_radial[~df_photoz_radial.zml.between(*z_photo_range)]
     ra_col, dec_col = guess_coords_columns(df_photoz_radial)
-    if len(df_photoz_bad) > 0:
+    if len(df_photoz_radial) > 0:
       ax.scatter(
-        df_photoz_bad[ra_col].values, 
-        df_photoz_bad[dec_col].values, 
-        c='silver', 
-        s=6, 
-        alpha=0.5, 
-        rasterized=True, 
-        transform=ax.get_transform('icrs'),
-        label=f'Bad Photo Z ({len(df_photoz_bad)} obj)'
-      )
-    if len(df_photoz_good) > 0:
-      ax.scatter(
-        df_photoz_good[ra_col].values, 
-        df_photoz_good[dec_col].values,
+        df_photoz_radial[ra_col].values, 
+        df_photoz_radial[dec_col].values,
         c='tab:blue', 
-        s=6, 
+        s=2, 
+        alpha=0.02 if len(df_photoz_radial) > 200_000 else 0.2,
         rasterized=True, 
         transform=ax.get_transform('icrs'),
-        label=f'Good Photo Z ({len(df_photoz_good)} obj)'
+        label=f'iDR5 objects'
       )
     self.add_cluster_center(cls_ra, cls_dec, ax)
     self.add_all_circles(
@@ -803,7 +792,7 @@ class ClusterPlotStage(PipelineStage):
       r15Mpc_deg=cls_15Mpc_deg,
       ax=ax
     )
-    ax.set_title(f'S-PLUS Photo Z Only - Objects: {len(df_photoz_radial)}')
+    ax.set_title(f'S-PLUS Coverage - Objects: {len(df_photoz_radial)}')
     ax.invert_xaxis()
     ax.legend(loc='upper left')
     ax.set_aspect('equal')
@@ -823,18 +812,17 @@ class ClusterPlotStage(PipelineStage):
     cls_15Mpc_deg: float,
     df_specz_radial: pd.DataFrame,
     df_photoz_radial: pd.DataFrame,
+    df_all_radial: pd.DataFrame,
     z_photo_range: Tuple[float, float],
+    z_spec_range: Tuple[float, float],
     ax: plt.Axes,
   ):
-    if not 'idx' in df_photoz_radial.columns:
-      df_photoz_radial.loc[:,'idx'] = range(len(df_photoz_radial))
-    df_photoz_good = df_photoz_radial[df_photoz_radial.zml.between(*z_photo_range)]
-    
     if len(df_specz_radial) > 0 and len(df_photoz_radial) > 0:
-      df_match = fast_crossmatch(df_specz_radial, df_photoz_radial)
-      df_photoz_good_with_spec = df_match[df_match.zml.between(*z_photo_range)]
-      df_photoz_good_wo_spec = df_photoz_good[~df_photoz_good.idx.isin(df_match.idx)]
-      df_photoz_bad_with_spec = df_match[~df_match.zml.between(*z_photo_range)]
+      df_photoz_good = df_all_radial[df_all_radial.zml.between(*z_photo_range) & (df_all_radial.odds > self.photoz_odds)]
+      df_photoz_good_with_spec = df_photoz_good[df_photoz_good.z.between(*z_spec_range)]
+      df_photoz_good_wo_spec = df_photoz_good[~df_photoz_good.z.between(*z_spec_range) | df_photoz_good.z.isna()]
+      df_photoz_bad = df_all_radial[~df_all_radial.zml.between(*z_photo_range) & (df_all_radial.odds > self.photoz_odds)]
+      df_photoz_bad_with_spec = df_photoz_bad[df_photoz_bad.z.between(*z_spec_range)]
       ra_col, dec_col = guess_coords_columns(df_photoz_radial)
       if len(df_photoz_good_wo_spec) > 0:
         ax.scatter(
@@ -844,7 +832,7 @@ class ClusterPlotStage(PipelineStage):
           s=6, 
           rasterized=True, 
           transform=ax.get_transform('icrs'),
-          label=f'Good Photo Z wo/ Spec Z ({len(df_photoz_good_wo_spec)} obj)'
+          label=f'good $z_{{photo}}$ wo/ $z_{{spec}}$ ({len(df_photoz_good_wo_spec)} obj)'
         )
       if len(df_photoz_bad_with_spec) > 0:
         ax.scatter(
@@ -854,7 +842,7 @@ class ClusterPlotStage(PipelineStage):
           s=6, 
           rasterized=True, 
           transform=ax.get_transform('icrs'),
-          label=f'Bad Photo Z w/ Spec Z ({len(df_photoz_bad_with_spec)} obj)'
+          label=f'bad $z_{{photo}}$ w/ $z_{{spec}}$ ({len(df_photoz_bad_with_spec)} obj)'
         )
       if len(df_photoz_good_with_spec) > 0:
         ax.scatter(
@@ -864,7 +852,7 @@ class ClusterPlotStage(PipelineStage):
           s=6, 
           rasterized=True, 
           transform=ax.get_transform('icrs'),
-          label=f'Good Photo Z w/ Spec Z ({len(df_photoz_good_with_spec)} obj)'
+          label=f'good $z_{{photo}}$ w/ $z_{{spec}}$ ({len(df_photoz_good_with_spec)} obj)'
         )
     self.add_cluster_center(cls_ra, cls_dec, ax)
     self.add_all_circles(
@@ -877,7 +865,7 @@ class ClusterPlotStage(PipelineStage):
       r15Mpc_deg=cls_15Mpc_deg,
       ax=ax
     )
-    ax.set_title(f'Photo Z $\\cap$ Spec Z (CrossMatch Distance: 1 arcsec)')
+    ax.set_title(f'$z_{{photo}}$ $\\cap$ $z_{{spec}}$ (xmatch distance: 1 arcsec, odds > {self.photoz_odds})')
     ax.invert_xaxis()
     ax.legend(loc='upper left')
     ax.set_aspect('equal')
@@ -901,6 +889,7 @@ class ClusterPlotStage(PipelineStage):
     z_spec_range: Tuple[float, float],
     df_photoz_radial: pd.DataFrame,
     df_specz_radial: pd.DataFrame,
+    df_all_radial: pd.DataFrame,
     df_members: pd.DataFrame,
     df_interlopers: pd.DataFrame,
   ):
@@ -985,7 +974,9 @@ class ClusterPlotStage(PipelineStage):
           cls_15Mpc_deg=cls_15Mpc_deg,
           df_specz_radial=df_specz_radial,
           df_photoz_radial=df_photoz_radial,
+          df_all_radial=df_all_radial,
           z_photo_range=z_photo_range,
+          z_spec_range=z_spec_range,
           ax=ax,
         )
         plt.savefig(out, bbox_inches='tight', pad_inches=0.1)
@@ -1057,10 +1048,12 @@ class VelocityPlotStage(PipelineStage):
     overwrite: bool = False, 
     fmt: Literal['pdf', 'jpg', 'png'] = 'pdf',
     separated: bool = False,
+    photoz_odds: float = 0.9,
   ):
     self.overwrite = overwrite
     self.separated = separated
     self.fmt = fmt
+    self.photoz_odds = photoz_odds
     
     
   def add_circle(
@@ -1167,8 +1160,8 @@ class VelocityPlotStage(PipelineStage):
     df_interlopers_match = fast_crossmatch(df_interlopers, df_photoz_radial)
     df_members_match['zml_offset'] = df_members_match['zml'] - cls_z
     df_interlopers_match['zml_offset'] = df_interlopers_match['zml'] - cls_z
-    df_members_match2 = df_members_match[df_members_match['odds'] > 0.9]
-    df_interlopers_match2 = df_interlopers_match[df_interlopers_match['odds'] > 0.9]
+    df_members_match2 = df_members_match[df_members_match['odds'] > self.photoz_odds]
+    df_interlopers_match2 = df_interlopers_match[df_interlopers_match['odds'] > self.photoz_odds]
     ax.scatter(df_members_match2.radius_Mpc, df_members_match2.zml_offset, c='tab:red', s=5, label='Members', rasterized=True)  
     ax.scatter(df_interlopers_match2.radius_Mpc, df_interlopers_match2.zml_offset, c='tab:blue', s=5, label='Interlopers', rasterized=True)
     ax.legend()
@@ -1176,7 +1169,7 @@ class VelocityPlotStage(PipelineStage):
     ax.tick_params(direction='in')
     ax.set_xlabel('R [Mpc]')
     ax.set_ylabel('$\\Delta z_{{photo}}$')
-    ax.set_title('Photometric redshift x distance ($z_{{photo}} odds > 0.9$)')
+    ax.set_title(f'Photometric redshift x distance (odds > {self.photoz_odds})')
     ax.set_ylim(-0.03, 0.03)
   
   def plot_ra_dec(
@@ -2169,10 +2162,10 @@ def website_pipeline(overwrite: bool = False):
     LoadPhotozRadialStage(),
     LoadSpeczRadialStage(),
     LoadAllRadialStage(),
-    ClusterPlotStage(overwrite=overwrite, fmt='jpg', separated=True),
+    ClusterPlotStage(overwrite=True, fmt='jpg', separated=True),
     VelocityPlotStage(overwrite=overwrite, fmt='jpg', separated=True),
     MagDiffPlotStage(overwrite=overwrite, fmt='jpg', separated=True),
-    CopyXrayStage(overwrite=True, fmt='png'),
+    CopyXrayStage(overwrite=overwrite, fmt='png'),
     WebsitePagesStage(clusters=df_clusters.name.values),
   )
   
