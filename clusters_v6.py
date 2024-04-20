@@ -1,12 +1,10 @@
 import subprocess
 from datetime import datetime, timedelta
-from io import BytesIO
 from pathlib import Path
 from shutil import copy
-from typing import List, Literal, Sequence, Tuple
+from typing import Literal, Sequence, Tuple
 
 import matplotlib.pyplot as plt
-import mpl_scatter_density
 import numpy as np
 import pandas as pd
 import requests
@@ -22,7 +20,6 @@ from astropy.cosmology import LambdaCDM
 from astropy.wcs import WCS
 from matplotlib.colors import LinearSegmentedColormap
 from matplotlib.patches import Circle
-from PIL import Image, ImageChops
 from tqdm import tqdm
 
 PHOTOZ_TABLE_PATH = Path('/mnt/hd/natanael/astrodata/idr5_photoz_clean.parquet')
@@ -1636,12 +1633,37 @@ class MagnitudePlotStage(PipelineStage):
       dpi=150
     )
     
-    
 
 
 class WebsitePagesStage(PipelineStage):
   def __init__(self, clusters: Sequence[str]):
     self.clusters = sorted(clusters)
+  
+  def make_splus_fields_tables(
+    self, 
+    cls_name: str,
+    cls_ra: float,
+    cls_dec: float,
+    cls_r200_deg: float,
+    cls_r500_deg: float,
+    df: pd.DataFrame,
+  ):
+    cls_center = SkyCoord(cls_ra, cls_dec, unit='deg')
+    r200_path = WEBSITE_PATH / 'clusters' / cls_name / 'splus_fields_5r200.csv'
+    r500_path = WEBSITE_PATH / 'clusters' / cls_name / 'splus_fields_5r500.csv'
+    r15Mpc_path = WEBSITE_PATH / 'clusters' / cls_name / 'splus_fields_15Mpc.csv'
+    if not r200_path.exists() or not r500_path.exists() or not r15Mpc_path.exists():
+    # if True:
+      coords = SkyCoord(df.ra, df.dec, unit='deg')
+      df_r200 = radial_search(cls_center, df, 5*cls_r200_deg * u.deg, cached_catalog=coords)
+      df_r500 = radial_search(cls_center, df, 5*cls_r500_deg * u.deg, cached_catalog=coords)
+      fields_r200 = df_r200.groupby('field').size().reset_index(name='n_objects')
+      fields_r500 = df_r500.groupby('field').size().reset_index(name='n_objects')
+      fields_15Mpc = df.groupby('field').size().reset_index(name='n_objects')
+      write_table(fields_r200, r200_path)
+      write_table(fields_r500, r500_path)
+      write_table(fields_15Mpc, r15Mpc_path)
+    
   
   def get_paginator(self, back: bool = True):
     if back:
@@ -1685,10 +1707,16 @@ class WebsitePagesStage(PipelineStage):
     cls_r500_Mpc: float,
     z_spec_range: Tuple[float, float],
     z_photo_range: Tuple[float, float],
+    df_photoz_radial: pd.DataFrame,
   ):
     width = 400
     height = 400
     folder_path = WEBSITE_PATH / 'clusters' / cls_name
+    attachments = [
+      'splus_fields_5r200.csv', 'splus_fields_5r500.csv', 
+      'splus_fields_15Mpc.csv'
+    ]
+    attachments_html = [f'<a href="{a}">{a}</a>' for a in attachments]
     images = [
       'specz', 'photoz', 'photoz_specz', 
       'spec_velocity_position', 'spec_velocity_rel_position', 
@@ -1747,6 +1775,8 @@ class WebsitePagesStage(PipelineStage):
         <b>&Omega;<sub>m</sub>:</b> 0.3 &nbsp;&nbsp;&nbsp; 
         <b>&Omega;<sub>&Lambda;</sub>:</b> 0.7
       </i>
+      <br /><br />
+      <b>Attachments:</b> {' &nbsp;&bullet;&nbsp; '.join(attachments_html)}
       <br />
       <p><b>Gallery</b></p>
       {' '.join(gallery)}
@@ -1811,6 +1841,15 @@ class WebsitePagesStage(PipelineStage):
     index_path = folder_path / 'index.html'
     index_path.parent.mkdir(parents=True, exist_ok=True)
     index_path.write_text(page)
+    
+    self.make_splus_fields_tables(
+      cls_name=cls_name, 
+      cls_ra=cls_ra, 
+      cls_dec=cls_dec, 
+      cls_r200_deg=cls_r200_deg, 
+      cls_r500_deg=cls_r500_deg, 
+      df=df_photoz_radial
+    )
     
 
 
@@ -2162,7 +2201,7 @@ def website_pipeline(overwrite: bool = False):
     LoadPhotozRadialStage(),
     LoadSpeczRadialStage(),
     LoadAllRadialStage(),
-    ClusterPlotStage(overwrite=True, fmt='jpg', separated=True),
+    ClusterPlotStage(overwrite=overwrite, fmt='jpg', separated=True),
     VelocityPlotStage(overwrite=overwrite, fmt='jpg', separated=True),
     MagDiffPlotStage(overwrite=overwrite, fmt='jpg', separated=True),
     CopyXrayStage(overwrite=overwrite, fmt='png'),
