@@ -26,6 +26,7 @@ PHOTOZ_TABLE_PATH = Path('/mnt/hd/natanael/astrodata/idr5_photoz_clean.parquet')
 SPEC_TABLE_PATH = Path('/mnt/hd/natanael/astrodata/SpecZ_Catalogue_20240124.parquet')
 ERASS_TABLE_PATH = Path('/mnt/hd/natanael/astrodata/liana_erass.csv')
 FULL_ERASS_TABLE_PATH = Path('/mnt/hd/natanael/astrodata/eRASS1_min.parquet')
+ERASS2_TABLE_PATH = Path('tables/Kluge_Bulbul_joint_selected_clusters_zlt0.2.csv')
 HEASARC_TABLE_PATH = Path('public/heasarc_all.parquet')
 TABLES_PATH = Path('clusters_members')
 MEMBERS_FOLDER = Path('clusters_members/clusters')
@@ -132,6 +133,10 @@ def load_eRASS():
 def load_full_eRASS():
   df_full_eras = read_table(FULL_ERASS_TABLE_PATH)
   return df_full_eras
+
+
+def load_eRASS_2():
+  return read_table(ERASS2_TABLE_PATH)
 
 
 def load_heasarc():
@@ -291,6 +296,47 @@ class LoadERASSInfoStage(PipelineStage):
       'df_members': None,
       'df_interlopers': None,
     }
+    
+    
+class LoadERASS2InfoStage(PipelineStage):
+  products = [
+    'cls_name', 'cls_z', 'cls_ra', 'cls_dec', 'cls_15Mpc_deg',
+    'cls_r500_Mpc', 'cls_r500_deg', 'cls_r200_Mpc', 'cls_r200_deg',
+    'z_photo_range', 'z_spec_range', 'df_members', 'df_interlopers',
+  ]
+  
+  def __init__(self, df_clusters: pd.DataFrame):
+    self.df_clusters = df_clusters
+  
+  def run(self, cls_name: str):
+    df_clusters = self.df_clusters
+    cluster = df_clusters[df_clusters.NAME == cls_name]
+    z = cluster['BEST_Z'].values[0]
+    ra = cluster['RA_XFIT'].values[0]
+    dec = cluster['DEC_XFIT'].values[0]
+    r500_Mpc = cluster['R500'].values[0] * 1e-3 # kpc -> Mpc
+    # r500_deg = cluster['R500_deg'].values[0]
+    cosmo = LambdaCDM(H0=70, Om0=0.3, Ode0=0.7)
+    r500_deg = mpc2arcsec(r500_Mpc, z, cosmo).to(u.deg).value
+    r15Mpc_deg = min(mpc2arcsec(15, z, cosmo).to(u.deg).value, 17)
+    print('Cluster Name:', cls_name)
+    print(f'RA: {ra:.3f}, DEC: {dec:.3f}, z: {z:.2f}, search radius: {r15Mpc_deg:.2f}')
+    return {
+      'cls_name': cls_name,
+      'cls_z': z,
+      'cls_ra': ra,
+      'cls_dec': dec,
+      'cls_15Mpc_deg': r15Mpc_deg,
+      'cls_r500_Mpc': r500_Mpc,
+      'cls_r500_deg': r500_deg,
+      'cls_r200_Mpc': None,
+      'cls_r200_deg': None,
+      'z_photo_range': (z - Z_PHOTO_DELTA, z + Z_PHOTO_DELTA),
+      'z_spec_range': (z - Z_SPEC_DELTA, z + Z_SPEC_DELTA),
+      'df_members': None,
+      'df_interlopers': None,
+    }
+
 
 
 class LoadDataFrameStage(PipelineStage):
@@ -1938,6 +1984,25 @@ def download_legacy_erass_pipeline(clear: bool = False):
   ls10_pipe.map_run('cls_name', df_clusters.Cluster.values, workers=1)
 
 
+def download_legacy_erass2_pipeline(clear: bool = False, z_type: Literal['spec', 'photo', 'both'] = 'spec'):
+  df_clusters = load_eRASS_2()
+  if z_type == 'spec':
+    df_clusters = df_clusters[df_clusters.BEST_Z_TYPE != 'photo_z']
+  elif z_type == 'photo':
+    df_clusters = df_clusters[df_clusters.BEST_Z_TYPE == 'photo_z']
+  
+  if clear:
+    for p in LEG_PHOTO_FOLDER.glob('*.parquet'):
+      if p.stat().st_size < 650:
+        p.unlink()
+        
+  ls10_pipe = Pipeline(
+    LoadERASS2InfoStage(df_clusters),
+    DownloadLegacyCatalogStage('cls_15Mpc_deg', overwrite=False, workers=8)
+  )
+  ls10_pipe.map_run('cls_name', df_clusters.NAME.values, workers=1)
+
+
 
 def match_all_pipeline():
   df_clusters = load_clusters()
@@ -2293,8 +2358,9 @@ def main():
   # magdiff_outliers_pipeline(True)
   # velocity_plots_pipeline(True)
   # download_xray_pipeline(True)
-  website_pipeline(False)
+  # website_pipeline(False)
   # all_sky_plot()
+  download_legacy_erass2_pipeline(True, 'spec')
   
   
   
