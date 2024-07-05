@@ -1,3 +1,4 @@
+import re
 import subprocess
 from datetime import datetime, timedelta
 from pathlib import Path
@@ -23,7 +24,9 @@ from matplotlib.patches import Circle
 from tqdm import tqdm
 
 PHOTOZ_TABLE_PATH = Path('/mnt/hd/natanael/astrodata/idr5_photoz_clean.parquet')
+PHOTOZ2_TABLE_PATH = Path('tables/idr5_v3.parquet')
 SPEC_TABLE_PATH = Path('/mnt/hd/natanael/astrodata/SpecZ_Catalogue_20240124.parquet')
+# SPEC_TABLE_PATH = Path('tables/SpecZ_Catalogue_20240124.parquet')
 ERASS_TABLE_PATH = Path('/mnt/hd/natanael/astrodata/liana_erass.csv')
 FULL_ERASS_TABLE_PATH = Path('/mnt/hd/natanael/astrodata/eRASS1_min.parquet')
 ERASS2_TABLE_PATH = Path('tables/Kluge_Bulbul_joint_selected_clusters_zlt0.2.csv')
@@ -124,6 +127,19 @@ def load_photoz(coords: bool = True):
     )
     return df_photoz, coords
   return df_photoz
+
+def load_photoz2(coords: bool = True):
+  df_photoz = read_table(PHOTOZ2_TABLE_PATH)
+  if coords:
+    ra, dec = guess_coords_columns(df_photoz)
+    coords = SkyCoord(
+      ra=df_photoz[ra].values, 
+      dec=df_photoz[dec].values, 
+      unit=u.deg, 
+      frame='icrs'
+    )
+    return df_photoz, coords
+  return df_photoz.rename(columns={'RA': 'ra', 'DEC': 'dec'})
 
 def load_eRASS():
   df_erass = read_table(ERASS_TABLE_PATH)
@@ -424,10 +440,11 @@ class RadialSearchStage(PipelineStage):
         df_search.class_spec.str.startswith('GALAXY')
       ]
     elif self.kind == 'photo':
-      df_search = df_search[
-        # df_search.zml.between(*z_photo_range) &
-        df_search.r_auto.between(*MAG_RANGE)
-      ]
+      if 'r_auto' in df_search.columns:
+        df_search = df_search[
+          # df_search.zml.between(*z_photo_range) &
+          df_search.r_auto.between(*MAG_RANGE)
+        ]
     
     print(f'Radial search finished. Elapsed time: {t.end()}')
     
@@ -578,8 +595,14 @@ class PhotozSpeczLegacyMatchStage(PipelineStage):
       table2=df_specz_radial,
       join='1or2',
     )
-    df['ra_1'].fillna(df['RA_2'], inplace=True)
-    df['dec_1'].fillna(df['DEC_2'], inplace=True)
+    
+    if 'RA_1' in df.columns:
+      df = df.rename(columns={'RA_1': 'ra_1'})
+    if 'DEC_1' in df.columns:
+      df = df.rename(columns={'DEC_1': 'dec_1'})
+    
+    df['ra_1'] = df['ra_1'].fillna(df['RA_2'])
+    df['dec_1'] = df['dec_1'].fillna(df['DEC_2'])
     
     print(f'First crossmatch finished. Duration: {t.end()}')
     print('Objects with photo-z only:', len(df[~df.zml.isna() & df.z.isna()]))
@@ -607,7 +630,11 @@ class PhotozSpeczLegacyMatchStage(PipelineStage):
     del df['dec'] # legacy dec
     df = df.rename(columns={'ra_1': 'ra', 'dec_1': 'dec'}) # use photoz ra/dec
     
-    photoz_cols = ['ra', 'dec', 'zml', 'odds', 'r_auto', 'field']
+    photoz_cols = ['ra', 'dec', 'zml', 'odds']
+    if 'r_auto' in df.columns:
+      photoz_cols.append('r_auto')
+    if 'field' in df.columns:
+      photoz_cols.append('field')
     specz_cols = ['z', 'e_z', 'f_z', 'class_spec']
     legacy_cols = ['mag_r', 'type']
     cols = photoz_cols + specz_cols + legacy_cols
@@ -644,11 +671,13 @@ class ClusterPlotStage(PipelineStage):
     overwrite: bool = False, 
     separated: bool = False,
     photoz_odds: float = 0.9,
+    splus_only: bool = False,
   ):
     self.fmt = fmt
     self.overwrite = overwrite
     self.separated = separated
     self.photoz_odds = photoz_odds
+    self.splus_only = splus_only
     
   def add_circle(
     self, 
@@ -866,8 +895,8 @@ class ClusterPlotStage(PipelineStage):
       df_photoz_good_wo_spec = df_photoz_good[~df_photoz_good.z.between(*z_spec_range) | df_photoz_good.z.isna()]
       df_photoz_bad = df_all_radial[~df_all_radial.zml.between(*z_photo_range) & (df_all_radial.odds > self.photoz_odds)]
       df_photoz_bad_with_spec = df_photoz_bad[df_photoz_bad.z.between(*z_spec_range)]
-      ra_col, dec_col = guess_coords_columns(df_photoz_radial)
       if len(df_photoz_good_wo_spec) > 0:
+        ra_col, dec_col = guess_coords_columns(df_photoz_good_wo_spec)
         ax.scatter(
           df_photoz_good_wo_spec[ra_col].values, 
           df_photoz_good_wo_spec[dec_col].values, 
@@ -878,6 +907,7 @@ class ClusterPlotStage(PipelineStage):
           label=f'good $z_{{photo}}$ wo/ $z_{{spec}}$ ({len(df_photoz_good_wo_spec)} obj)'
         )
       if len(df_photoz_bad_with_spec) > 0:
+        ra_col, dec_col = guess_coords_columns(df_photoz_bad_with_spec)
         ax.scatter(
           df_photoz_bad_with_spec[ra_col].values, 
           df_photoz_bad_with_spec[dec_col].values, 
@@ -888,6 +918,7 @@ class ClusterPlotStage(PipelineStage):
           label=f'bad $z_{{photo}}$ w/ $z_{{spec}}$ ({len(df_photoz_bad_with_spec)} obj)'
         )
       if len(df_photoz_good_with_spec) > 0:
+        ra_col, dec_col = guess_coords_columns(df_photoz_good_with_spec)
         ax.scatter(
           df_photoz_good_with_spec[ra_col].values, 
           df_photoz_good_with_spec[dec_col].values, 
@@ -1025,8 +1056,10 @@ class ClusterPlotStage(PipelineStage):
         plt.savefig(out, bbox_inches='tight', pad_inches=0.1)
         plt.close(fig)
     else:
-      out_path = self.output_folder / f'cls_{cls_name}.{self.fmt}'
+      out_path = PLOTS_FOLDER / f'cls_{cls_name}.{self.fmt}'
       if not self.overwrite and out_path.exists():
+        return
+      if self.splus_only and len(df_photoz_radial) == 0:
         return
       
       fig, axs = plt.subplots(
@@ -1074,7 +1107,9 @@ class ClusterPlotStage(PipelineStage):
         cls_15Mpc_deg=cls_15Mpc_deg,
         df_specz_radial=df_specz_radial,
         df_photoz_radial=df_photoz_radial,
+        df_all_radial=df_all_radial,
         z_photo_range=z_photo_range,
+        z_spec_range=z_spec_range,
         ax=axs[2],
       )
       
@@ -1938,14 +1973,22 @@ class CopyXrayStage(PipelineStage):
     
 
 def prepare_idr5():
-  fields_path = Path('/mnt/hd/natanael/astrodata/idr5_fields/')
-  output_path = Path('/mnt/hd/natanael/astrodata/idr5_photoz_clean.parquet')
-  cols = ['RA', 'DEC', 'zml', 'odds', 'r_auto', 'remove_flag']
-  for path in (pbar := tqdm(list(fields_path.glob('*.csv')))):
+  # fields_path = Path('/mnt/hd/natanael/astrodata/idr5_fields/')
+  # output_path = Path('/mnt/hd/natanael/astrodata/idr5_photoz_clean.parquet')
+  fields_path = Path('Predicted')
+  output_path = Path('tables/idr5_v3.parquet')
+  cols = ['RA', 'DEC', 'zml', 'odds'] # r_auto
+  splus_filter = re.compile(r'^(?:HYDRA|SPLUS|STRIPE|MC).*$')
+  tables_paths = [
+    p for p in fields_path.glob('*.csv') 
+    if splus_filter.match(p.name.upper())
+  ]
+  for path in (pbar := tqdm(tables_paths)):
     pbar.set_description(path.stem)
     df = read_table(path, columns=cols)
-    df = df[df['remove_flag'] == False]
-    del df['remove_flag']
+    if 'remove_flag' in df.columns:
+      df = df[df['remove_flag'] == False]
+      del df['remove_flag']
     df = df.rename(columns={'RA': 'ra', 'DEC': 'dec'})
     df['field'] = path.stem
     write_table(df, str(path.absolute()).replace('.csv', '.parquet'))
@@ -1987,9 +2030,9 @@ def download_legacy_erass_pipeline(clear: bool = False):
 def download_legacy_erass2_pipeline(clear: bool = False, z_type: Literal['spec', 'photo', 'both'] = 'spec'):
   df_clusters = load_eRASS_2()
   if z_type == 'spec':
-    df_clusters = df_clusters[df_clusters.BEST_Z_TYPE != 'photo_z']
+    df_clusters = df_clusters[(df_clusters.BEST_Z_TYPE != 'photo_z') & (df_clusters.BEST_Z <= 0.1)].iloc[360:]
   elif z_type == 'photo':
-    df_clusters = df_clusters[df_clusters.BEST_Z_TYPE == 'photo_z']
+    df_clusters = df_clusters[(df_clusters.BEST_Z_TYPE == 'photo_z') & (df_clusters.BEST_Z <= 0.1)]
   
   if clear:
     for p in LEG_PHOTO_FOLDER.glob('*.parquet'):
@@ -2146,6 +2189,46 @@ def erass_plots_pipeline():
   plot_paths = [PLOTS_FOLDER / f'cls_{c}.pdf' for c in df2.Cluster.values]
   concat_plot_path = PLOTS_FOLDER / 'eRASS_v1.pdf'
   merge_pdf(plot_paths, concat_plot_path)
+
+
+
+
+
+def erass2_plots_pipeline():
+  df_clusters = load_eRASS_2()
+  df_photoz, photoz_skycoord = load_photoz2()
+  df_spec, specz_skycoord = load_spec()
+  df_clusters = df_clusters[(df_clusters.BEST_Z_TYPE != 'photo_z') & (df_clusters.BEST_Z <= 0.1)]
+  
+  pipe = Pipeline(
+    LoadERASS2InfoStage(df_clusters),
+    PhotoZRadialSearchStage(overwrite=False),
+    SpecZRadialSearchStage(overwrite=False),
+    LoadPhotozRadialStage(),
+    LoadSpeczRadialStage(),
+    LoadLegacyRadialStage(),
+    PhotozSpeczLegacyMatchStage(overwrite=False),
+    LoadAllRadialStage(),
+    ClusterPlotStage(overwrite=False, splus_only=True),
+  )
+  
+  PipelineStorage().write('df_photoz', df_photoz)
+  PipelineStorage().write('photoz_skycoord', photoz_skycoord)
+  PipelineStorage().write('df_spec', df_spec)
+  PipelineStorage().write('specz_skycoord', specz_skycoord)
+  
+  pipe.map_run('cls_name', df_clusters.NAME.values, workers=4)
+  # df2 = selfmatch(df_clusters, 1*u.deg, 'identify', ra='RA_OPT', dec='DEC_OPT')
+  # df2 = df2.sort_values('GroupID')
+  # df2 = df_clusters.sort_values('DEC_XFIT')
+  df2 = df_clusters.sort_values('N_MEMBERS', ascending=False)
+  plot_paths = [PLOTS_FOLDER / f'cls_{c}.pdf' for c in df2.NAME.values]
+  plot_paths = [p for p in plot_paths if p.exists() and (p.stat().st_size > 100_000)]
+  df2 = df2[df2.NAME.isin([p.name for p in plot_paths])]
+  # for i, row in df2.iterrows():
+  #   len(radial_search(SkyCoord(ra=row.ra, dec=row.dec, unit='deg'), OUT_PATH / 'photoz' / f'{row.name}.parquet'), row.) > 0
+  concat_plot_path = PLOTS_FOLDER / 'eRASS_v2+nmembers.pdf'
+  merge_pdf(plot_paths, concat_plot_path)
   
 
 
@@ -2185,7 +2268,6 @@ def magdiff_pipeline(overwrite: bool = False):
     MagDiffPlotStage(overwrite=overwrite),
   )
   pipe.map_run('cls_id', df_clusters.clsid.values, workers=1)
-  
   
   # pipe = Pipeline(
   #   LoadERASSInfoStage(df_erass),
@@ -2333,6 +2415,7 @@ def all_sky_plot():
   ax.legend(loc='upper center', bbox_to_anchor=(0.5, -0.07),
            fancybox=True, shadow=False, ncol=10)
   plt.savefig('docs/all_sky.png', bbox_inches='tight', pad_inches=0.1)
+  plt.close(fig)
     
     
     
@@ -2360,7 +2443,8 @@ def main():
   # download_xray_pipeline(True)
   # website_pipeline(False)
   # all_sky_plot()
-  download_legacy_erass2_pipeline(True, 'spec')
+  # download_legacy_erass2_pipeline(True, 'spec')
+  erass2_plots_pipeline()
   
   
   
