@@ -7,7 +7,7 @@ import requests
 from astromodule.legacy import LegacyService
 from astromodule.pipeline import Pipeline, PipelineStage, PipelineStorage
 
-from splusclusters.constants import *
+from splusclusters.configs import configs
 
 
 class DownloadLegacyCatalogStage(PipelineStage):
@@ -17,7 +17,7 @@ class DownloadLegacyCatalogStage(PipelineStage):
     self.workers = workers
     
   def run(self, cls_ra: float, cls_dec: float, cls_name: str):
-    out_path = LEG_PHOTO_FOLDER / f'{cls_name}.parquet'
+    out_path = configs.LEG_PHOTO_FOLDER / f'{cls_name}.parquet'
     if not self.overwrite and out_path.exists():
       if self.get_data('cls_15Mpc_deg') < 10.17:
         return
@@ -41,7 +41,7 @@ class DownloadLegacyCatalogStage(PipelineStage):
         r_min=_r,
         r_max=_r+.05
       )
-      for _r in np.arange(*MAG_RANGE, .05)
+      for _r in np.arange(*configs.MAG_RANGE, .05)
     ]
     service = LegacyService(replace=True, workers=self.workers)
     service.batch_sync_query(
@@ -59,8 +59,8 @@ class DownloadXRayStage(PipelineStage):
     self.base_url = 'http://zmtt.bao.ac.cn/galaxy_clusters/dyXimages/image_all/'
 
   def run(self, cls_name: str):
-    eps_path = XRAY_PLOTS_FOLDER / f'{cls_name}.eps'
-    raster_path = XRAY_PLOTS_FOLDER / f'{cls_name}.{self.fmt}'
+    eps_path = configs.XRAY_PLOTS_FOLDER / f'{cls_name}.eps'
+    raster_path = configs.XRAY_PLOTS_FOLDER / f'{cls_name}.{self.fmt}'
     if not eps_path.exists():
       url = self.base_url + cls_name + '_image.eps'
       r = requests.get(url)
@@ -81,7 +81,7 @@ class CopyXrayStage(PipelineStage):
     self.fmt = fmt
     
   def run(self, cls_name: str):
-    src = XRAY_PLOTS_FOLDER / f'{cls_name}.{self.fmt}'
-    dst = WEBSITE_PATH / 'clusters' / cls_name / f'xray.{self.fmt}'
+    src = configs.XRAY_PLOTS_FOLDER / f'{cls_name}.{self.fmt}'
+    dst = configs.WEBSITE_PATH / 'clusters' / cls_name / f'xray.{self.fmt}'
     if (not dst.exists() or self.overwrite) and src.exists(): 
       copy(src, dst)

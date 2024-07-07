@@ -5,7 +5,6 @@ sys.path.insert(0, str(Path(__file__).parent.parent.absolute()))
 
 from astromodule.pipeline import Pipeline, PipelineStorage
 
-from splusclusters.constants import *
 from splusclusters.loaders import LoadERASSInfoStage, load_eRASS, load_spec
 from splusclusters.match import SpecZRadialSearchStage
 

@@ -6,7 +6,7 @@ sys.path.insert(0, str(Path(__file__).parent.parent.absolute()))
 from astromodule.io import merge_pdf
 from astromodule.pipeline import Pipeline, PipelineStorage
 
-from splusclusters.constants import *
+from splusclusters.configs import configs
 from splusclusters.loaders import (LoadERASSInfoStage, load_eRASS, load_photoz,
                                    load_spec)
 from splusclusters.match import PhotoZRadialSearchStage, SpecZRadialSearchStage
@@ -34,8 +34,8 @@ def erass_plots_pipeline():
   # df2 = selfmatch(df_clusters, 1*u.deg, 'identify', ra='RA_OPT', dec='DEC_OPT')
   # df2 = df2.sort_values('GroupID')
   df2 = df_clusters.sort_values('RA_OPT')
-  plot_paths = [PLOTS_FOLDER / f'cls_{c}.pdf' for c in df2.Cluster.values]
-  concat_plot_path = PLOTS_FOLDER / 'eRASS_v1.pdf'
+  plot_paths = [configs.PLOTS_FOLDER / f'cls_{c}.pdf' for c in df2.Cluster.values]
+  concat_plot_path = configs.PLOTS_FOLDER / 'eRASS_v1.pdf'
   merge_pdf(plot_paths, concat_plot_path)
   
 

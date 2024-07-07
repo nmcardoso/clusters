@@ -9,7 +9,7 @@ from astromodule.table import (concat_tables, crossmatch, fast_crossmatch,
 from astropy import units as u
 from astropy.coordinates import SkyCoord
 
-from splusclusters.constants import *
+from splusclusters.configs import configs
 from splusclusters.utils import Timming
 
 
@@ -63,7 +63,7 @@ class RadialSearchStage(PipelineStage):
       if 'r_auto' in df_search.columns:
         df_search = df_search[
           # df_search.zml.between(*z_photo_range) &
-          df_search.r_auto.between(*MAG_RANGE)
+          df_search.r_auto.between(*configs.MAG_RANGE)
         ]
     
     print(f'Radial search finished. Elapsed time: {t.end()}')
@@ -78,7 +78,7 @@ class RadialSearchStage(PipelineStage):
 class SpecZRadialSearchStage(RadialSearchStage):
   def __init__(
     self, 
-    save_folder: str | Path = SPECZ_FOLDER, 
+    save_folder: str | Path = configs.SPECZ_FOLDER, 
     radius_key: str = 'cls_15Mpc_deg', 
     overwrite: bool = False,
   ):
@@ -95,7 +95,7 @@ class SpecZRadialSearchStage(RadialSearchStage):
 class PhotoZRadialSearchStage(RadialSearchStage):
   def __init__(
     self, 
-    save_folder: str | Path = PHOTOZ_FOLDER, 
+    save_folder: str | Path = configs.PHOTOZ_FOLDER, 
     radius_key: str = 'cls_15Mpc_deg', 
     overwrite: bool = False,
   ):
@@ -153,7 +153,7 @@ class PhotozSpeczLegacyMatchStage(PipelineStage):
     df_photoz_radial: pd.DataFrame, 
     df_legacy_radial: pd.DataFrame
   ):
-    out_path = PHOTOZ_SPECZ_LEG_FOLDER / f'{cls_name}.parquet'
+    out_path = configs.PHOTOZ_SPECZ_LEG_FOLDER / f'{cls_name}.parquet'
     if out_path.exists() and not self.overwrite:
       if self.get_data('cls_15Mpc_deg') < 10.17:
         return
