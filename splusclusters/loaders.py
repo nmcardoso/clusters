@@ -331,7 +331,7 @@ class LoadPauloInfoStage(PipelineStage):
     self.cls_id = cls_id
     
   def run(self, cls_id: int = None):
-    print(configs.Z_SPEC_DELTA)
+    print(configs.SPECZ_FOLDER)
     df_clusters = self.df_clusters
     cls_id = cls_id or self.cls_id
     cluster = df_clusters[df_clusters.clsid == cls_id]

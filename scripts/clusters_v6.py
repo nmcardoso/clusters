@@ -31,8 +31,6 @@ def clusters_v6_pipeline(clear: bool = False):
       if p.stat().st_size < 650:
         p.unlink()
         
-  print(df_clusters)
-        
   ls10_pipe = Pipeline(
     LoadPauloInfoStage(df_clusters),
     PhotoZRadialSearchStage(overwrite=False),
