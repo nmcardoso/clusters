@@ -35,7 +35,7 @@ def clusters_v6_pipeline(clear: bool = False):
     LoadPauloInfoStage(df_clusters),
     PhotoZRadialSearchStage(overwrite=False),
     SpecZRadialSearchStage(overwrite=False),
-    DownloadLegacyCatalogStage('cls_15Mpc_deg', overwrite=False, workers=8),
+    DownloadLegacyCatalogStage('cls_15Mpc_deg', overwrite=False, workers=5),
     LoadPhotozRadialStage(),
     LoadSpeczRadialStage(),
     LoadLegacyRadialStage(),
