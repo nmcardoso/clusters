@@ -57,7 +57,10 @@ def clusters_v6_pipeline(clear: bool = False):
   concat_plot_path = configs.PLOTS_FOLDER / 'clusters_v6+review.pdf'
   merge_pdf(plot_paths, concat_plot_path)
   
-  write_table(df_clusters, configs.SUBMIT_FOLDER / 'index.dat')
+  write_table(
+    df_clusters[['clsid', 'name', 'RA', 'DEC', 'zspec']], 
+    configs.SUBMIT_FOLDER / 'index.dat'
+  )
 
 
 if __name__ == "__main__":
