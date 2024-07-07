@@ -40,8 +40,7 @@ class RadialSearchStage(PipelineStage):
   ):
     out_path = self.save_folder / f'{cls_name}.parquet'
     if not self.overwrite and out_path.exists():
-      if self.get_data('cls_15Mpc_deg') < 10.17:
-        return
+      return
     
     radius = self.get_data(self.radius_key)
     t = Timming()
@@ -157,8 +156,7 @@ class PhotozSpeczLegacyMatchStage(PipelineStage):
   ):
     out_path = configs.PHOTOZ_SPECZ_LEG_FOLDER / f'{cls_name}.parquet'
     if out_path.exists() and not self.overwrite:
-      if self.get_data('cls_15Mpc_deg') < 10.17:
-        return
+      return
     
     df_specz_radial['f_z'] = df_specz_radial['f_z'].astype('str')
     df_specz_radial['original_class_spec'] = df_specz_radial['original_class_spec'].astype('str')
