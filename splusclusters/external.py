@@ -19,8 +19,7 @@ class DownloadLegacyCatalogStage(PipelineStage):
   def run(self, cls_ra: float, cls_dec: float, cls_name: str):
     out_path = configs.LEG_PHOTO_FOLDER / f'{cls_name}.parquet'
     if not self.overwrite and out_path.exists():
-      if self.get_data('cls_15Mpc_deg') < 10.17:
-        return
+      return
     
     sql = """
       SELECT t.ra, t.dec, t.type, t.mag_r
