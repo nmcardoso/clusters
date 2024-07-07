@@ -23,8 +23,6 @@ def clusters_v6_pipeline(clear: bool = False):
   df_spec, specz_skycoord = load_spec()
   
   configs.Z_SPEC_DELTA = 0.02
-  configs.SPECZ_FOLDER = configs.OUT_PATH / 'specz_paulo'
-  configs.setup_paths()
   
   if clear:
     for p in configs.LEG_PHOTO_FOLDER.glob('*.parquet'):
