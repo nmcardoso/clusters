@@ -52,7 +52,7 @@ def clusters_v6_pipeline(clear: bool = False):
   
   ls10_pipe.map_run('cls_id', df_clusters.clsid.values, workers=1)
   
-  plot_paths = [configs.PLOTS_FOLDER / f'cls_{c}.pdf' for c in df_clusters.NAME.values]
+  plot_paths = [configs.PLOTS_FOLDER / f'cls_{c}.pdf' for c in df_clusters.name.values]
   plot_paths = [p for p in plot_paths if p.exists()]
   concat_plot_path = configs.PLOTS_FOLDER / 'clusters_v6+review.pdf'
   merge_pdf(plot_paths, concat_plot_path)
