@@ -32,6 +32,7 @@ class Configs(metaclass=SingletonMeta):
   SPECZ_FOLDER = OUT_PATH / 'specz'
   PHOTOZ_SPECZ_LEG_FOLDER = OUT_PATH / 'photoz+specz+legacy'
   MAG_COMP_FOLDER = OUT_PATH / 'mag_comp'
+  SUBMIT_FOLDER = OUT_PATH / 'submit'
   Z_PHOTO_DELTA = 0.015
   Z_SPEC_DELTA = 0.007
   Z_SPEC_DELTA_PAULO = 0.02

@@ -3,14 +3,16 @@ from pathlib import Path
 
 sys.path.insert(0, str(Path(__file__).parent.parent.absolute()))
 
+from astromodule.io import merge_pdf, write_table
 from astromodule.pipeline import Pipeline, PipelineStorage
 
 from splusclusters.configs import configs
 from splusclusters.external import DownloadLegacyCatalogStage
 from splusclusters.loaders import (LoadAllRadialStage, LoadLegacyRadialStage,
                                    LoadPauloInfoStage, LoadPhotozRadialStage,
-                                   LoadSpeczRadialStage, load_catalog_v6,
-                                   load_photoz2, load_spec)
+                                   LoadSpeczRadialStage,
+                                   PrepareCatalogToSubmitStage,
+                                   load_catalog_v6, load_photoz2, load_spec)
 from splusclusters.match import (PhotoZRadialSearchStage,
                                  PhotozSpeczLegacyMatchStage,
                                  SpecZRadialSearchStage)
@@ -40,6 +42,7 @@ def clusters_v6_pipeline(clear: bool = False):
     PhotozSpeczLegacyMatchStage(overwrite=False),
     LoadAllRadialStage(),
     ClusterPlotStage(overwrite=False, splus_only=False),
+    PrepareCatalogToSubmitStage(overwrite=True),
   )
   
   PipelineStorage().write('df_photoz', df_photoz)
@@ -48,6 +51,13 @@ def clusters_v6_pipeline(clear: bool = False):
   PipelineStorage().write('specz_skycoord', specz_skycoord)
   
   ls10_pipe.map_run('cls_id', df_clusters.clsid.values, workers=1)
+  
+  plot_paths = [configs.PLOTS_FOLDER / f'cls_{c}.pdf' for c in df_clusters.NAME.values]
+  plot_paths = [p for p in plot_paths if p.exists()]
+  concat_plot_path = configs.PLOTS_FOLDER / 'clusters_v6+review.pdf'
+  merge_pdf(plot_paths, concat_plot_path)
+  
+  write_table(df_clusters, configs.SUBMIT_FOLDER / 'index.dat')
 
 
 if __name__ == "__main__":

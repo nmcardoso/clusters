@@ -336,9 +336,9 @@ class LoadPauloInfoStage(PipelineStage):
     cls_id = cls_id or self.cls_id
     cluster = df_clusters[df_clusters.clsid == cls_id]
     name = cluster['name'].values[0]
-    ra = cluster['ra'].values[0]
-    dec = cluster['dec'].values[0]
-    z = cluster['z_spec'].values[0]
+    ra = cluster['RA'].values[0]
+    dec = cluster['DEC'].values[0]
+    z = cluster['zspec'].values[0]
     
     cosmo = LambdaCDM(H0=70, Om0=0.3, Ode0=0.7)
     if 'R500_Mpc' in cluster:
@@ -432,6 +432,34 @@ class LoadERASS2InfoStage(PipelineStage):
       'df_members': None,
       'df_interlopers': None,
     }
+
+
+
+class PrepareCatalogToSubmitStage(PipelineStage):
+  def __init__(self, overwrite: bool = True):
+    super().__init__()
+    self.overwrite = overwrite
+    
+  def run(self, cls_id: int, df_all_radial: pd.DataFrame):
+    clusters_path = configs.SUBMIT_FOLDER / 'clusters'
+    clusters_path.mkdir(parents=True, exist_ok=True)
+    out_path = clusters_path / f'cluster_{str(cls_id).zfill(4)}.dat'
+    if out_path.exists() and not self.overwrite:
+      return
+    
+    df_submit = df_all_radial[~df_all_radial.z.isna()].copy(deep=True)
+    df_submit['ls10_photo'] = (~df_submit['mag_r'].isna()).astype(int)
+    df_submit.fillna(-999)
+    df_submit = df_submit.rename(columns={
+      'z': 'zspec',
+      'e_z': 'zspec-err',
+      'f_z': 'zspec-flag',
+      'zml': 'z_phot',
+      'odds': 'z_phot_odds',
+      'mag_r': 'ls10_r',
+    })
+    write_table(df_all_radial, out_path)
+
 
 
 
