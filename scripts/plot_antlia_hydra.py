@@ -37,7 +37,7 @@ def antlia_hydra_plot_pipeline():
     LoadLegacyRadialStage(),
     PhotozSpeczLegacyMatchStage(overwrite=False),
     LoadAllRadialStage(),
-    ClusterPlotStage(overwrite=False, splus_only=False),
+    ClusterPlotStage(overwrite=True, splus_only=False),
   )
   
   PipelineStorage().write('df_photoz', df_photoz)

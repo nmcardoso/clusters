@@ -41,7 +41,7 @@ def clusters_v6_pipeline(clear: bool = False):
     LoadLegacyRadialStage(),
     PhotozSpeczLegacyMatchStage(overwrite=False),
     LoadAllRadialStage(),
-    ClusterPlotStage(overwrite=False, splus_only=False),
+    ClusterPlotStage(overwrite=True, splus_only=False),
     PrepareCatalogToSubmitStage(overwrite=True),
   )
   
