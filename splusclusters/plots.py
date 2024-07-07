@@ -26,8 +26,8 @@ def get_plot_title(
   return (
     f'Cluster: {cls_name} (RA: {cls_ra:.5f}, DEC: {cls_dec:.5f})\n'
     f'Search Radius: 15Mpc = {cls_15Mpc_deg:.3f}$^\\circ$ ($z_{{cluster}}={cls_z:.4f}$)\n'
-    f'Spec Z Range: $z_{{cluster}} \pm 0.007$ = [{z_spec_range[0]:.4f}, {z_spec_range[1]:.4f}]\n'
-    f'Good Photo Z: $z_{{cluster}} \pm 0.015$ = [{z_photo_range[0]:.4f}, {z_photo_range[1]:.4f}]\n'
+    f'Spec Z Range: $z_{{cluster}} \pm {configs.Z_SPEC_DELTA}$ = [{z_spec_range[0]:.4f}, {z_spec_range[1]:.4f}]\n'
+    f'Good Photo Z: $z_{{cluster}} \pm {configs.Z_PHOTO_DELTA}$ = [{z_photo_range[0]:.4f}, {z_photo_range[1]:.4f}]\n'
     f'R Mag Range: [13, 22] $\cdot$ Spec Class = GALAXY*\n'
   )
 
@@ -138,13 +138,15 @@ class ClusterPlotStage(PlotStage):
     df_specz_radial: pd.DataFrame,
     df_members: pd.DataFrame,
     df_interlopers: pd.DataFrame,
+    z_spec_range: Tuple[float, float],
     ax: plt.Axes,
   ):
     ra_col, dec_col = guess_coords_columns(df_specz_radial)
+    df_plot = df_specz_radial[df_specz_radial.z.between(*z_spec_range)]
     if df_members is not None and df_interlopers is not None:
       ax.scatter(
-        df_specz_radial[ra_col].values, 
-        df_specz_radial[dec_col].values, 
+        df_plot[ra_col].values, 
+        df_plot[dec_col].values, 
         c='tab:red', 
         s=6, 
         rasterized=True, 
@@ -172,8 +174,8 @@ class ClusterPlotStage(PlotStage):
       )
     else:
       ax.scatter(
-        df_specz_radial[ra_col].values, 
-        df_specz_radial[dec_col].values, 
+        df_plot[ra_col].values, 
+        df_plot[dec_col].values, 
         c='tab:blue', 
         s=6, 
         rasterized=True, 
@@ -191,7 +193,7 @@ class ClusterPlotStage(PlotStage):
       r15Mpc_deg=cls_15Mpc_deg,
       ax=ax
     )
-    ax.set_title(f'$z_{{spec}}$ - Objects: {len(df_specz_radial)}')
+    ax.set_title(f'$z_{{spec}}$ - Objects: {len(df_plot)}')
     ax.invert_xaxis()
     ax.legend(loc='upper left')
     ax.set_aspect('equal')
@@ -453,6 +455,7 @@ class ClusterPlotStage(PlotStage):
         df_members=df_members,
         df_interlopers=df_interlopers,
         df_specz_radial=df_specz_radial,
+        z_spec_range=z_spec_range,
         ax=axs[0],
       )
       
