@@ -7,7 +7,7 @@ from astromodule.table import radial_search
 from astropy import units as u
 from astropy.coordinates import SkyCoord
 
-from splusclusters.constants import *
+from splusclusters.configs import configs
 
 
 class WebsitePagesStage(PipelineStage):
@@ -24,9 +24,9 @@ class WebsitePagesStage(PipelineStage):
     df: pd.DataFrame,
   ):
     cls_center = SkyCoord(cls_ra, cls_dec, unit='deg')
-    r200_path = WEBSITE_PATH / 'clusters' / cls_name / 'splus_fields_5r200.csv'
-    r500_path = WEBSITE_PATH / 'clusters' / cls_name / 'splus_fields_5r500.csv'
-    r15Mpc_path = WEBSITE_PATH / 'clusters' / cls_name / 'splus_fields_15Mpc.csv'
+    r200_path = configs.WEBSITE_PATH / 'clusters' / cls_name / 'splus_fields_5r200.csv'
+    r500_path = configs.WEBSITE_PATH / 'clusters' / cls_name / 'splus_fields_5r500.csv'
+    r15Mpc_path = configs.WEBSITE_PATH / 'clusters' / cls_name / 'splus_fields_15Mpc.csv'
     if not r200_path.exists() or not r500_path.exists() or not r15Mpc_path.exists():
     # if True:
       coords = SkyCoord(df.ra, df.dec, unit='deg')
@@ -65,7 +65,7 @@ class WebsitePagesStage(PipelineStage):
     </body>
     </html>
     '''
-    index_path = WEBSITE_PATH / 'index.html'
+    index_path = configs.WEBSITE_PATH / 'index.html'
     index_path.parent.mkdir(parents=True, exist_ok=True)
     index_path.write_text(page)
   
@@ -86,7 +86,7 @@ class WebsitePagesStage(PipelineStage):
   ):
     width = 400
     height = 400
-    folder_path = WEBSITE_PATH / 'clusters' / cls_name
+    folder_path = configs.WEBSITE_PATH / 'clusters' / cls_name
     attachments = [
       'splus_fields_5r200.csv', 'splus_fields_5r500.csv', 
       'splus_fields_15Mpc.csv'

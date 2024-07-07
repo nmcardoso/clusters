@@ -11,7 +11,7 @@ from matplotlib.colors import LinearSegmentedColormap
 from matplotlib.patches import Circle
 from tqdm import tqdm
 
-from splusclusters.constants import *
+from splusclusters.configs import configs
 
 
 def get_plot_title(
@@ -364,7 +364,7 @@ class ClusterPlotStage(PlotStage):
       )
     
     if self.separated:
-      out = WEBSITE_PATH / 'clusters' / cls_name / f'specz.{self.fmt}'
+      out = configs.WEBSITE_PATH / 'clusters' / cls_name / f'specz.{self.fmt}'
       if self.overwrite or not out.exists():
         out.parent.mkdir(parents=True, exist_ok=True)
         fig = plt.figure(figsize=(7.5, 7.5), dpi=150)
@@ -385,7 +385,7 @@ class ClusterPlotStage(PlotStage):
         plt.savefig(out, bbox_inches='tight', pad_inches=0.1)
         plt.close(fig)
         
-      out = WEBSITE_PATH / 'clusters' / cls_name / f'photoz.{self.fmt}'
+      out = configs.WEBSITE_PATH / 'clusters' / cls_name / f'photoz.{self.fmt}'
       if self.overwrite or not out.exists():
         out.parent.mkdir(parents=True, exist_ok=True)
         fig = plt.figure(figsize=(7.5, 7.5), dpi=150)
@@ -405,7 +405,7 @@ class ClusterPlotStage(PlotStage):
         plt.savefig(out, bbox_inches='tight', pad_inches=0.1)
         plt.close(fig)
         
-      out = WEBSITE_PATH / 'clusters' / cls_name / f'photoz_specz.{self.fmt}'
+      out = configs.WEBSITE_PATH / 'clusters' / cls_name / f'photoz_specz.{self.fmt}'
       if self.overwrite or not out.exists():
         out.parent.mkdir(parents=True, exist_ok=True)
         fig = plt.figure(figsize=(7.5, 7.5), dpi=150)
@@ -428,7 +428,7 @@ class ClusterPlotStage(PlotStage):
         plt.savefig(out, bbox_inches='tight', pad_inches=0.1)
         plt.close(fig)
     else:
-      out_path = PLOTS_FOLDER / f'cls_{cls_name}.{self.fmt}'
+      out_path = configs.PLOTS_FOLDER / f'cls_{cls_name}.{self.fmt}'
       if not self.overwrite and out_path.exists():
         return
       if self.splus_only and len(df_photoz_radial) == 0:
@@ -719,7 +719,7 @@ class VelocityPlotStage(PlotStage):
     )
       
     if self.separated:
-      out = WEBSITE_PATH / 'clusters' / cls_name / f'spec_velocity.{self.fmt}'
+      out = configs.WEBSITE_PATH / 'clusters' / cls_name / f'spec_velocity.{self.fmt}'
       if self.overwrite or not out.exists():
         out.parent.mkdir(parents=True, exist_ok=True)
         fig = plt.figure(figsize=(7.5, 7.5), dpi=150)
@@ -728,7 +728,7 @@ class VelocityPlotStage(PlotStage):
         plt.savefig(out, bbox_inches='tight', pad_inches=0.1)
         plt.close(fig)
         
-      out = WEBSITE_PATH / 'clusters' / cls_name / f'specz_distance.{self.fmt}'
+      out = configs.WEBSITE_PATH / 'clusters' / cls_name / f'specz_distance.{self.fmt}'
       if self.overwrite or not out.exists():
         out.parent.mkdir(parents=True, exist_ok=True)
         fig = plt.figure(figsize=(7.5, 7.5), dpi=150)
@@ -737,7 +737,7 @@ class VelocityPlotStage(PlotStage):
         plt.savefig(out, bbox_inches='tight', pad_inches=0.1)
         plt.close(fig)
         
-      out = WEBSITE_PATH / 'clusters' / cls_name / f'photoz_distance.{self.fmt}'
+      out = configs.WEBSITE_PATH / 'clusters' / cls_name / f'photoz_distance.{self.fmt}'
       if self.overwrite or not out.exists():
         out.parent.mkdir(parents=True, exist_ok=True)
         fig = plt.figure(figsize=(7.5, 7.5), dpi=150)
@@ -746,7 +746,7 @@ class VelocityPlotStage(PlotStage):
         plt.savefig(out, bbox_inches='tight', pad_inches=0.1)
         plt.close(fig)
         
-      out = WEBSITE_PATH / 'clusters' / cls_name / f'spec_velocity_position.{self.fmt}'
+      out = configs.WEBSITE_PATH / 'clusters' / cls_name / f'spec_velocity_position.{self.fmt}'
       if self.overwrite or not out.exists():
         out.parent.mkdir(parents=True, exist_ok=True)
         fig = plt.figure(figsize=(7.5, 7.5), dpi=150)
@@ -756,7 +756,7 @@ class VelocityPlotStage(PlotStage):
         plt.savefig(out, bbox_inches='tight', pad_inches=0.1)
         plt.close(fig)
         
-      out = WEBSITE_PATH / 'clusters' / cls_name / f'spec_velocity_rel_position.{self.fmt}'
+      out = configs.WEBSITE_PATH / 'clusters' / cls_name / f'spec_velocity_rel_position.{self.fmt}'
       if self.overwrite or not out.exists():
         out.parent.mkdir(parents=True, exist_ok=True)
         fig = plt.figure(figsize=(7.5, 7.5), dpi=150)
@@ -766,7 +766,7 @@ class VelocityPlotStage(PlotStage):
         plt.savefig(out, bbox_inches='tight', pad_inches=0.1)
         plt.close(fig)
     else:
-      out_path = VELOCITY_PLOTS_FOLDER / f'cls_{cls_name}.{self.fmt}'
+      out_path = configs.VELOCITY_PLOTS_FOLDER / f'cls_{cls_name}.{self.fmt}'
       if not self.overwrite and out_path.exists():
         return
       
@@ -879,8 +879,8 @@ class MagDiffPlotStage(PipelineStage):
   ):
     df = df_all_radial[
       (df_all_radial.type != 'PSF') & 
-      df_all_radial.r_auto.between(*MAG_RANGE) & 
-      df_all_radial.mag_r.between(*MAG_RANGE) &
+      df_all_radial.r_auto.between(*configs.MAG_RANGE) & 
+      df_all_radial.mag_r.between(*configs.MAG_RANGE) &
       (df_all_radial.z.between(*z_spec_range) | df_all_radial.z.isna()) &
       df_all_radial.zml.between(*z_photo_range)
     ]
@@ -895,7 +895,7 @@ class MagDiffPlotStage(PipelineStage):
     )
     
     if self.separated:
-      out = WEBSITE_PATH / 'clusters' / cls_name / f'mag_diff.{self.fmt}'
+      out = configs.WEBSITE_PATH / 'clusters' / cls_name / f'mag_diff.{self.fmt}'
       if self.overwrite or not out.exists():
         out.parent.mkdir(parents=True, exist_ok=True)
         fig, axs = plt.subplots(figsize=(7.5, 7.5), dpi=150)
@@ -903,7 +903,7 @@ class MagDiffPlotStage(PipelineStage):
         plt.savefig(out, bbox_inches='tight', pad_inches=0.1)
         plt.close(fig)
       
-      out = WEBSITE_PATH / 'clusters' / cls_name / f'mag_diff_hist.{self.fmt}'
+      out = configs.WEBSITE_PATH / 'clusters' / cls_name / f'mag_diff_hist.{self.fmt}'
       if self.overwrite or not out.exists():
         out.parent.mkdir(parents=True, exist_ok=True)
         fig, axs = plt.subplots(figsize=(7.5, 7.5), dpi=150)
@@ -911,7 +911,7 @@ class MagDiffPlotStage(PipelineStage):
         plt.savefig(out, bbox_inches='tight', pad_inches=0.1)
         plt.close(fig)
     else:
-      out_path = MAGDIFF_PLOTS_FOLDER / f'cls_{cls_name}.pdf'
+      out_path = configs.sMAGDIFF_PLOTS_FOLDER / f'cls_{cls_name}.pdf'
       if not self.overwrite and out_path.exists():
         return
 
