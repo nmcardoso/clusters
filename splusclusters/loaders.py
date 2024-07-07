@@ -1,4 +1,5 @@
 from pathlib import Path
+from typing import Tuple
 
 import pandas as pd
 from astromodule.distance import mpc2arcsec
@@ -440,9 +441,11 @@ class LoadDataFrameStage(PipelineStage):
     self.base_path = base_path
     self.products = [key]
     
-  def run(self, cls_name: str):
+  def run(self, cls_name: str, z_spec_range: Tuple[float, float]):
     t = Timming()
     df = read_table(self.base_path / f'{cls_name}.parquet')
+    if 'z' in df.colums:
+      df = df[df.z.between(*z_spec_range)].reset_index(drop=True)
     print(f'Table loaded. Duration: {t.end()}. Number of objects: {len(df)}')
     return {self.key: df}
 
