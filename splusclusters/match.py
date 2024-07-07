@@ -78,10 +78,12 @@ class RadialSearchStage(PipelineStage):
 class SpecZRadialSearchStage(RadialSearchStage):
   def __init__(
     self, 
-    save_folder: str | Path = configs.SPECZ_FOLDER, 
+    save_folder: str | Path = None, 
     radius_key: str = 'cls_15Mpc_deg', 
     overwrite: bool = False,
   ):
+    if save_folder is None:
+      save_folder = configs.SPECZ_FOLDER
     super().__init__(
       df_name='df_spec',
       radius_key=radius_key, 
