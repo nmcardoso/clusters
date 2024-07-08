@@ -20,6 +20,7 @@ from splusclusters.plots import ClusterPlotStage
 
 
 def antlia_hydra_plot_pipeline():
+  # http://www.atlasoftheuniverse.com/superc/hya.html
   df_clusters = pd.DataFrame([
     {'NAME': 'Hydra', 'ra': 159.17416, 'dec': -27.52444, 'z_spec': 0.0126},
     {'NAME': 'A636', 'ra': 157.148, 'dec': -35.642, 'z_spec': 0.0093},
