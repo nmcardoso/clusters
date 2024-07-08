@@ -455,7 +455,7 @@ class PrepareCatalogToSubmitStage(PipelineStage):
     # df_submit.ls10_photo[~df_submit.mag_r.isna()] = 1
     df_submit['ls10_photo'] = (~df_submit['mag_r'].isna()).astype(int)
     df_submit['class_spec'] = df_submit.class_spec.str.replace(' ', '')
-    df_submit[df_submit.class_spec == 'None']['class_spec'] = np.nan
+    df_submit[df_submit.class_spec == '']['class_spec'] = np.nan
     df_submit = df_submit.fillna(-999)
     df_submit = df_submit.rename(columns={
       'ra': 'RA',
