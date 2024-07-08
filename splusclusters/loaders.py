@@ -1,6 +1,7 @@
 from pathlib import Path
 from typing import Tuple
 
+import numpy as np
 import pandas as pd
 from astromodule.distance import mpc2arcsec
 from astromodule.io import merge_pdf, read_table, write_table
@@ -449,8 +450,11 @@ class PrepareCatalogToSubmitStage(PipelineStage):
     
     df_submit = df_all_radial[(~df_all_radial.z.isna()) & df_all_radial.z.between(*z_spec_range)]
     df_submit = df_submit.reset_index(drop=True)
+    # df_submit['ls10_photo'] = np.zeros(shape=((len(df_submit),)), dtype=int)
+    # df_submit.ls10_photo[~df_submit.mag_r.isna()] = 1
     df_submit['ls10_photo'] = (~df_submit['mag_r'].isna()).astype(int)
-    df_submit.fillna(-999)
+    df_submit['class_spec'] = df_submit.class_spec.str.replace(' ', '')
+    df_submit = df_submit.fillna(-999)
     df_submit = df_submit.rename(columns={
       'ra': 'RA',
       'dec': 'DEC',
@@ -460,6 +464,7 @@ class PrepareCatalogToSubmitStage(PipelineStage):
       'zml': 'z_phot',
       'odds': 'z_phot_odds',
       'mag_r': 'ls10_r',
+      'type': 'ls10_morpho',
     })
     write_table(df_submit, out_path)
 
