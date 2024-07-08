@@ -99,7 +99,7 @@ def load_heasarc():
 
 
 def load_catalog_v6():
-  df = read_table(configs.CATALOG_V6_TABLE_PATH)
+  df = read_table(configs.CATALOG_V6_TABLE_PATH, comment='#')
   df['name'] = df.name.str.replace(' ', '')
   df['name'] = df.name.str.replace(r'^ABELL0+', 'A', regex=True)
   df['name'] = df.name.str.replace(r'^ABELL', 'A', regex=True)
