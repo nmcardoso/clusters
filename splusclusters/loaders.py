@@ -447,10 +447,13 @@ class PrepareCatalogToSubmitStage(PipelineStage):
     if out_path.exists() and not self.overwrite:
       return
     
-    df_submit = df_all_radial[df_all_radial.z.between(*z_spec_range)].copy(deep=True)
+    df_submit = df_all_radial[(~df_all_radial.isna()) & df_all_radial.z.between(*z_spec_range)]
+    df_submit = df_submit.reset_index(drop=True)
     df_submit['ls10_photo'] = (~df_submit['mag_r'].isna()).astype(int)
     df_submit.fillna(-999)
     df_submit = df_submit.rename(columns={
+      'ra': 'RA',
+      'dec': 'DEC',
       'z': 'zspec',
       'e_z': 'zspec-err',
       'f_z': 'zspec-flag',
@@ -458,7 +461,7 @@ class PrepareCatalogToSubmitStage(PipelineStage):
       'odds': 'z_phot_odds',
       'mag_r': 'ls10_r',
     })
-    write_table(df_all_radial, out_path)
+    write_table(df_submit, out_path)
 
 
 
