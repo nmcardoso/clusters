@@ -452,6 +452,7 @@ class PrepareCatalogToSubmitStage(PipelineStage):
     df_submit = df_submit.reset_index(drop=True)
     # df_submit['ls10_photo'] = np.zeros(shape=((len(df_submit),)), dtype=int)
     # df_submit.ls10_photo[~df_submit.mag_r.isna()] = 1
+    del df_submit['field']
     df_submit['ls10_photo'] = (~df_submit['mag_r'].isna()).astype(int)
     df_submit['class_spec'] = df_submit.class_spec.str.replace(' ', '')
     df_submit = df_submit.fillna(-999)
