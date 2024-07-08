@@ -57,7 +57,7 @@ def clusters_v6_pipeline(clear: bool = False):
   concat_plot_path = configs.PLOTS_FOLDER / 'clusters_v6+review.pdf'
   merge_pdf(plot_paths, concat_plot_path)
   
-  df_clusters['clsid'] = df_clusters.clsid.str.zfill(4)
+  df_clusters['clsid'] = df_clusters.clsid.astype(str).str.zfill(4)
   
   write_table(
     df_clusters[['clsid', 'name', 'RA', 'DEC', 'zspec']], 
