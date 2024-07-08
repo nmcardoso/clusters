@@ -33,15 +33,15 @@ def clusters_v6_pipeline(clear: bool = False):
         
   ls10_pipe = Pipeline(
     LoadPauloInfoStage(df_clusters),
-    PhotoZRadialSearchStage(overwrite=True),
-    SpecZRadialSearchStage(overwrite=True),
-    DownloadLegacyCatalogStage('cls_15Mpc_deg', overwrite=True, workers=5),
+    PhotoZRadialSearchStage(overwrite=False),
+    SpecZRadialSearchStage(overwrite=False),
+    DownloadLegacyCatalogStage('cls_15Mpc_deg', overwrite=False, workers=5),
     LoadPhotozRadialStage(),
     LoadSpeczRadialStage(),
     LoadLegacyRadialStage(),
-    PhotozSpeczLegacyMatchStage(overwrite=True),
+    PhotozSpeczLegacyMatchStage(overwrite=False),
     LoadAllRadialStage(),
-    ClusterPlotStage(overwrite=True, splus_only=False),
+    ClusterPlotStage(overwrite=False, splus_only=False),
     PrepareCatalogToSubmitStage(overwrite=True),
   )
   
