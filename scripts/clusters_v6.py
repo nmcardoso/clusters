@@ -65,6 +65,8 @@ def clusters_v5_remake_pipeline(clear: bool = False):
   
   df_clusters['clsid'] = df_clusters.clsid.astype(str).str.zfill(4)
   
+  print(df_clusters.columns)
+  
   df_clusters = df_clusters.rename(columns={'ra': 'RA', 'dec': 'DEC'})
   write_table(
     df_clusters[['clsid', 'name', 'RA', 'DEC', 'zspec']], 
