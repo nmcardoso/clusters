@@ -67,7 +67,7 @@ def clusters_v5_remake_pipeline(clear: bool = False):
   
   print(df_clusters.columns)
   
-  df_clusters = df_clusters.rename(columns={'ra': 'RA', 'dec': 'DEC'})
+  df_clusters = df_clusters.rename(columns={'ra': 'RA', 'dec': 'DEC', 'z_spec': 'zspec'})
   write_table(
     df_clusters[['clsid', 'name', 'RA', 'DEC', 'zspec']], 
     configs.SUBMIT_FOLDER / 'index.dat'
