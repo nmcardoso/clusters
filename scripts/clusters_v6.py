@@ -100,7 +100,7 @@ def hydra_neighbours_pipeline(clear: bool = False):
     LoadGenericInfoStage(df_clusters),
     PhotoZRadialSearchStage(radius_key='', overwrite=True),
     SpecZRadialSearchStage(radius_key='', overwrite=True),
-    DownloadLegacyCatalogStage(radius_key='cls_search_radius_deg', overwrite=False, workers=5),
+    DownloadLegacyCatalogStage(radius_key='cls_search_radius_deg', overwrite=True, workers=5),
     LoadPhotozRadialStage(),
     LoadSpeczRadialStage(),
     LoadLegacyRadialStage(),
