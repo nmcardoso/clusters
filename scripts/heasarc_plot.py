@@ -26,7 +26,7 @@ def heasarc_plot_pipeline(overwrite: bool = False):
     LoadHeasarcInfoStage(df_heasarc),
     PhotoZRadialSearchStage(overwrite=overwrite),
     SpecZRadialSearchStage(overwrite=overwrite),
-    DownloadLegacyCatalogStage('cls_15Mpc_deg', overwrite=overwrite),
+    DownloadLegacyCatalogStage('cls_search_radius_deg', overwrite=overwrite),
     LoadPhotozRadialStage(),
     LoadSpeczRadialStage(),
     LoadLegacyRadialStage(),

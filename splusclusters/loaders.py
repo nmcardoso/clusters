@@ -118,9 +118,10 @@ def load_catalog_v6():
 
 class LoadHeasarcInfoStage(PipelineStage):
   products = [
-    'cls_name', 'cls_z', 'cls_ra', 'cls_dec', 'cls_15Mpc_deg',
+    'cls_name', 'cls_z', 'cls_ra', 'cls_dec', 'cls_search_radius_deg',
     'cls_r500_Mpc', 'cls_r500_deg', 'cls_r200_Mpc', 'cls_r200_deg',
     'z_photo_range', 'z_spec_range', 'df_members', 'df_interlopers',
+    'cls_search_radius_Mpc',
   ]
   
   def __init__(
@@ -138,15 +139,20 @@ class LoadHeasarcInfoStage(PipelineStage):
     dec = cluster['dec'].values[0]
     z = cluster['redshift'].values[0]
     cosmo = LambdaCDM(H0=70, Om0=0.3, Ode0=0.7)
-    r15Mpc_deg = mpc2arcsec(15, z, cosmo).to(u.deg).value
+    if 'search_radius_Mpc' in self.df.columns:
+      search_radius_Mpc = cluster['search_radius_Mpc'].values[0]
+    else:
+      search_radius_Mpc = 15
+    search_radius_deg = min(mpc2arcsec(search_radius_Mpc, z, cosmo).to(u.deg).value, 17)
     print('Cluster Name:', cls_name)
-    print(f'RA: {ra:.3f}, DEC: {dec:.3f}, z: {z:.2f}, search radius: {r15Mpc_deg:.2f}')
+    print(f'RA: {ra:.3f}, DEC: {dec:.3f}, z: {z:.2f}, search radius: {search_radius_deg:.2f}')
     return {
       'cls_name': cls_name,
       'cls_z': z,
       'cls_ra': ra,
       'cls_dec': dec,
-      'cls_15Mpc_deg': r15Mpc_deg,
+      'cls_search_radius_Mpc': search_radius_Mpc,
+      'cls_search_radius_deg': search_radius_deg,
       'cls_r500_Mpc': None,
       'cls_r500_deg': None,
       'cls_r200_Mpc': None,
@@ -161,9 +167,10 @@ class LoadHeasarcInfoStage(PipelineStage):
 
 class LoadClusterInfoStage(PipelineStage):
   products = [
-    'cls_name', 'cls_z', 'cls_ra', 'cls_dec', 'cls_15Mpc_deg',
+    'cls_name', 'cls_z', 'cls_ra', 'cls_dec', 'cls_search_radius_deg',
     'cls_r500_Mpc', 'cls_r500_deg', 'cls_r200_Mpc', 'cls_r200_deg',
     'z_photo_range', 'z_spec_range', 'df_members', 'df_interlopers',
+    'cls_search_radius_Mpc',
   ]
   
   def __init__(
@@ -198,10 +205,14 @@ class LoadClusterInfoStage(PipelineStage):
       r200_Mpc = None
       r200_deg = None
     
-    r15Mpc_deg = mpc2arcsec(15, z, cosmo).to(u.deg).value
-    if r15Mpc_deg > 17:
-      print(f'Cluster angular radius @ 15Mpc = {r15Mpc_deg:.2f} deg, limiting to 17 deg')
-      r15Mpc_deg = min(r15Mpc_deg, 17)
+    if 'search_radius_Mpc' in df_clusters.columns:
+      search_radius_Mpc = cluster['search_radius_Mpc'].values[0]
+    else:
+      search_radius_Mpc = 15
+    search_radius_deg = min(mpc2arcsec(search_radius_Mpc, z, cosmo).to(u.deg).value, 17)
+    if search_radius_deg > 17:
+      print(f'Cluster angular radius @ 15Mpc = {search_radius_deg:.2f} deg, limiting to 17 deg')
+      search_radius_deg = min(search_radius_deg, 17)
     
     paulo_path = configs.MEMBERS_FOLDER / f'cluster.gals.sel.shiftgap.iter.{str(cls_id).zfill(5)}'
     if paulo_path.exists():
@@ -217,14 +228,15 @@ class LoadClusterInfoStage(PipelineStage):
       df_interlopers = None
     
     print('Cluster Name:', name)
-    print(f'RA: {ra:.3f}, DEC: {dec:.3f}, z: {z:.2f}, search radius: {r15Mpc_deg:.2f}')
+    print(f'RA: {ra:.3f}, DEC: {dec:.3f}, z: {z:.2f}, search radius: {search_radius_deg:.2f}')
     
     return {
       'cls_name': name,
       'cls_z': z,
       'cls_ra': ra,
       'cls_dec': dec,
-      'cls_15Mpc_deg': r15Mpc_deg,
+      'cls_search_radius_Mpc': search_radius_Mpc,
+      'cls_search_radius_deg': search_radius_deg,
       'cls_r500_Mpc': r500_Mpc,
       'cls_r500_deg': r500_deg,
       'cls_r200_Mpc': r200_Mpc,
@@ -238,9 +250,10 @@ class LoadClusterInfoStage(PipelineStage):
     
 class LoadERASSInfoStage(PipelineStage):
   products = [
-    'cls_name', 'cls_z', 'cls_ra', 'cls_dec', 'cls_15Mpc_deg',
+    'cls_name', 'cls_z', 'cls_ra', 'cls_dec', 'cls_search_radius_deg',
     'cls_r500_Mpc', 'cls_r500_deg', 'cls_r200_Mpc', 'cls_r200_deg',
     'z_photo_range', 'z_spec_range', 'df_members', 'df_interlopers',
+    'cls_search_radius_Mpc',
   ]
   
   def __init__(self, df_clusters: pd.DataFrame):
@@ -255,15 +268,20 @@ class LoadERASSInfoStage(PipelineStage):
     r500_Mpc = cluster['R500_Mpc'].values[0]
     r500_deg = cluster['R500_deg'].values[0]
     cosmo = LambdaCDM(H0=70, Om0=0.3, Ode0=0.7)
-    r15Mpc_deg = min(mpc2arcsec(15, z, cosmo).to(u.deg).value, 17)
+    if 'search_radius_Mpc' in df_clusters.columns:
+      search_radius_Mpc = cluster['search_radius_Mpc'].values[0]
+    else:
+      search_radius_Mpc = 15
+    search_radius_deg = min(mpc2arcsec(search_radius_Mpc, z, cosmo).to(u.deg).value, 17)
     print('Cluster Name:', cls_name)
-    print(f'RA: {ra:.3f}, DEC: {dec:.3f}, z: {z:.2f}, search radius: {r15Mpc_deg:.2f}')
+    print(f'RA: {ra:.3f}, DEC: {dec:.3f}, z: {z:.2f}, search radius: {search_radius_deg:.2f}')
     return {
       'cls_name': cls_name,
       'cls_z': z,
       'cls_ra': ra,
       'cls_dec': dec,
-      'cls_15Mpc_deg': r15Mpc_deg,
+      'cls_search_radius_Mpc': search_radius_Mpc,
+      'cls_search_radius_deg': search_radius_deg,
       'cls_r500_Mpc': r500_Mpc,
       'cls_r500_deg': r500_deg,
       'cls_r200_Mpc': None,
@@ -278,9 +296,10 @@ class LoadERASSInfoStage(PipelineStage):
 
 class LoadGenericInfoStage(PipelineStage):
   products = [
-    'cls_name', 'cls_z', 'cls_ra', 'cls_dec', 'cls_15Mpc_deg',
+    'cls_name', 'cls_z', 'cls_ra', 'cls_dec', 'cls_search_radius_deg',
     'cls_r500_Mpc', 'cls_r500_deg', 'cls_r200_Mpc', 'cls_r200_deg',
     'z_photo_range', 'z_spec_range', 'df_members', 'df_interlopers',
+    'cls_search_radius_Mpc',
   ]
   
   def __init__(self, df_clusters: pd.DataFrame):
@@ -295,15 +314,20 @@ class LoadGenericInfoStage(PipelineStage):
     # r500_Mpc = cluster['R500_Mpc'].values[0]
     # r500_deg = cluster['R500_deg'].values[0]
     cosmo = LambdaCDM(H0=70, Om0=0.3, Ode0=0.7)
-    r15Mpc_deg = min(mpc2arcsec(15, z, cosmo).to(u.deg).value, 17)
+    if 'search_radius_Mpc' in df_clusters.columns:
+      search_radius_Mpc = cluster['search_radius_Mpc'].values[0]
+    else:
+      search_radius_Mpc = 15
+    search_radius_deg = min(mpc2arcsec(search_radius_Mpc, z, cosmo).to(u.deg).value, 17)
     print('Cluster Name:', cls_name)
-    print(f'RA: {ra:.3f}, DEC: {dec:.3f}, z: {z:.2f}, search radius: {r15Mpc_deg:.2f}')
+    print(f'RA: {ra:.3f}, DEC: {dec:.3f}, z: {z:.2f}, search radius: {search_radius_deg:.2f}')
     return {
       'cls_name': cls_name,
       'cls_z': z,
       'cls_ra': ra,
       'cls_dec': dec,
-      'cls_15Mpc_deg': r15Mpc_deg,
+      'cls_search_radius_Mpc': search_radius_Mpc,
+      'cls_search_radius_deg': search_radius_deg,
       # 'cls_r500_Mpc': r500_Mpc,
       # 'cls_r500_deg': r500_deg,
       'cls_r500_Mpc': None,
@@ -319,9 +343,10 @@ class LoadGenericInfoStage(PipelineStage):
 
 class LoadPauloInfoStage(PipelineStage):
   products = [
-    'cls_name', 'cls_z', 'cls_ra', 'cls_dec', 'cls_15Mpc_deg',
+    'cls_name', 'cls_z', 'cls_ra', 'cls_dec', 'cls_search_radius_deg',
     'cls_r500_Mpc', 'cls_r500_deg', 'cls_r200_Mpc', 'cls_r200_deg',
     'z_photo_range', 'z_spec_range', 'df_members', 'df_interlopers',
+    'cls_search_radius_Mpc',
   ]
   
   def __init__(
@@ -356,10 +381,14 @@ class LoadPauloInfoStage(PipelineStage):
       r200_Mpc = None
       r200_deg = None
     
-    r15Mpc_deg = mpc2arcsec(15, z, cosmo).to(u.deg).value
-    if r15Mpc_deg > 17:
-      print(f'Cluster angular radius @ 15Mpc = {r15Mpc_deg:.2f} deg, limiting to 17 deg')
-      r15Mpc_deg = min(r15Mpc_deg, 17)
+    if 'search_radius_Mpc' in df_clusters.columns:
+      search_radius_Mpc = cluster['search_radius_Mpc'].values[0]
+    else:
+      search_radius_Mpc = 15
+    search_radius_deg = min(mpc2arcsec(search_radius_Mpc, z, cosmo).to(u.deg).value, 17)
+    if search_radius_deg > 17:
+      print(f'Cluster angular radius @ 15Mpc = {search_radius_deg:.2f} deg, limiting to 17 deg')
+      search_radius_deg = min(search_radius_deg, 17)
     
     paulo_path = configs.MEMBERS_FOLDER / f'cluster.gals.sel.shiftgap.iter.{str(cls_id).zfill(5)}'
     if paulo_path.exists():
@@ -375,14 +404,15 @@ class LoadPauloInfoStage(PipelineStage):
       df_interlopers = None
     
     print('Cluster Name:', name)
-    print(f'RA: {ra:.3f}, DEC: {dec:.3f}, z: {z:.2f}, search radius: {r15Mpc_deg:.2f}')
+    print(f'RA: {ra:.3f}, DEC: {dec:.3f}, z: {z:.2f}, search radius: {search_radius_deg:.2f}')
     
     return {
       'cls_name': name,
       'cls_z': z,
       'cls_ra': ra,
       'cls_dec': dec,
-      'cls_15Mpc_deg': r15Mpc_deg,
+      'cls_search_radius_Mpc': search_radius_Mpc,
+      'cls_search_radius_deg': search_radius_deg,
       'cls_r500_Mpc': r500_Mpc,
       'cls_r500_deg': r500_deg,
       'cls_r200_Mpc': r200_Mpc,
@@ -397,9 +427,10 @@ class LoadPauloInfoStage(PipelineStage):
     
 class LoadERASS2InfoStage(PipelineStage):
   products = [
-    'cls_name', 'cls_z', 'cls_ra', 'cls_dec', 'cls_15Mpc_deg',
-    'cls_r500_Mpc', 'cls_r500_deg', 'cls_r200_Mpc', 'cls_r200_deg',
-    'z_photo_range', 'z_spec_range', 'df_members', 'df_interlopers',
+    'cls_name', 'cls_z', 'cls_ra', 'cls_dec', 'cls_search_radius_deg', 
+    'cls_search_radius_Mpc', 'cls_r500_Mpc', 'cls_r500_deg', 'cls_r200_Mpc', 
+    'cls_r200_deg', 'z_photo_range', 'z_spec_range', 'df_members', 
+    'df_interlopers',
   ]
   
   def __init__(self, df_clusters: pd.DataFrame):
@@ -415,15 +446,20 @@ class LoadERASS2InfoStage(PipelineStage):
     # r500_deg = cluster['R500_deg'].values[0]
     cosmo = LambdaCDM(H0=70, Om0=0.3, Ode0=0.7)
     r500_deg = mpc2arcsec(r500_Mpc, z, cosmo).to(u.deg).value
-    r15Mpc_deg = min(mpc2arcsec(15, z, cosmo).to(u.deg).value, 17)
+    if 'search_radius_Mpc' in df_clusters.columns:
+      search_radius_Mpc = cluster['search_radius_Mpc'].values[0]
+    else:
+      search_radius_Mpc = 15
+    search_radius_deg = min(mpc2arcsec(search_radius_Mpc, z, cosmo).to(u.deg).value, 17)
     print('Cluster Name:', cls_name)
-    print(f'RA: {ra:.3f}, DEC: {dec:.3f}, z: {z:.2f}, search radius: {r15Mpc_deg:.2f}')
+    print(f'RA: {ra:.3f}, DEC: {dec:.3f}, z: {z:.2f}, search radius: {search_radius_deg:.2f}')
     return {
       'cls_name': cls_name,
       'cls_z': z,
       'cls_ra': ra,
       'cls_dec': dec,
-      'cls_15Mpc_deg': r15Mpc_deg,
+      'cls_search_radius_Mpc': search_radius_Mpc,
+      'cls_search_radius_deg': search_radius_deg,
       'cls_r500_Mpc': r500_Mpc,
       'cls_r500_deg': r500_deg,
       'cls_r200_Mpc': None,

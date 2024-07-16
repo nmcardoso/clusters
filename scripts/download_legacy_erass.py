@@ -20,7 +20,7 @@ def download_legacy_erass_pipeline(clear: bool = False):
         
   ls10_pipe = Pipeline(
     LoadERASSInfoStage(df_clusters),
-    DownloadLegacyCatalogStage('cls_15Mpc_deg', overwrite=False, workers=8)
+    DownloadLegacyCatalogStage('cls_search_radius_deg', overwrite=False, workers=8)
   )
   ls10_pipe.map_run('cls_name', df_clusters.Cluster.values, workers=1)
   

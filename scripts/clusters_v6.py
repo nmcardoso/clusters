@@ -1,6 +1,8 @@
 import sys
 from pathlib import Path
 
+import pandas as pd
+
 sys.path.insert(0, str(Path(__file__).parent.parent.absolute()))
 
 from astromodule.io import merge_pdf, write_table
@@ -8,15 +10,132 @@ from astromodule.pipeline import Pipeline, PipelineStorage
 
 from splusclusters.configs import configs
 from splusclusters.external import DownloadLegacyCatalogStage
-from splusclusters.loaders import (LoadAllRadialStage, LoadLegacyRadialStage,
+from splusclusters.loaders import (LoadAllRadialStage, LoadClusterInfoStage,
+                                   LoadGenericInfoStage, LoadLegacyRadialStage,
                                    LoadPauloInfoStage, LoadPhotozRadialStage,
                                    LoadSpeczRadialStage,
                                    PrepareCatalogToSubmitStage,
-                                   load_catalog_v6, load_photoz2, load_spec)
+                                   load_catalog_v6, load_clusters,
+                                   load_photoz2, load_spec)
 from splusclusters.match import (PhotoZRadialSearchStage,
                                  PhotozSpeczLegacyMatchStage,
                                  SpecZRadialSearchStage)
 from splusclusters.plots import ClusterPlotStage
+
+
+def clusters_v5_remake_pipeline(clear: bool = False):
+  df_clusters = load_clusters()
+  df_photoz, photoz_skycoord = load_photoz2()
+  df_spec, specz_skycoord = load_spec()
+  
+  configs.Z_SPEC_DELTA = 0.02
+  configs.SUBMIT_FOLDER = configs.SUBMIT_FOLDER / 'antigos'
+  configs.SUBMIT_FOLDER.mkdir(exist_ok=True, parents=True)
+  
+  if clear:
+    for p in configs.LEG_PHOTO_FOLDER.glob('*.parquet'):
+      if p.stat().st_size < 650:
+        p.unlink()
+  
+  pipe = Pipeline(
+    LoadClusterInfoStage(df_clusters),
+    PhotoZRadialSearchStage(overwrite=True),
+    SpecZRadialSearchStage(overwrite=True),
+    DownloadLegacyCatalogStage('cls_search_radius_deg', overwrite=False, workers=5),
+    LoadPhotozRadialStage(),
+    LoadSpeczRadialStage(),
+    LoadLegacyRadialStage(),
+    PhotozSpeczLegacyMatchStage(overwrite=True),
+    LoadAllRadialStage(),
+    ClusterPlotStage(overwrite=True, splus_only=False),
+    PrepareCatalogToSubmitStage(overwrite=True),
+  )
+  
+  PipelineStorage().write('df_photoz', df_photoz)
+  PipelineStorage().write('photoz_skycoord', photoz_skycoord)
+  PipelineStorage().write('df_spec', df_spec)
+  PipelineStorage().write('specz_skycoord', specz_skycoord)
+  
+  pipe.map_run('cls_id', df_clusters.clsid.values, workers=1)
+  
+  plot_paths = [configs.PLOTS_FOLDER / f'cls_{c}.pdf' for c in df_clusters.name.values]
+  plot_paths = [p for p in plot_paths if p.exists()]
+  concat_plot_path = configs.PLOTS_FOLDER / 'clusters_v6+antigos.pdf'
+  merge_pdf(plot_paths, concat_plot_path)
+  
+  df_clusters['clsid'] = df_clusters.clsid.astype(str).str.zfill(4)
+  
+  write_table(
+    df_clusters[['clsid', 'name', 'RA', 'DEC', 'zspec']], 
+    configs.SUBMIT_FOLDER / 'index.dat'
+  )
+
+
+
+
+
+
+def hydra_neighbours_pipeline(clear: bool = False):
+  df_clusters = pd.DataFrame([
+    {'NAME': 'Hydra', 'ra': 159.17416, 'dec': -27.52444, 'z_spec': 0.0126, 'search_radius_Mpc': 12},
+    {'NAME': 'A636', 'ra': 157.148, 'dec': -35.642, 'z_spec': 0.0093, 'search_radius_Mpc': 12},
+    {'NAME': 'NGC3054', 'ra': 148.61911316631, 'dec': -25.70343597937, 'z_spec': .0077, 'search_radius_Mpc': 6},
+    {'NAME': 'NGC3087', 'ra': 149.786083333,'dec': -34.22522222,'z_spec': .0081, 'search_radius_Mpc': 6},
+    {'NAME': 'NGC3250', 'ra': 156.634499999,'dec': -39.94399999,'z_spec': .0084, 'search_radius_Mpc': 6},
+    {'NAME': 'NGC3256', 'ra': 156.963666666,'dec': -43.90374999,'z_spec': .0079, 'search_radius_Mpc': 6},
+    {'NAME': 'NGC3263', 'ra': 157.305791666,'dec': -44.12291666,'z_spec': .0090, 'search_radius_Mpc': 6},
+    {'NAME': 'NGC3347', 'ra': 160.694291666,'dec': -36.35325,'z_spec': .0092, 'search_radius_Mpc': 6},
+    {'NAME': 'NGC3393', 'ra': 162.09775,'dec': -25.162055555,'z_spec': .0119, 'search_radius_Mpc': 6},
+    {'NAME': 'NGC3557', 'ra': 167.490208333,'dec': -37.539166666,'z_spec': .0089, 'search_radius_Mpc': 6},
+  ])
+  df_photoz, photoz_skycoord = load_photoz2()
+  df_spec, specz_skycoord = load_spec()
+  
+  configs.Z_SPEC_DELTA = 0.02
+  configs.SUBMIT_FOLDER = configs.SUBMIT_FOLDER / 'hydra'
+  configs.SUBMIT_FOLDER.mkdir(exist_ok=True, parents=True)
+  
+  if clear:
+    for p in configs.LEG_PHOTO_FOLDER.glob('*.parquet'):
+      if p.stat().st_size < 650:
+        p.unlink()
+  
+  pipe = Pipeline(
+    LoadGenericInfoStage(df_clusters),
+    PhotoZRadialSearchStage(radius_key='', overwrite=True),
+    SpecZRadialSearchStage(radius_key='', overwrite=True),
+    DownloadLegacyCatalogStage(radius_key='cls_search_radius_deg', overwrite=False, workers=5),
+    LoadPhotozRadialStage(),
+    LoadSpeczRadialStage(),
+    LoadLegacyRadialStage(),
+    PhotozSpeczLegacyMatchStage(overwrite=True),
+    LoadAllRadialStage(),
+    ClusterPlotStage(overwrite=True, splus_only=False),
+    PrepareCatalogToSubmitStage(overwrite=True),
+  )
+  
+  PipelineStorage().write('df_photoz', df_photoz)
+  PipelineStorage().write('photoz_skycoord', photoz_skycoord)
+  PipelineStorage().write('df_spec', df_spec)
+  PipelineStorage().write('specz_skycoord', specz_skycoord)
+  
+  pipe.map_run('cls_name', df_clusters.NAME.values, workers=1)
+  
+  plot_paths = [configs.PLOTS_FOLDER / f'cls_{c}.pdf' for c in df_clusters.NAME.values]
+  plot_paths = [p for p in plot_paths if p.exists()]
+  concat_plot_path = configs.PLOTS_FOLDER / 'clusters_v6+hydra.pdf'
+  merge_pdf(plot_paths, concat_plot_path)
+  
+  df_clusters['clsid'] = df_clusters.clsid.astype(str).str.zfill(4)
+  
+  write_table(
+    df_clusters[['clsid', 'name', 'RA', 'DEC', 'zspec']], 
+    configs.SUBMIT_FOLDER / 'index.dat'
+  )
+
+
+
+
 
 
 def clusters_v6_pipeline(clear: bool = False):
@@ -25,6 +144,8 @@ def clusters_v6_pipeline(clear: bool = False):
   df_spec, specz_skycoord = load_spec()
   
   configs.Z_SPEC_DELTA = 0.02
+  configs.SUBMIT_FOLDER = configs.SUBMIT_FOLDER / 'novos'
+  configs.SUBMIT_FOLDER.mkdir(exist_ok=True, parents=True)
   
   if clear:
     for p in configs.LEG_PHOTO_FOLDER.glob('*.parquet'):
@@ -33,15 +154,15 @@ def clusters_v6_pipeline(clear: bool = False):
         
   ls10_pipe = Pipeline(
     LoadPauloInfoStage(df_clusters),
-    PhotoZRadialSearchStage(overwrite=False),
-    SpecZRadialSearchStage(overwrite=False),
-    DownloadLegacyCatalogStage('cls_15Mpc_deg', overwrite=False, workers=5),
+    PhotoZRadialSearchStage(overwrite=True),
+    SpecZRadialSearchStage(overwrite=True),
+    DownloadLegacyCatalogStage('cls_search_radius_deg', overwrite=False, workers=5),
     LoadPhotozRadialStage(),
     LoadSpeczRadialStage(),
     LoadLegacyRadialStage(),
-    PhotozSpeczLegacyMatchStage(overwrite=False),
+    PhotozSpeczLegacyMatchStage(overwrite=True),
     LoadAllRadialStage(),
-    ClusterPlotStage(overwrite=False, splus_only=False),
+    ClusterPlotStage(overwrite=True, splus_only=False),
     PrepareCatalogToSubmitStage(overwrite=True),
   )
   
@@ -54,7 +175,7 @@ def clusters_v6_pipeline(clear: bool = False):
   
   plot_paths = [configs.PLOTS_FOLDER / f'cls_{c}.pdf' for c in df_clusters.name.values]
   plot_paths = [p for p in plot_paths if p.exists()]
-  concat_plot_path = configs.PLOTS_FOLDER / 'clusters_v6+review.pdf'
+  concat_plot_path = configs.PLOTS_FOLDER / 'clusters_v6+novos.pdf'
   merge_pdf(plot_paths, concat_plot_path)
   
   df_clusters['clsid'] = df_clusters.clsid.astype(str).str.zfill(4)
@@ -66,4 +187,6 @@ def clusters_v6_pipeline(clear: bool = False):
 
 
 if __name__ == "__main__":
+  clusters_v5_remake_pipeline()
   clusters_v6_pipeline()
+  hydra_neighbours_pipeline()

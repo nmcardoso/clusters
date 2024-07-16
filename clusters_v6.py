@@ -175,7 +175,7 @@ def load_heasarc():
 
 class LoadHeasarcInfoStage(PipelineStage):
   products = [
-    'cls_name', 'cls_z', 'cls_ra', 'cls_dec', 'cls_15Mpc_deg',
+    'cls_name', 'cls_z', 'cls_ra', 'cls_dec', 'cls_search_radius_deg',
     'cls_r500_Mpc', 'cls_r500_deg', 'cls_r200_Mpc', 'cls_r200_deg',
     'z_photo_range', 'z_spec_range', 'df_members', 'df_interlopers',
   ]
@@ -195,15 +195,15 @@ class LoadHeasarcInfoStage(PipelineStage):
     dec = cluster['dec'].values[0]
     z = cluster['redshift'].values[0]
     cosmo = LambdaCDM(H0=70, Om0=0.3, Ode0=0.7)
-    r15Mpc_deg = mpc2arcsec(15, z, cosmo).to(u.deg).value
+    search_radius_deg = mpc2arcsec(15, z, cosmo).to(u.deg).value
     print('Cluster Name:', cls_name)
-    print(f'RA: {ra:.3f}, DEC: {dec:.3f}, z: {z:.2f}, search radius: {r15Mpc_deg:.2f}')
+    print(f'RA: {ra:.3f}, DEC: {dec:.3f}, z: {z:.2f}, search radius: {search_radius_deg:.2f}')
     return {
       'cls_name': cls_name,
       'cls_z': z,
       'cls_ra': ra,
       'cls_dec': dec,
-      'cls_15Mpc_deg': r15Mpc_deg,
+      'cls_search_radius_deg': search_radius_deg,
       'cls_r500_Mpc': None,
       'cls_r500_deg': None,
       'cls_r200_Mpc': None,
@@ -218,7 +218,7 @@ class LoadHeasarcInfoStage(PipelineStage):
 
 class LoadClusterInfoStage(PipelineStage):
   products = [
-    'cls_name', 'cls_z', 'cls_ra', 'cls_dec', 'cls_15Mpc_deg',
+    'cls_name', 'cls_z', 'cls_ra', 'cls_dec', 'cls_search_radius_deg',
     'cls_r500_Mpc', 'cls_r500_deg', 'cls_r200_Mpc', 'cls_r200_deg',
     'z_photo_range', 'z_spec_range', 'df_members', 'df_interlopers',
   ]
@@ -244,10 +244,10 @@ class LoadClusterInfoStage(PipelineStage):
     cosmo = LambdaCDM(H0=70, Om0=0.3, Ode0=0.7)
     r500_deg = mpc2arcsec(r500_Mpc, z, cosmo).to(u.deg).value
     r200_deg = mpc2arcsec(r200_Mpc, z, cosmo).to(u.deg).value
-    r15Mpc_deg = mpc2arcsec(15, z, cosmo).to(u.deg).value
-    if r15Mpc_deg > 17:
-      print(f'Cluster angular radius @ 15Mpc = {r15Mpc_deg:.2f} deg, limiting to 17 deg')
-      r15Mpc_deg = min(r15Mpc_deg, 17)
+    search_radius_deg = mpc2arcsec(15, z, cosmo).to(u.deg).value
+    if search_radius_deg > 17:
+      print(f'Cluster angular radius @ 15Mpc = {search_radius_deg:.2f} deg, limiting to 17 deg')
+      search_radius_deg = min(search_radius_deg, 17)
     paulo_path = MEMBERS_FOLDER / f'cluster.gals.sel.shiftgap.iter.{str(cls_id).zfill(5)}'
     col_names = [
       'ra', 'dec', 'z', 'z_err', 'v', 'v_err', 'radius_deg', 
@@ -257,13 +257,13 @@ class LoadClusterInfoStage(PipelineStage):
     df_members = df_paulo[df_paulo.flag_member == 0]
     df_interlopers = df_paulo[df_paulo.flag_member == 1]
     print('Cluster Name:', name)
-    print(f'RA: {ra:.3f}, DEC: {dec:.3f}, z: {z:.2f}, search radius: {r15Mpc_deg:.2f}')
+    print(f'RA: {ra:.3f}, DEC: {dec:.3f}, z: {z:.2f}, search radius: {search_radius_deg:.2f}')
     return {
       'cls_name': name,
       'cls_z': z,
       'cls_ra': ra,
       'cls_dec': dec,
-      'cls_15Mpc_deg': r15Mpc_deg,
+      'cls_search_radius_deg': search_radius_deg,
       'cls_r500_Mpc': r500_Mpc,
       'cls_r500_deg': r500_deg,
       'cls_r200_Mpc': r200_Mpc,
@@ -277,7 +277,7 @@ class LoadClusterInfoStage(PipelineStage):
     
 class LoadERASSInfoStage(PipelineStage):
   products = [
-    'cls_name', 'cls_z', 'cls_ra', 'cls_dec', 'cls_15Mpc_deg',
+    'cls_name', 'cls_z', 'cls_ra', 'cls_dec', 'cls_search_radius_deg',
     'cls_r500_Mpc', 'cls_r500_deg', 'cls_r200_Mpc', 'cls_r200_deg',
     'z_photo_range', 'z_spec_range', 'df_members', 'df_interlopers',
   ]
@@ -294,15 +294,15 @@ class LoadERASSInfoStage(PipelineStage):
     r500_Mpc = cluster['R500_Mpc'].values[0]
     r500_deg = cluster['R500_deg'].values[0]
     cosmo = LambdaCDM(H0=70, Om0=0.3, Ode0=0.7)
-    r15Mpc_deg = min(mpc2arcsec(15, z, cosmo).to(u.deg).value, 17)
+    search_radius_deg = min(mpc2arcsec(15, z, cosmo).to(u.deg).value, 17)
     print('Cluster Name:', cls_name)
-    print(f'RA: {ra:.3f}, DEC: {dec:.3f}, z: {z:.2f}, search radius: {r15Mpc_deg:.2f}')
+    print(f'RA: {ra:.3f}, DEC: {dec:.3f}, z: {z:.2f}, search radius: {search_radius_deg:.2f}')
     return {
       'cls_name': cls_name,
       'cls_z': z,
       'cls_ra': ra,
       'cls_dec': dec,
-      'cls_15Mpc_deg': r15Mpc_deg,
+      'cls_search_radius_deg': search_radius_deg,
       'cls_r500_Mpc': r500_Mpc,
       'cls_r500_deg': r500_deg,
       'cls_r200_Mpc': None,
@@ -316,7 +316,7 @@ class LoadERASSInfoStage(PipelineStage):
     
 class LoadERASS2InfoStage(PipelineStage):
   products = [
-    'cls_name', 'cls_z', 'cls_ra', 'cls_dec', 'cls_15Mpc_deg',
+    'cls_name', 'cls_z', 'cls_ra', 'cls_dec', 'cls_search_radius_deg',
     'cls_r500_Mpc', 'cls_r500_deg', 'cls_r200_Mpc', 'cls_r200_deg',
     'z_photo_range', 'z_spec_range', 'df_members', 'df_interlopers',
   ]
@@ -334,15 +334,15 @@ class LoadERASS2InfoStage(PipelineStage):
     # r500_deg = cluster['R500_deg'].values[0]
     cosmo = LambdaCDM(H0=70, Om0=0.3, Ode0=0.7)
     r500_deg = mpc2arcsec(r500_Mpc, z, cosmo).to(u.deg).value
-    r15Mpc_deg = min(mpc2arcsec(15, z, cosmo).to(u.deg).value, 17)
+    search_radius_deg = min(mpc2arcsec(15, z, cosmo).to(u.deg).value, 17)
     print('Cluster Name:', cls_name)
-    print(f'RA: {ra:.3f}, DEC: {dec:.3f}, z: {z:.2f}, search radius: {r15Mpc_deg:.2f}')
+    print(f'RA: {ra:.3f}, DEC: {dec:.3f}, z: {z:.2f}, search radius: {search_radius_deg:.2f}')
     return {
       'cls_name': cls_name,
       'cls_z': z,
       'cls_ra': ra,
       'cls_dec': dec,
-      'cls_15Mpc_deg': r15Mpc_deg,
+      'cls_search_radius_deg': search_radius_deg,
       'cls_r500_Mpc': r500_Mpc,
       'cls_r500_deg': r500_deg,
       'cls_r200_Mpc': None,
@@ -420,7 +420,7 @@ class RadialSearchStage(PipelineStage):
   ):
     out_path = self.save_folder / f'{cls_name}.parquet'
     if not self.overwrite and out_path.exists():
-      if self.get_data('cls_15Mpc_deg') < 10.17:
+      if self.get_data('cls_search_radius_deg') < 10.17:
         return
     
     radius = self.get_data(self.radius_key)
@@ -459,7 +459,7 @@ class SpecZRadialSearchStage(RadialSearchStage):
   def __init__(
     self, 
     save_folder: str | Path = SPECZ_FOLDER, 
-    radius_key: str = 'cls_15Mpc_deg', 
+    radius_key: str = 'cls_search_radius_deg', 
     overwrite: bool = False,
   ):
     super().__init__(
@@ -476,7 +476,7 @@ class PhotoZRadialSearchStage(RadialSearchStage):
   def __init__(
     self, 
     save_folder: str | Path = PHOTOZ_FOLDER, 
-    radius_key: str = 'cls_15Mpc_deg', 
+    radius_key: str = 'cls_search_radius_deg', 
     overwrite: bool = False,
   ):
     super().__init__(
@@ -531,7 +531,7 @@ class DownloadLegacyCatalogStage(PipelineStage):
   def run(self, cls_ra: float, cls_dec: float, cls_name: str):
     out_path = LEG_PHOTO_FOLDER / f'{cls_name}.parquet'
     if not self.overwrite and out_path.exists():
-      if self.get_data('cls_15Mpc_deg') < 10.17:
+      if self.get_data('cls_search_radius_deg') < 10.17:
         return
     
     sql = """
@@ -578,7 +578,7 @@ class PhotozSpeczLegacyMatchStage(PipelineStage):
   ):
     out_path = PHOTOZ_SPECZ_LEG_FOLDER / f'{cls_name}.parquet'
     if out_path.exists() and not self.overwrite:
-      if self.get_data('cls_15Mpc_deg') < 10.17:
+      if self.get_data('cls_search_radius_deg') < 10.17:
         return
     
     df_specz_radial['f_z'] = df_specz_radial['f_z'].astype('str')
@@ -650,13 +650,13 @@ def get_plot_title(
   cls_ra: float,
   cls_dec: float,
   cls_z: float,
-  cls_15Mpc_deg: float,
+  cls_search_radius_deg: float,
   z_spec_range: Tuple[float, float],
   z_photo_range: Tuple[float, float],
 ):
   return (
     f'Cluster: {cls_name} (RA: {cls_ra:.5f}, DEC: {cls_dec:.5f})\n'
-    f'Search Radius: 15Mpc = {cls_15Mpc_deg:.3f}$^\\circ$ ($z_{{cluster}}={cls_z:.4f}$)\n'
+    f'Search Radius: 15Mpc = {cls_search_radius_deg:.3f}$^\\circ$ ($z_{{cluster}}={cls_z:.4f}$)\n'
     f'Spec Z Range: $z_{{cluster}} \pm 0.007$ = [{z_spec_range[0]:.4f}, {z_spec_range[1]:.4f}]\n'
     f'Good Photo Z: $z_{{cluster}} \pm 0.015$ = [{z_photo_range[0]:.4f}, {z_photo_range[1]:.4f}]\n'
     f'R Mag Range: [13, 22] $\cdot$ Spec Class = GALAXY*\n'
@@ -709,7 +709,7 @@ class ClusterPlotStage(PipelineStage):
     r200_Mpc: float,
     r500_deg: float,
     r500_Mpc: float,
-    r15Mpc_deg: float,
+    search_radius_deg: float,
     ax,
   ):
     if r200_deg:
@@ -731,13 +731,13 @@ class ClusterPlotStage(PipelineStage):
         label=f'5$\\times$R500 ({5*r500_Mpc:.2f}Mpc $\\bullet$ {5*r500_deg:.2f}$^\\circ$)',
         ax=ax
       )
-    if r15Mpc_deg:
+    if search_radius_deg:
       self.add_circle(
         ra=cls_ra,
         dec=cls_dec,
-        radius=r15Mpc_deg,
+        radius=search_radius_deg,
         color='tab:brown',
-        label=f'15Mpc ({r15Mpc_deg:.3f}$^\\circ$)',
+        label=f'15Mpc ({search_radius_deg:.3f}$^\\circ$)',
         ax=ax
       )
     
@@ -762,7 +762,7 @@ class ClusterPlotStage(PipelineStage):
     cls_r500_deg: float, 
     cls_r200_Mpc: float, 
     cls_r500_Mpc: float, 
-    cls_15Mpc_deg: float,
+    cls_search_radius_deg: float,
     df_specz_radial: pd.DataFrame,
     df_members: pd.DataFrame,
     df_interlopers: pd.DataFrame,
@@ -816,7 +816,7 @@ class ClusterPlotStage(PipelineStage):
       r200_Mpc=cls_r200_Mpc, 
       r500_deg=cls_r500_deg, 
       r500_Mpc=cls_r500_Mpc, 
-      r15Mpc_deg=cls_15Mpc_deg,
+      search_radius_deg=cls_search_radius_deg,
       ax=ax
     )
     ax.set_title(f'$z_{{spec}}$ - Objects: {len(df_specz_radial)}')
@@ -836,7 +836,7 @@ class ClusterPlotStage(PipelineStage):
     cls_r500_deg: float, 
     cls_r200_Mpc: float, 
     cls_r500_Mpc: float, 
-    cls_15Mpc_deg: float,
+    cls_search_radius_deg: float,
     df_photoz_radial: pd.DataFrame,
     z_photo_range: Tuple[float, float],
     ax: plt.Axes,
@@ -861,7 +861,7 @@ class ClusterPlotStage(PipelineStage):
       r200_Mpc=cls_r200_Mpc, 
       r500_deg=cls_r500_deg, 
       r500_Mpc=cls_r500_Mpc, 
-      r15Mpc_deg=cls_15Mpc_deg,
+      search_radius_deg=cls_search_radius_deg,
       ax=ax
     )
     ax.set_title(f'S-PLUS Coverage - Objects: {len(df_photoz_radial)}')
@@ -881,7 +881,7 @@ class ClusterPlotStage(PipelineStage):
     cls_r500_deg: float, 
     cls_r200_Mpc: float, 
     cls_r500_Mpc: float, 
-    cls_15Mpc_deg: float,
+    cls_search_radius_deg: float,
     df_specz_radial: pd.DataFrame,
     df_photoz_radial: pd.DataFrame,
     df_all_radial: pd.DataFrame,
@@ -936,7 +936,7 @@ class ClusterPlotStage(PipelineStage):
       r200_Mpc=cls_r200_Mpc, 
       r500_deg=cls_r500_deg, 
       r500_Mpc=cls_r500_Mpc, 
-      r15Mpc_deg=cls_15Mpc_deg,
+      search_radius_deg=cls_search_radius_deg,
       ax=ax
     )
     ax.set_title(f'$z_{{photo}}$ $\\cap$ $z_{{spec}}$ (xmatch distance: 1 arcsec, odds > {self.photoz_odds})')
@@ -958,7 +958,7 @@ class ClusterPlotStage(PipelineStage):
     cls_r500_deg: float, 
     cls_r200_Mpc: float, 
     cls_r500_Mpc: float, 
-    cls_15Mpc_deg: float,
+    cls_search_radius_deg: float,
     z_photo_range: Tuple[float, float],
     z_spec_range: Tuple[float, float],
     df_photoz_radial: pd.DataFrame,
@@ -986,7 +986,7 @@ class ClusterPlotStage(PipelineStage):
         cls_ra=cls_ra,
         cls_dec=cls_dec,
         cls_z=cls_z,
-        cls_15Mpc_deg=cls_15Mpc_deg,
+        cls_search_radius_deg=cls_search_radius_deg,
         z_spec_range=z_spec_range,
         z_photo_range=z_photo_range,
       )
@@ -1004,7 +1004,7 @@ class ClusterPlotStage(PipelineStage):
           cls_r500_deg=cls_r500_deg, 
           cls_r200_Mpc=cls_r200_Mpc, 
           cls_r500_Mpc=cls_r500_Mpc, 
-          cls_15Mpc_deg=cls_15Mpc_deg,
+          cls_search_radius_deg=cls_search_radius_deg,
           df_members=df_members,
           df_interlopers=df_interlopers,
           df_specz_radial=df_specz_radial,
@@ -1025,7 +1025,7 @@ class ClusterPlotStage(PipelineStage):
           cls_r500_deg=cls_r500_deg, 
           cls_r200_Mpc=cls_r200_Mpc, 
           cls_r500_Mpc=cls_r500_Mpc, 
-          cls_15Mpc_deg=cls_15Mpc_deg,
+          cls_search_radius_deg=cls_search_radius_deg,
           df_photoz_radial=df_photoz_radial,
           z_photo_range=z_photo_range,
           ax=ax,
@@ -1045,7 +1045,7 @@ class ClusterPlotStage(PipelineStage):
           cls_r500_deg=cls_r500_deg, 
           cls_r200_Mpc=cls_r200_Mpc, 
           cls_r500_Mpc=cls_r500_Mpc, 
-          cls_15Mpc_deg=cls_15Mpc_deg,
+          cls_search_radius_deg=cls_search_radius_deg,
           df_specz_radial=df_specz_radial,
           df_photoz_radial=df_photoz_radial,
           df_all_radial=df_all_radial,
@@ -1077,7 +1077,7 @@ class ClusterPlotStage(PipelineStage):
         cls_r500_deg=cls_r500_deg, 
         cls_r200_Mpc=cls_r200_Mpc, 
         cls_r500_Mpc=cls_r500_Mpc, 
-        cls_15Mpc_deg=cls_15Mpc_deg,
+        cls_search_radius_deg=cls_search_radius_deg,
         df_members=df_members,
         df_interlopers=df_interlopers,
         df_specz_radial=df_specz_radial,
@@ -1091,7 +1091,7 @@ class ClusterPlotStage(PipelineStage):
         cls_r500_deg=cls_r500_deg, 
         cls_r200_Mpc=cls_r200_Mpc, 
         cls_r500_Mpc=cls_r500_Mpc, 
-        cls_15Mpc_deg=cls_15Mpc_deg,
+        cls_search_radius_deg=cls_search_radius_deg,
         df_photoz_radial=df_photoz_radial,
         z_photo_range=z_photo_range,
         ax=axs[1],
@@ -1104,7 +1104,7 @@ class ClusterPlotStage(PipelineStage):
         cls_r500_deg=cls_r500_deg, 
         cls_r200_Mpc=cls_r200_Mpc, 
         cls_r500_Mpc=cls_r500_Mpc, 
-        cls_15Mpc_deg=cls_15Mpc_deg,
+        cls_search_radius_deg=cls_search_radius_deg,
         df_specz_radial=df_specz_radial,
         df_photoz_radial=df_photoz_radial,
         df_all_radial=df_all_radial,
@@ -1164,7 +1164,7 @@ class VelocityPlotStage(PipelineStage):
     r200_Mpc: float,
     r500_deg: float,
     r500_Mpc: float,
-    r15Mpc_deg: float,
+    search_radius_deg: float,
     ax,
   ):
     if r200_deg:
@@ -1186,13 +1186,13 @@ class VelocityPlotStage(PipelineStage):
         label=f'5$\\times$R500 ({5*r500_Mpc:.2f}Mpc $\\bullet$ {5*r500_deg:.2f}$^\\circ$)',
         ax=ax,
       )
-    if r15Mpc_deg:
+    if search_radius_deg:
       self.add_circle(
         ra=cls_ra,
         dec=cls_dec,
-        radius=r15Mpc_deg,
+        radius=search_radius_deg,
         color='tab:brown',
-        label=f'15Mpc ({r15Mpc_deg:.3f}$^\\circ$)',
+        label=f'15Mpc ({search_radius_deg:.3f}$^\\circ$)',
         ax=ax,
       )
     
@@ -1258,7 +1258,7 @@ class VelocityPlotStage(PipelineStage):
     cls_r200_Mpc: float,
     cls_r500_deg: float,
     cls_r500_Mpc: float,
-    cls_15Mpc_deg: float,
+    cls_search_radius_deg: float,
     df_members: pd.DataFrame, 
     df_interlopers: pd.DataFrame, 
     ax: plt.Axes
@@ -1270,7 +1270,7 @@ class VelocityPlotStage(PipelineStage):
       r200_Mpc=cls_r200_Mpc, 
       r500_deg=cls_r500_deg, 
       r500_Mpc=cls_r500_Mpc, 
-      r15Mpc_deg=cls_15Mpc_deg,
+      search_radius_deg=cls_search_radius_deg,
       ax=ax
     )
     ax.scatter(
@@ -1310,7 +1310,7 @@ class VelocityPlotStage(PipelineStage):
     cls_r200_Mpc: float,
     cls_r500_deg: float,
     cls_r500_Mpc: float,
-    cls_15Mpc_deg: float,
+    cls_search_radius_deg: float,
     df_members: pd.DataFrame, 
     df_interlopers: pd.DataFrame, 
     ax: plt.Axes
@@ -1337,7 +1337,7 @@ class VelocityPlotStage(PipelineStage):
     ax.add_patch(circle)
     circle = Circle(
       (0, 0), 
-      cls_15Mpc_deg/cls_r200_deg,
+      cls_search_radius_deg/cls_r200_deg,
       fc='none', 
       lw=2, 
       linestyle='-',
@@ -1388,7 +1388,7 @@ class VelocityPlotStage(PipelineStage):
     cls_ra: float, 
     cls_dec: float, 
     cls_z: float,
-    cls_15Mpc_deg: float,
+    cls_search_radius_deg: float,
     cls_r200_deg: float,
     cls_r200_Mpc: float,
     cls_r500_deg: float,
@@ -1417,7 +1417,7 @@ class VelocityPlotStage(PipelineStage):
       cls_ra=cls_ra,
       cls_dec=cls_dec,
       cls_z=cls_z,
-      cls_15Mpc_deg=cls_15Mpc_deg,
+      cls_search_radius_deg=cls_search_radius_deg,
       z_spec_range=z_spec_range,
       z_photo_range=z_photo_range,
     )
@@ -1456,7 +1456,7 @@ class VelocityPlotStage(PipelineStage):
         fig = plt.figure(figsize=(7.5, 7.5), dpi=150)
         ax = fig.add_subplot(projection=wcs)
         self.plot_ra_dec(cls_ra, cls_dec, cls_r200_deg, cls_r200_Mpc, cls_r500_deg, 
-                         cls_r500_Mpc, cls_15Mpc_deg, df_members, df_interlopers, ax)
+                         cls_r500_Mpc, cls_search_radius_deg, df_members, df_interlopers, ax)
         plt.savefig(out, bbox_inches='tight', pad_inches=0.1)
         plt.close(fig)
         
@@ -1466,7 +1466,7 @@ class VelocityPlotStage(PipelineStage):
         fig = plt.figure(figsize=(7.5, 7.5), dpi=150)
         ax = fig.add_subplot()
         self.plot_ra_dec_relative(cls_ra, cls_dec, cls_r200_deg, cls_r200_Mpc, cls_r500_deg, 
-                         cls_r500_Mpc, cls_15Mpc_deg, df_members, df_interlopers, ax)
+                         cls_r500_Mpc, cls_search_radius_deg, df_members, df_interlopers, ax)
         plt.savefig(out, bbox_inches='tight', pad_inches=0.1)
         plt.close(fig)
     else:
@@ -1479,7 +1479,7 @@ class VelocityPlotStage(PipelineStage):
       ax2 = fig.add_subplot(212, projection=wcs)
       self.plot_velocity(df_members, df_interlopers, ax1)
       self.plot_ra_dec(cls_ra, cls_dec, cls_r200_deg, cls_r200_Mpc, cls_r500_deg, 
-                      cls_r500_Mpc, cls_15Mpc_deg, df_members, df_interlopers, ax2)
+                      cls_r500_Mpc, cls_search_radius_deg, df_members, df_interlopers, ax2)
       
       fig.suptitle(title, size=18)
       plt.savefig(out_path, bbox_inches='tight', pad_inches=0.1)
@@ -1579,7 +1579,7 @@ class MagDiffPlotStage(PipelineStage):
     cls_z: float, 
     z_spec_range: Tuple[float, float], 
     z_photo_range: Tuple[float, float], 
-    cls_15Mpc_deg: float
+    cls_search_radius_deg: float
   ):
     df = df_all_radial[
       (df_all_radial.type != 'PSF') & 
@@ -1593,7 +1593,7 @@ class MagDiffPlotStage(PipelineStage):
       cls_ra=cls_ra,
       cls_dec=cls_dec,
       cls_z=cls_z,
-      cls_15Mpc_deg=cls_15Mpc_deg,
+      cls_search_radius_deg=cls_search_radius_deg,
       z_spec_range=z_spec_range,
       z_photo_range=z_photo_range,
     )
@@ -1670,7 +1670,7 @@ class MagnitudeCrossmatch(PipelineStage):
   def run(self, cls_name: str, df_magnitudes: pd.DataFrame, df_photoz_radial: pd.DataFrame):
     out_path = MAG_COMP_FOLDER / f'{cls_name}.parquet'
     if out_path.exists() and not self.overwrite:
-      if self.get_data('cls_15Mpc_deg') < 10.17:
+      if self.get_data('cls_search_radius_deg') < 10.17:
         return 
     
     df = fast_crossmatch(
@@ -1781,7 +1781,7 @@ class WebsitePagesStage(PipelineStage):
     cls_ra: float, 
     cls_dec: float, 
     cls_z: float,
-    cls_15Mpc_deg: float,
+    cls_search_radius_deg: float,
     cls_r200_deg: float,
     cls_r200_Mpc: float,
     cls_r500_deg: float,
@@ -1838,7 +1838,7 @@ class WebsitePagesStage(PipelineStage):
         <b>RA:</b> {cls_ra:.4f}&deg; &nbsp;&nbsp;&nbsp;  
         <b>DEC:</b> {cls_dec:.4f}&deg; &nbsp;&nbsp;&nbsp;  
         <b>z<sub>cluster</sub>:</b> {cls_z:.4f} &nbsp;&nbsp;&nbsp; 
-        <b>search radius:</b> 15Mpc ({cls_15Mpc_deg:.3f}&deg;) &nbsp;&nbsp;&nbsp;  
+        <b>search radius:</b> 15Mpc ({cls_search_radius_deg:.3f}&deg;) &nbsp;&nbsp;&nbsp;  
         <b>5&times;R200:</b> {5*cls_r200_Mpc:.3f}Mpc ({5*cls_r200_deg:.3f}&deg;) &nbsp;&nbsp;&nbsp; 
         <b>5&times;R500:</b> {5*cls_r500_Mpc:.3f}Mpc ({5*cls_r500_deg:.3f}&deg;)
       </i>
@@ -2006,7 +2006,7 @@ def download_legacy_pipeline(clear: bool = False):
         
   ls10_pipe = Pipeline(
     LoadClusterInfoStage(df_clusters),
-    DownloadLegacyCatalogStage('cls_15Mpc_deg', overwrite=False, workers=8)
+    DownloadLegacyCatalogStage('cls_search_radius_deg', overwrite=False, workers=8)
   )
   ls10_pipe.map_run('cls_id', df_clusters.clsid.values, workers=1)
 
@@ -2022,7 +2022,7 @@ def download_legacy_erass_pipeline(clear: bool = False):
         
   ls10_pipe = Pipeline(
     LoadERASSInfoStage(df_clusters),
-    DownloadLegacyCatalogStage('cls_15Mpc_deg', overwrite=False, workers=8)
+    DownloadLegacyCatalogStage('cls_search_radius_deg', overwrite=False, workers=8)
   )
   ls10_pipe.map_run('cls_name', df_clusters.Cluster.values, workers=1)
 
@@ -2041,7 +2041,7 @@ def download_legacy_erass2_pipeline(clear: bool = False, z_type: Literal['spec',
         
   ls10_pipe = Pipeline(
     LoadERASS2InfoStage(df_clusters),
-    DownloadLegacyCatalogStage('cls_15Mpc_deg', overwrite=False, workers=8)
+    DownloadLegacyCatalogStage('cls_search_radius_deg', overwrite=False, workers=8)
   )
   ls10_pipe.map_run('cls_name', df_clusters.NAME.values, workers=1)
 
@@ -2292,7 +2292,7 @@ def heasarc_plot_pipeline(overwrite: bool = False):
     LoadHeasarcInfoStage(df_heasarc),
     PhotoZRadialSearchStage(overwrite=overwrite),
     SpecZRadialSearchStage(overwrite=overwrite),
-    DownloadLegacyCatalogStage('cls_15Mpc_deg', overwrite=overwrite),
+    DownloadLegacyCatalogStage('cls_search_radius_deg', overwrite=overwrite),
     LoadPhotozRadialStage(),
     LoadSpeczRadialStage(),
     LoadLegacyRadialStage(),

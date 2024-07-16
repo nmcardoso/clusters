@@ -1,11 +1,13 @@
 from typing import Literal, Sequence, Tuple
 
+import astropy.units as u
 import matplotlib.pyplot as plt
 import numpy as np
 import pandas as pd
 from astromodule.pipeline import Pipeline, PipelineStage, PipelineStorage
 from astromodule.table import (concat_tables, crossmatch, fast_crossmatch,
                                guess_coords_columns, radial_search, selfmatch)
+from astropy.visualization.wcsaxes import SphericalCircle
 from astropy.wcs import WCS
 from matplotlib.colors import LinearSegmentedColormap
 from matplotlib.patches import Circle
@@ -19,13 +21,14 @@ def get_plot_title(
   cls_ra: float,
   cls_dec: float,
   cls_z: float,
-  cls_15Mpc_deg: float,
+  cls_search_radius_deg: float,
+  cls_search_radius_Mpc: float,
   z_spec_range: Tuple[float, float],
   z_photo_range: Tuple[float, float],
 ):
   return (
     f'Cluster: {cls_name} (RA: {cls_ra:.5f}, DEC: {cls_dec:.5f})\n'
-    f'Search Radius: 15Mpc = {cls_15Mpc_deg:.3f}$^\\circ$ ($z_{{cluster}}={cls_z:.4f}$)\n'
+    f'Search Radius: {cls_search_radius_Mpc:.2f}Mpc = {cls_search_radius_deg:.3f}$^\\circ$ ($z_{{cluster}}={cls_z:.4f}$)\n'
     f'Spec Z Range: $z_{{cluster}} \pm {configs.Z_SPEC_DELTA}$ = [{z_spec_range[0]:.4f}, {z_spec_range[1]:.4f}]\n'
     f'Good Photo Z: $z_{{cluster}} \pm {configs.Z_PHOTO_DELTA}$ = [{z_photo_range[0]:.4f}, {z_photo_range[1]:.4f}]\n'
     f'R Mag Range: [13, 22] $\cdot$ Spec Class = GALAXY*\n'
@@ -44,9 +47,9 @@ class PlotStage(PipelineStage):
     label: str = '',
     ls: str = '-',
   ):
-    circle = Circle(
-      (ra, dec), 
-      radius,
+    circle = SphericalCircle(
+      center=[ra, dec]*u.deg,
+      radius=radius*u.deg,
       fc='none', 
       lw=2, 
       linestyle=ls,
@@ -64,7 +67,8 @@ class PlotStage(PipelineStage):
     r200_Mpc: float,
     r500_deg: float,
     r500_Mpc: float,
-    r15Mpc_deg: float,
+    search_radius_deg: float,
+    search_radius_Mpc: float,
     ax,
   ):
     if r200_deg:
@@ -86,13 +90,13 @@ class PlotStage(PipelineStage):
         label=f'5$\\times$R500 ({5*r500_Mpc:.2f}Mpc $\\bullet$ {5*r500_deg:.2f}$^\\circ$)',
         ax=ax
       )
-    if r15Mpc_deg:
+    if search_radius_deg:
       self.add_circle(
         ra=cls_ra,
         dec=cls_dec,
-        radius=r15Mpc_deg,
+        radius=search_radius_deg,
         color='tab:brown',
-        label=f'15Mpc ({r15Mpc_deg:.3f}$^\\circ$)',
+        label=f'{search_radius_Mpc:.2f}Mpc ({search_radius_deg:.3f}$^\\circ$)',
         ax=ax
       )
     
@@ -134,7 +138,8 @@ class ClusterPlotStage(PlotStage):
     cls_r500_deg: float, 
     cls_r200_Mpc: float, 
     cls_r500_Mpc: float, 
-    cls_15Mpc_deg: float,
+    cls_search_radius_deg: float,
+    cls_search_radius_Mpc: float,
     df_specz_radial: pd.DataFrame,
     df_members: pd.DataFrame,
     df_interlopers: pd.DataFrame,
@@ -190,7 +195,8 @@ class ClusterPlotStage(PlotStage):
       r200_Mpc=cls_r200_Mpc, 
       r500_deg=cls_r500_deg, 
       r500_Mpc=cls_r500_Mpc, 
-      r15Mpc_deg=cls_15Mpc_deg,
+      search_radius_deg=cls_search_radius_deg,
+      search_radius_Mpc=cls_search_radius_Mpc,
       ax=ax
     )
     ax.set_title(f'$z_{{spec}}$ - Objects: {len(df_plot)}')
@@ -210,7 +216,8 @@ class ClusterPlotStage(PlotStage):
     cls_r500_deg: float, 
     cls_r200_Mpc: float, 
     cls_r500_Mpc: float, 
-    cls_15Mpc_deg: float,
+    cls_search_radius_deg: float,
+    cls_search_radius_Mpc: float,
     df_photoz_radial: pd.DataFrame,
     z_photo_range: Tuple[float, float],
     ax: plt.Axes,
@@ -235,7 +242,8 @@ class ClusterPlotStage(PlotStage):
       r200_Mpc=cls_r200_Mpc, 
       r500_deg=cls_r500_deg, 
       r500_Mpc=cls_r500_Mpc, 
-      r15Mpc_deg=cls_15Mpc_deg,
+      search_radius_deg=cls_search_radius_deg,
+      search_radius_Mpc=cls_search_radius_Mpc,
       ax=ax
     )
     ax.set_title(f'S-PLUS Coverage - Objects: {len(df_photoz_radial)}')
@@ -255,7 +263,8 @@ class ClusterPlotStage(PlotStage):
     cls_r500_deg: float, 
     cls_r200_Mpc: float, 
     cls_r500_Mpc: float, 
-    cls_15Mpc_deg: float,
+    cls_search_radius_deg: float,
+    cls_search_radius_Mpc: float,
     df_specz_radial: pd.DataFrame,
     df_photoz_radial: pd.DataFrame,
     df_all_radial: pd.DataFrame,
@@ -310,7 +319,8 @@ class ClusterPlotStage(PlotStage):
       r200_Mpc=cls_r200_Mpc, 
       r500_deg=cls_r500_deg, 
       r500_Mpc=cls_r500_Mpc, 
-      r15Mpc_deg=cls_15Mpc_deg,
+      search_radius_deg=cls_search_radius_deg,
+      search_radius_Mpc=cls_search_radius_Mpc,
       ax=ax
     )
     ax.set_title(f'$z_{{photo}}$ $\\cap$ $z_{{spec}}$ (xmatch distance: 1 arcsec, odds > {self.photoz_odds})')
@@ -332,7 +342,8 @@ class ClusterPlotStage(PlotStage):
     cls_r500_deg: float, 
     cls_r200_Mpc: float, 
     cls_r500_Mpc: float, 
-    cls_15Mpc_deg: float,
+    cls_search_radius_deg: float,
+    cls_search_radius_Mpc: float,
     z_photo_range: Tuple[float, float],
     z_spec_range: Tuple[float, float],
     df_photoz_radial: pd.DataFrame,
@@ -360,7 +371,8 @@ class ClusterPlotStage(PlotStage):
         cls_ra=cls_ra,
         cls_dec=cls_dec,
         cls_z=cls_z,
-        cls_15Mpc_deg=cls_15Mpc_deg,
+        cls_search_radius_deg=cls_search_radius_deg,
+        cls_search_radius_Mpc=cls_search_radius_Mpc,
         z_spec_range=z_spec_range,
         z_photo_range=z_photo_range,
       )
@@ -378,7 +390,8 @@ class ClusterPlotStage(PlotStage):
           cls_r500_deg=cls_r500_deg, 
           cls_r200_Mpc=cls_r200_Mpc, 
           cls_r500_Mpc=cls_r500_Mpc, 
-          cls_15Mpc_deg=cls_15Mpc_deg,
+          cls_search_radius_deg=cls_search_radius_deg,
+          cls_search_radius_Mpc=cls_search_radius_Mpc,
           df_members=df_members,
           df_interlopers=df_interlopers,
           df_specz_radial=df_specz_radial,
@@ -399,7 +412,8 @@ class ClusterPlotStage(PlotStage):
           cls_r500_deg=cls_r500_deg, 
           cls_r200_Mpc=cls_r200_Mpc, 
           cls_r500_Mpc=cls_r500_Mpc, 
-          cls_15Mpc_deg=cls_15Mpc_deg,
+          cls_search_radius_deg=cls_search_radius_deg,
+          cls_search_radius_Mpc=cls_search_radius_Mpc,
           df_photoz_radial=df_photoz_radial,
           z_photo_range=z_photo_range,
           ax=ax,
@@ -419,7 +433,8 @@ class ClusterPlotStage(PlotStage):
           cls_r500_deg=cls_r500_deg, 
           cls_r200_Mpc=cls_r200_Mpc, 
           cls_r500_Mpc=cls_r500_Mpc, 
-          cls_15Mpc_deg=cls_15Mpc_deg,
+          cls_search_radius_deg=cls_search_radius_deg,
+          cls_search_radius_Mpc=cls_search_radius_Mpc,
           df_specz_radial=df_specz_radial,
           df_photoz_radial=df_photoz_radial,
           df_all_radial=df_all_radial,
@@ -451,7 +466,8 @@ class ClusterPlotStage(PlotStage):
         cls_r500_deg=cls_r500_deg, 
         cls_r200_Mpc=cls_r200_Mpc, 
         cls_r500_Mpc=cls_r500_Mpc, 
-        cls_15Mpc_deg=cls_15Mpc_deg,
+        cls_search_radius_deg=cls_search_radius_deg,
+        cls_search_radius_Mpc=cls_search_radius_Mpc,
         df_members=df_members,
         df_interlopers=df_interlopers,
         df_specz_radial=df_specz_radial,
@@ -466,7 +482,7 @@ class ClusterPlotStage(PlotStage):
         cls_r500_deg=cls_r500_deg, 
         cls_r200_Mpc=cls_r200_Mpc, 
         cls_r500_Mpc=cls_r500_Mpc, 
-        cls_15Mpc_deg=cls_15Mpc_deg,
+        cls_search_radius_deg=cls_search_radius_deg,
         df_photoz_radial=df_photoz_radial,
         z_photo_range=z_photo_range,
         ax=axs[1],
@@ -479,7 +495,8 @@ class ClusterPlotStage(PlotStage):
         cls_r500_deg=cls_r500_deg, 
         cls_r200_Mpc=cls_r200_Mpc, 
         cls_r500_Mpc=cls_r500_Mpc, 
-        cls_15Mpc_deg=cls_15Mpc_deg,
+        cls_search_radius_deg=cls_search_radius_deg,
+        cls_search_radius_Mpc=cls_search_radius_Mpc,
         df_specz_radial=df_specz_radial,
         df_photoz_radial=df_photoz_radial,
         df_all_radial=df_all_radial,
@@ -557,7 +574,8 @@ class VelocityPlotStage(PlotStage):
     cls_r200_Mpc: float,
     cls_r500_deg: float,
     cls_r500_Mpc: float,
-    cls_15Mpc_deg: float,
+    cls_search_radius_deg: float,
+    cls_search_radius_Mpc: float,
     df_members: pd.DataFrame, 
     df_interlopers: pd.DataFrame, 
     ax: plt.Axes
@@ -569,7 +587,8 @@ class VelocityPlotStage(PlotStage):
       r200_Mpc=cls_r200_Mpc, 
       r500_deg=cls_r500_deg, 
       r500_Mpc=cls_r500_Mpc, 
-      r15Mpc_deg=cls_15Mpc_deg,
+      search_radius_deg=cls_search_radius_deg,
+      search_radius_Mpc=cls_search_radius_Mpc,
       ax=ax
     )
     ax.scatter(
@@ -609,7 +628,8 @@ class VelocityPlotStage(PlotStage):
     cls_r200_Mpc: float,
     cls_r500_deg: float,
     cls_r500_Mpc: float,
-    cls_15Mpc_deg: float,
+    cls_search_radius_deg: float,
+    cls_search_radius_Mpc: float,
     df_members: pd.DataFrame, 
     df_interlopers: pd.DataFrame, 
     ax: plt.Axes
@@ -636,12 +656,12 @@ class VelocityPlotStage(PlotStage):
     ax.add_patch(circle)
     circle = Circle(
       (0, 0), 
-      cls_15Mpc_deg/cls_r200_deg,
+      cls_search_radius_deg/cls_r200_deg,
       fc='none', 
       lw=2, 
       linestyle='-',
       ec='tab:brown',
-      label='15Mpc',
+      label=f'{cls_search_radius_Mpc:.2f}Mpc',
     )
     ax.add_patch(circle)
     ax.scatter(
@@ -687,7 +707,8 @@ class VelocityPlotStage(PlotStage):
     cls_ra: float, 
     cls_dec: float, 
     cls_z: float,
-    cls_15Mpc_deg: float,
+    cls_search_radius_deg: float,
+    cls_search_radius_Mpc: float,
     cls_r200_deg: float,
     cls_r200_Mpc: float,
     cls_r500_deg: float,
@@ -716,7 +737,8 @@ class VelocityPlotStage(PlotStage):
       cls_ra=cls_ra,
       cls_dec=cls_dec,
       cls_z=cls_z,
-      cls_15Mpc_deg=cls_15Mpc_deg,
+      cls_search_radius_deg=cls_search_radius_deg,
+      cls_search_radius_Mpc=cls_search_radius_Mpc,
       z_spec_range=z_spec_range,
       z_photo_range=z_photo_range,
     )
@@ -754,8 +776,19 @@ class VelocityPlotStage(PlotStage):
         out.parent.mkdir(parents=True, exist_ok=True)
         fig = plt.figure(figsize=(7.5, 7.5), dpi=150)
         ax = fig.add_subplot(projection=wcs)
-        self.plot_ra_dec(cls_ra, cls_dec, cls_r200_deg, cls_r200_Mpc, cls_r500_deg, 
-                         cls_r500_Mpc, cls_15Mpc_deg, df_members, df_interlopers, ax)
+        self.plot_ra_dec(
+          cls_ra=cls_ra, 
+          cls_dec=cls_dec, 
+          cls_r200_deg=cls_r200_deg, 
+          cls_r200_Mpc=cls_r200_Mpc, 
+          cls_r500_deg=cls_r500_deg, 
+          cls_r500_Mpc=cls_r500_Mpc, 
+          cls_search_radius_deg=cls_search_radius_deg, 
+          cls_search_radius_Mpc=cls_search_radius_Mpc,
+          df_members=df_members, 
+          df_interlopers=df_interlopers, 
+          ax=ax
+        )
         plt.savefig(out, bbox_inches='tight', pad_inches=0.1)
         plt.close(fig)
         
@@ -764,8 +797,19 @@ class VelocityPlotStage(PlotStage):
         out.parent.mkdir(parents=True, exist_ok=True)
         fig = plt.figure(figsize=(7.5, 7.5), dpi=150)
         ax = fig.add_subplot()
-        self.plot_ra_dec_relative(cls_ra, cls_dec, cls_r200_deg, cls_r200_Mpc, cls_r500_deg, 
-                         cls_r500_Mpc, cls_15Mpc_deg, df_members, df_interlopers, ax)
+        self.plot_ra_dec_relative(
+          cls_ra=cls_ra, 
+          cls_dec=cls_dec, 
+          cls_r200_deg=cls_r200_deg, 
+          cls_r200_Mpc=cls_r200_Mpc, 
+          cls_r500_deg=cls_r500_deg, 
+          cls_r500_Mpc=cls_r500_Mpc, 
+          cls_search_radius_deg=cls_search_radius_deg, 
+          cls_search_radius_Mpc=cls_search_radius_Mpc,
+          df_members=df_members, 
+          df_interlopers=df_interlopers, 
+          ax=ax
+        )
         plt.savefig(out, bbox_inches='tight', pad_inches=0.1)
         plt.close(fig)
     else:
@@ -777,8 +821,19 @@ class VelocityPlotStage(PlotStage):
       ax1 = fig.add_subplot(211)
       ax2 = fig.add_subplot(212, projection=wcs)
       self.plot_velocity(df_members, df_interlopers, ax1)
-      self.plot_ra_dec(cls_ra, cls_dec, cls_r200_deg, cls_r200_Mpc, cls_r500_deg, 
-                      cls_r500_Mpc, cls_15Mpc_deg, df_members, df_interlopers, ax2)
+      self.plot_ra_dec(
+          cls_ra=cls_ra, 
+          cls_dec=cls_dec, 
+          cls_r200_deg=cls_r200_deg, 
+          cls_r200_Mpc=cls_r200_Mpc, 
+          cls_r500_deg=cls_r500_deg, 
+          cls_r500_Mpc=cls_r500_Mpc, 
+          cls_search_radius_deg=cls_search_radius_deg, 
+          cls_search_radius_Mpc=cls_search_radius_Mpc,
+          df_members=df_members, 
+          df_interlopers=df_interlopers, 
+          ax=ax2
+        )
       
       fig.suptitle(title, size=18)
       plt.savefig(out_path, bbox_inches='tight', pad_inches=0.1)
@@ -878,7 +933,8 @@ class MagDiffPlotStage(PipelineStage):
     cls_z: float, 
     z_spec_range: Tuple[float, float], 
     z_photo_range: Tuple[float, float], 
-    cls_15Mpc_deg: float
+    cls_search_radius_deg: float,
+    cls_search_radius_Mpc: float,
   ):
     df = df_all_radial[
       (df_all_radial.type != 'PSF') & 
@@ -892,7 +948,8 @@ class MagDiffPlotStage(PipelineStage):
       cls_ra=cls_ra,
       cls_dec=cls_dec,
       cls_z=cls_z,
-      cls_15Mpc_deg=cls_15Mpc_deg,
+      cls_search_radius_deg=cls_search_radius_deg,
+      cls_search_radius_Mpc=cls_search_radius_Mpc,
       z_spec_range=z_spec_range,
       z_photo_range=z_photo_range,
     )

@@ -26,18 +26,18 @@ class WebsitePagesStage(PipelineStage):
     cls_center = SkyCoord(cls_ra, cls_dec, unit='deg')
     r200_path = configs.WEBSITE_PATH / 'clusters' / cls_name / 'splus_fields_5r200.csv'
     r500_path = configs.WEBSITE_PATH / 'clusters' / cls_name / 'splus_fields_5r500.csv'
-    r15Mpc_path = configs.WEBSITE_PATH / 'clusters' / cls_name / 'splus_fields_15Mpc.csv'
-    if not r200_path.exists() or not r500_path.exists() or not r15Mpc_path.exists():
+    search_radius_path = configs.WEBSITE_PATH / 'clusters' / cls_name / 'splus_fields_search_radius.csv'
+    if not r200_path.exists() or not r500_path.exists() or not search_radius_path.exists():
     # if True:
       coords = SkyCoord(df.ra, df.dec, unit='deg')
       df_r200 = radial_search(cls_center, df, 5*cls_r200_deg * u.deg, cached_catalog=coords)
       df_r500 = radial_search(cls_center, df, 5*cls_r500_deg * u.deg, cached_catalog=coords)
       fields_r200 = df_r200.groupby('field').size().reset_index(name='n_objects')
       fields_r500 = df_r500.groupby('field').size().reset_index(name='n_objects')
-      fields_15Mpc = df.groupby('field').size().reset_index(name='n_objects')
+      fields_search_radius = df.groupby('field').size().reset_index(name='n_objects')
       write_table(fields_r200, r200_path)
       write_table(fields_r500, r500_path)
-      write_table(fields_15Mpc, r15Mpc_path)
+      write_table(fields_search_radius, search_radius_path)
     
   
   def get_paginator(self, back: bool = True):
@@ -75,7 +75,8 @@ class WebsitePagesStage(PipelineStage):
     cls_ra: float, 
     cls_dec: float, 
     cls_z: float,
-    cls_15Mpc_deg: float,
+    cls_search_radius_deg: float,
+    cls_search_radius_Mpc: float,
     cls_r200_deg: float,
     cls_r200_Mpc: float,
     cls_r500_deg: float,
@@ -89,7 +90,7 @@ class WebsitePagesStage(PipelineStage):
     folder_path = configs.WEBSITE_PATH / 'clusters' / cls_name
     attachments = [
       'splus_fields_5r200.csv', 'splus_fields_5r500.csv', 
-      'splus_fields_15Mpc.csv'
+      'splus_fields_search_radius.csv'
     ]
     attachments_html = [f'<a href="{a}">{a}</a>' for a in attachments]
     images = [
@@ -132,7 +133,7 @@ class WebsitePagesStage(PipelineStage):
         <b>RA:</b> {cls_ra:.4f}&deg; &nbsp;&nbsp;&nbsp;  
         <b>DEC:</b> {cls_dec:.4f}&deg; &nbsp;&nbsp;&nbsp;  
         <b>z<sub>cluster</sub>:</b> {cls_z:.4f} &nbsp;&nbsp;&nbsp; 
-        <b>search radius:</b> 15Mpc ({cls_15Mpc_deg:.3f}&deg;) &nbsp;&nbsp;&nbsp;  
+        <b>search radius:</b> {cls_search_radius_Mpc:.2f}Mpc ({cls_search_radius_deg:.3f}&deg;) &nbsp;&nbsp;&nbsp;  
         <b>5&times;R200:</b> {5*cls_r200_Mpc:.3f}Mpc ({5*cls_r200_deg:.3f}&deg;) &nbsp;&nbsp;&nbsp; 
         <b>5&times;R500:</b> {5*cls_r500_Mpc:.3f}Mpc ({5*cls_r500_deg:.3f}&deg;)
       </i>

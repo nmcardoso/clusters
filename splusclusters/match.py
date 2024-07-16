@@ -78,7 +78,7 @@ class SpecZRadialSearchStage(RadialSearchStage):
   def __init__(
     self, 
     save_folder: str | Path = None, 
-    radius_key: str = 'cls_15Mpc_deg', 
+    radius_key: str = 'cls_search_radius_deg', 
     overwrite: bool = False,
   ):
     if save_folder is None:
@@ -97,7 +97,7 @@ class PhotoZRadialSearchStage(RadialSearchStage):
   def __init__(
     self, 
     save_folder: str | Path = configs.PHOTOZ_FOLDER, 
-    radius_key: str = 'cls_15Mpc_deg', 
+    radius_key: str = 'cls_search_radius_deg', 
     overwrite: bool = False,
   ):
     super().__init__(

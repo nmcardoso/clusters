@@ -31,7 +31,7 @@ def antlia_hydra_plot_pipeline():
     LoadGenericInfoStage(df_clusters),
     PhotoZRadialSearchStage(overwrite=False),
     SpecZRadialSearchStage(overwrite=False),
-    DownloadLegacyCatalogStage('cls_15Mpc_deg', overwrite=False, workers=5),
+    DownloadLegacyCatalogStage('cls_search_radius_deg', overwrite=False, workers=5),
     LoadPhotozRadialStage(),
     LoadSpeczRadialStage(),
     LoadLegacyRadialStage(),
