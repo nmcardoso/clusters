@@ -100,8 +100,8 @@ def hydra_neighbours_pipeline(clear: bool = False):
   
   pipe = Pipeline(
     LoadGenericInfoStage(df_clusters),
-    PhotoZRadialSearchStage(radius_key='', overwrite=True),
-    SpecZRadialSearchStage(radius_key='', overwrite=True),
+    PhotoZRadialSearchStage(overwrite=True),
+    SpecZRadialSearchStage(overwrite=True),
     DownloadLegacyCatalogStage(radius_key='cls_search_radius_deg', overwrite=True, workers=5),
     LoadPhotozRadialStage(),
     LoadSpeczRadialStage(),
