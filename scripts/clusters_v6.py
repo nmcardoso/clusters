@@ -39,16 +39,16 @@ def clusters_v5_remake_pipeline(clear: bool = False):
   
   pipe = Pipeline(
     LoadClusterInfoStage(df_clusters),
-    PhotoZRadialSearchStage(overwrite=True),
-    SpecZRadialSearchStage(overwrite=True),
+    PhotoZRadialSearchStage(overwrite=False),
+    SpecZRadialSearchStage(overwrite=False),
     DownloadLegacyCatalogStage('cls_search_radius_deg', overwrite=False, workers=5),
     LoadPhotozRadialStage(),
     LoadSpeczRadialStage(),
     LoadLegacyRadialStage(),
-    PhotozSpeczLegacyMatchStage(overwrite=True),
+    PhotozSpeczLegacyMatchStage(overwrite=False),
     LoadAllRadialStage(),
-    ClusterPlotStage(overwrite=True, splus_only=False),
-    PrepareCatalogToSubmitStage(overwrite=True),
+    ClusterPlotStage(overwrite=False, splus_only=False),
+    PrepareCatalogToSubmitStage(overwrite=False),
   )
   
   PipelineStorage().write('df_photoz', df_photoz)
@@ -64,6 +64,8 @@ def clusters_v5_remake_pipeline(clear: bool = False):
   merge_pdf(plot_paths, concat_plot_path)
   
   df_clusters['clsid'] = df_clusters.clsid.astype(str).str.zfill(4)
+  
+  print(df_clusters.columns)
   
   write_table(
     df_clusters[['clsid', 'name', 'RA', 'DEC', 'zspec']], 
@@ -125,7 +127,7 @@ def hydra_neighbours_pipeline(clear: bool = False):
   df_clusters['clsid'] = df_clusters.clsid.astype(str).str.zfill(4)
   
   write_table(
-    df_clusters[['clsid', 'name', 'RA', 'DEC', 'zspec']], 
+    df_clusters[['clsid', 'name', 'ra', 'dec', 'zspec']], 
     configs.SUBMIT_FOLDER / 'index.dat'
   )
 
