@@ -392,18 +392,20 @@ class LoadPauloInfoStage(PipelineStage):
       print(f'Cluster angular radius @ 15Mpc = {search_radius_deg:.2f} deg, limiting to 17 deg')
       search_radius_deg = min(search_radius_deg, 17)
     
-    paulo_path = configs.MEMBERS_FOLDER / f'cluster.gals.sel.shiftgap.iter.{str(cls_id).zfill(5)}'
-    if paulo_path.exists():
-      col_names = [
-        'ra', 'dec', 'z', 'z_err', 'v', 'v_err', 'radius_deg', 
-        'radius_Mpc', 'v_offset', 'flag_member'
-      ] # 0 - member; 1 - interloper
-      df_paulo = read_table(paulo_path, fmt='dat', col_names=col_names)
-      df_members = df_paulo[df_paulo.flag_member == 0]
-      df_interlopers = df_paulo[df_paulo.flag_member == 1]
-    else:
-      df_members = None
-      df_interlopers = None
+    df_class = load_clusters()
+    df_members = None
+    df_interlopers = None
+    if name in df_class.name.values:
+      _cls_id = df_class[df_class.name == name].cldid.values[0]
+      paulo_path = configs.MEMBERS_FOLDER / f'cluster.gals.sel.shiftgap.iter.{str(_cls_id).zfill(5)}'
+      if paulo_path.exists():
+        col_names = [
+          'ra', 'dec', 'z', 'z_err', 'v', 'v_err', 'radius_deg', 
+          'radius_Mpc', 'v_offset', 'flag_member'
+        ] # 0 - member; 1 - interloper
+        df_paulo = read_table(paulo_path, fmt='dat', col_names=col_names)
+        df_members = df_paulo[df_paulo.flag_member == 0]
+        df_interlopers = df_paulo[df_paulo.flag_member == 1]
     
     print('Cluster Name:', name)
     print(f'RA: {ra:.3f}, DEC: {dec:.3f}, z: {z:.2f}, search radius: {search_radius_deg:.2f}')

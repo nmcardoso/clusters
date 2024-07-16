@@ -146,9 +146,9 @@ class ClusterPlotStage(PlotStage):
     z_spec_range: Tuple[float, float],
     ax: plt.Axes,
   ):
-    ra_col, dec_col = guess_coords_columns(df_specz_radial)
     df_plot = df_specz_radial[df_specz_radial.z.between(*z_spec_range)]
     if df_members is not None and df_interlopers is not None:
+      ra_col, dec_col = guess_coords_columns(df_plot)
       ax.scatter(
         df_plot[ra_col].values, 
         df_plot[dec_col].values, 
