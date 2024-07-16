@@ -79,14 +79,10 @@ def hydra_neighbours_pipeline(clear: bool = False):
   df_clusters = pd.DataFrame([
     {'NAME': 'Hydra', 'ra': 159.17416, 'dec': -27.52444, 'z_spec': 0.0126, 'search_radius_Mpc': 12},
     {'NAME': 'A636', 'ra': 157.148, 'dec': -35.642, 'z_spec': 0.0093, 'search_radius_Mpc': 12},
-    {'NAME': 'NGC3054', 'ra': 148.61911316631, 'dec': -25.70343597937, 'z_spec': .0077, 'search_radius_Mpc': 6},
-    {'NAME': 'NGC3087', 'ra': 149.786083333,'dec': -34.22522222,'z_spec': .0081, 'search_radius_Mpc': 6},
     {'NAME': 'NGC3250', 'ra': 156.634499999,'dec': -39.94399999,'z_spec': .0084, 'search_radius_Mpc': 6},
-    {'NAME': 'NGC3256', 'ra': 156.963666666,'dec': -43.90374999,'z_spec': .0079, 'search_radius_Mpc': 6},
     {'NAME': 'NGC3263', 'ra': 157.305791666,'dec': -44.12291666,'z_spec': .0090, 'search_radius_Mpc': 6},
     {'NAME': 'NGC3347', 'ra': 160.694291666,'dec': -36.35325,'z_spec': .0092, 'search_radius_Mpc': 6},
-    {'NAME': 'NGC3393', 'ra': 162.09775,'dec': -25.162055555,'z_spec': .0119, 'search_radius_Mpc': 6},
-    {'NAME': 'NGC3557', 'ra': 167.490208333,'dec': -37.539166666,'z_spec': .0089, 'search_radius_Mpc': 6},
+    {'NAME': 'NGC3091', 'ra': 150.0588542,'dec': -19.6364777,'z_spec': .012166, 'search_radius_Mpc': 6},
   ])
   df_photoz, photoz_skycoord = load_photoz2()
   df_spec, specz_skycoord = load_spec()
