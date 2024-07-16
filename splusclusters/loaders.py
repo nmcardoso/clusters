@@ -296,7 +296,7 @@ class LoadERASSInfoStage(PipelineStage):
 
 class LoadGenericInfoStage(PipelineStage):
   products = [
-    'cls_name', 'cls_z', 'cls_ra', 'cls_dec', 'cls_search_radius_deg',
+    'cls_name', 'cls_id', 'cls_z', 'cls_ra', 'cls_dec', 'cls_search_radius_deg',
     'cls_r500_Mpc', 'cls_r500_deg', 'cls_r200_Mpc', 'cls_r200_deg',
     'z_photo_range', 'z_spec_range', 'df_members', 'df_interlopers',
     'cls_search_radius_Mpc',
@@ -308,6 +308,7 @@ class LoadGenericInfoStage(PipelineStage):
   def run(self, cls_name: str):
     df_clusters = self.df_clusters
     cluster = df_clusters[df_clusters.NAME == cls_name]
+    cls_id = cluster['clsid'].values[0]
     z = cluster['z_spec'].values[0]
     ra = cluster['ra'].values[0]
     dec = cluster['dec'].values[0]
@@ -322,6 +323,7 @@ class LoadGenericInfoStage(PipelineStage):
     print('Cluster Name:', cls_name)
     print(f'RA: {ra:.3f}, DEC: {dec:.3f}, z: {z:.2f}, search radius: {search_radius_deg:.2f}')
     return {
+      'cls_id': cls_id,
       'cls_name': cls_name,
       'cls_z': z,
       'cls_ra': ra,
