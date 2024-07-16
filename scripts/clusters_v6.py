@@ -153,16 +153,16 @@ def clusters_v6_pipeline(clear: bool = False):
         
   ls10_pipe = Pipeline(
     LoadPauloInfoStage(df_clusters),
-    PhotoZRadialSearchStage(overwrite=True),
-    SpecZRadialSearchStage(overwrite=True),
+    PhotoZRadialSearchStage(overwrite=False),
+    SpecZRadialSearchStage(overwrite=False),
     DownloadLegacyCatalogStage('cls_search_radius_deg', overwrite=False, workers=5),
     LoadPhotozRadialStage(),
     LoadSpeczRadialStage(),
     LoadLegacyRadialStage(),
-    PhotozSpeczLegacyMatchStage(overwrite=True),
+    PhotozSpeczLegacyMatchStage(overwrite=False),
     LoadAllRadialStage(),
-    ClusterPlotStage(overwrite=True, splus_only=False),
-    PrepareCatalogToSubmitStage(overwrite=True),
+    ClusterPlotStage(overwrite=False, splus_only=False),
+    PrepareCatalogToSubmitStage(overwrite=False),
   )
   
   PipelineStorage().write('df_photoz', df_photoz)
