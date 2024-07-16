@@ -87,6 +87,7 @@ def hydra_neighbours_pipeline(clear: bool = False):
   ])
   df_photoz, photoz_skycoord = load_photoz2()
   df_spec, specz_skycoord = load_spec()
+  df_clusters['clsid'] = list(range(len(df_clusters)))
   
   configs.Z_SPEC_DELTA = 0.02
   configs.SUBMIT_FOLDER = configs.SUBMIT_FOLDER / 'hydra'
@@ -123,7 +124,6 @@ def hydra_neighbours_pipeline(clear: bool = False):
   concat_plot_path = configs.PLOTS_FOLDER / 'clusters_v6+hydra.pdf'
   merge_pdf(plot_paths, concat_plot_path)
   
-  df_clusters['clsid'] = list(range(len(df_clusters)))
   df_clusters['clsid'] = df_clusters.clsid.astype(str).str.zfill(4)
   
   df_clusters = df_clusters.rename(columns={'NAME': 'name', 'z_spec': 'zspec'})
