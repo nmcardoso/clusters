@@ -123,8 +123,10 @@ def hydra_neighbours_pipeline(clear: bool = False):
   concat_plot_path = configs.PLOTS_FOLDER / 'clusters_v6+hydra.pdf'
   merge_pdf(plot_paths, concat_plot_path)
   
+  df_clusters['clsid'] = list(range(len(df_clusters)))
   df_clusters['clsid'] = df_clusters.clsid.astype(str).str.zfill(4)
   
+  df_clusters = df_clusters.rename(columns={'NAME': 'name', 'z_spec': 'zspec'})
   write_table(
     df_clusters[['clsid', 'name', 'ra', 'dec', 'zspec']], 
     configs.SUBMIT_FOLDER / 'index.dat'
@@ -184,6 +186,6 @@ def clusters_v6_pipeline(clear: bool = False):
 
 
 if __name__ == "__main__":
-  clusters_v5_remake_pipeline()
+  # clusters_v5_remake_pipeline()
   clusters_v6_pipeline()
   hydra_neighbours_pipeline()
