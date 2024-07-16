@@ -19,14 +19,14 @@ from splusclusters.utils import Timming
 def load_clusters():
   df_clusters = read_table(configs.TABLES_PATH / 'index.dat')
   df_clusters['clsid'] = df_clusters['clsid'].astype('int')
-  df_index = read_table('outputs_v5/paulo/G/index.dat', columns=['clsid', 'name'])
+  df_index = read_table(configs.ROOT / 'outputs_v5/paulo/G/index.dat', columns=['clsid', 'name'])
   df = df_clusters.set_index('clsid').join(df_index.set_index('clsid'), how='inner', rsuffix='_r')
-  df_filter = read_table('tables/catalog_v6_splus_only_filter.csv')
+  df_filter = read_table(configs.ROOT / 'tables/catalog_v6_splus_only_filter.csv')
   df = df[df.name.isin(df_filter.name)].copy().reset_index()
   return df
 
 def load_index():
-  df_index = read_table('outputs_v5/paulo/G/index.dat')
+  df_index = read_table(configs.ROOT / 'outputs_v5/paulo/G/index.dat')
   return df_index
 
 def load_spec(coords: bool = True):
