@@ -483,6 +483,7 @@ class ClusterPlotStage(PlotStage):
         cls_r200_Mpc=cls_r200_Mpc, 
         cls_r500_Mpc=cls_r500_Mpc, 
         cls_search_radius_deg=cls_search_radius_deg,
+        cls_search_radius_Mpc=cls_search_radius_Mpc,
         df_photoz_radial=df_photoz_radial,
         z_photo_range=z_photo_range,
         ax=axs[1],
