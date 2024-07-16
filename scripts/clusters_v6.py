@@ -39,16 +39,16 @@ def clusters_v5_remake_pipeline(clear: bool = False):
   
   pipe = Pipeline(
     LoadClusterInfoStage(df_clusters),
-    PhotoZRadialSearchStage(overwrite=False),
-    SpecZRadialSearchStage(overwrite=False),
+    PhotoZRadialSearchStage(overwrite=True),
+    SpecZRadialSearchStage(overwrite=True),
     DownloadLegacyCatalogStage('cls_search_radius_deg', overwrite=False, workers=5),
     LoadPhotozRadialStage(),
     LoadSpeczRadialStage(),
     LoadLegacyRadialStage(),
-    PhotozSpeczLegacyMatchStage(overwrite=False),
+    PhotozSpeczLegacyMatchStage(overwrite=True),
     LoadAllRadialStage(),
-    ClusterPlotStage(overwrite=False, splus_only=False),
-    PrepareCatalogToSubmitStage(overwrite=False),
+    ClusterPlotStage(overwrite=True, splus_only=False),
+    PrepareCatalogToSubmitStage(overwrite=True),
   )
   
   PipelineStorage().write('df_photoz', df_photoz)
@@ -188,5 +188,5 @@ def clusters_v6_pipeline(clear: bool = False):
 
 if __name__ == "__main__":
   # clusters_v5_remake_pipeline()
-  # clusters_v6_pipeline()
+  clusters_v6_pipeline()
   hydra_neighbours_pipeline()
