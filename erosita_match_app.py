@@ -105,25 +105,23 @@ def main():
       df_upload = read_table(uploaded_file, fmt='csv')
       ra_col, dec_col = guess_coords_columns(df_upload)
       
-      st.dataframe(df_upload, hide_index=True, use_container_width=True)
-      
       coords_upload = SkyCoord(ra=df_upload[ra_col].values, dec=df_upload[dec_col].values, unit='deg')
       
       df, coords = load_erosita()
       _, sep, _ = match_coordinates_sky(coords_upload, coords)
       df_upload['erosita_sep'] = sep.to(u.arcmin).value
       
-      # df, coords = load_heasarc()
-      # _, sep, _ = match_coordinates_sky(coords_upload, coords)
-      # df_upload['heasarc_sep'] = sep.to(u.arcmin).value
+      df, coords = load_heasarc()
+      _, sep, _ = match_coordinates_sky(coords_upload, coords)
+      df_upload['heasarc_sep'] = sep.to(u.arcmin).value
       
-      # df, coords = load_chandra()
-      # _, sep, _ = match_coordinates_sky(coords_upload, coords)
-      # df_upload['chandra_sep'] = sep.to(u.arcmin).value
+      df, coords = load_chandra()
+      _, sep, _ = match_coordinates_sky(coords_upload, coords)
+      df_upload['chandra_sep'] = sep.to(u.arcmin).value
       
-      # df, coords = load_clusters_v5()
-      # _, sep, _ = match_coordinates_sky(coords_upload, coords)
-      # df_upload['v5_sep'] = sep.to(u.arcmin).value
+      df, coords = load_clusters_v5()
+      _, sep, _ = match_coordinates_sky(coords_upload, coords)
+      df_upload['v5_sep'] = sep.to(u.arcmin).value
       
       st.markdown('##### RESULT:')
       st.write('Separation in arcmin')
