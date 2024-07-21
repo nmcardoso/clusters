@@ -6,7 +6,7 @@ from astropy import units as u
 from astropy.coordinates import SkyCoord, match_coordinates_sky
 
 
-@st.cache_data
+# @st.cache_data
 def load_erosita():
   df = read_table('public/eRASS1_min.parquet')
   df = df[(~df.ra.isna()) | (~df.dec.isna())].reset_index(deep=True)
