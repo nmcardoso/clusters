@@ -113,17 +113,17 @@ def main():
       _, sep, _ = match_coordinates_sky(coords_upload, coords)
       df_upload['erosita_sep'] = sep.to(u.arcmin).value
       
-      df, coords = load_heasarc()
-      _, sep, _ = match_coordinates_sky(coords_upload, coords)
-      df_upload['heasarc_sep'] = sep.to(u.arcmin).value
+      # df, coords = load_heasarc()
+      # _, sep, _ = match_coordinates_sky(coords_upload, coords)
+      # df_upload['heasarc_sep'] = sep.to(u.arcmin).value
       
-      df, coords = load_chandra()
-      _, sep, _ = match_coordinates_sky(coords_upload, coords)
-      df_upload['chandra_sep'] = sep.to(u.arcmin).value
+      # df, coords = load_chandra()
+      # _, sep, _ = match_coordinates_sky(coords_upload, coords)
+      # df_upload['chandra_sep'] = sep.to(u.arcmin).value
       
-      df, coords = load_clusters_v5()
-      _, sep, _ = match_coordinates_sky(coords_upload, coords)
-      df_upload['v5_sep'] = sep.to(u.arcmin).value
+      # df, coords = load_clusters_v5()
+      # _, sep, _ = match_coordinates_sky(coords_upload, coords)
+      # df_upload['v5_sep'] = sep.to(u.arcmin).value
       
       st.markdown('##### RESULT:')
       st.write('Separation in arcmin')
