@@ -104,7 +104,6 @@ def main():
     if submit_upload:
       df_upload = read_table(uploaded_file, fmt='csv')
       ra_col, dec_col = guess_coords_columns(df_upload)
-      
       coords_upload = SkyCoord(ra=df_upload[ra_col].values, dec=df_upload[dec_col].values, unit='deg')
       
       df, coords = load_erosita()
@@ -125,7 +124,7 @@ def main():
       
       st.markdown('##### RESULT:')
       st.write('Separation in arcmin')
-      st.dataframe(df_upload, height=600, hide_index=True, use_container_width=True)
+      st.dataframe(df_upload, height=600, hide_index=False, use_container_width=True)
 
 
 
