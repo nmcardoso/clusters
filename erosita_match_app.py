@@ -9,21 +9,25 @@ from astropy.coordinates import SkyCoord, match_coordinates_sky
 @st.cache_data
 def load_erosita():
   df = read_table('public/eRASS1_min.parquet')
+  df = df[(~df.ra.isna()) & (~df.dec.isna())].reset_index(deep=True)
   coords = SkyCoord(ra=df.ra.values, dec=df.dec.values, unit='deg', frame='icrs')
   return df, coords
 
 def load_heasarc():
   df = read_table('public/heasarc_all.parquet')
+  df = df[(~df.ra.isna()) & (~df.dec.isna())].reset_index(deep=True)
   coords = SkyCoord(ra=df.ra.values, dec=df.dec.values, unit='deg', frame='icrs')
   return df, coords
 
 def load_chandra():
   df = read_table('public/catalog_chinese_xray.csv')
+  df = df[(~df.ra.isna()) & (~df.dec.isna())].reset_index(deep=True)
   coords = SkyCoord(ra=df.ra.values, dec=df.dec.values, unit='deg', frame='icrs')
   return df, coords
 
 def load_clusters_v5():
   df = read_table('public/clusters_v5.dat')
+  df = df[(~df.RA.isna()) & (~df.DEC.isna())].reset_index(deep=True)
   if 'clsid' in df.columns:
     del df['clsid']
   coords = SkyCoord(ra=df.RA.values, dec=df.DEC.values, unit='deg', frame='icrs')
@@ -100,6 +104,9 @@ def main():
     if submit_upload:
       df_upload = read_table(uploaded_file, fmt='csv')
       ra_col, dec_col = guess_coords_columns(df_upload)
+      
+      st.dataframe(df_upload, hide_index=True, use_container_width=True)
+      
       coords_upload = SkyCoord(ra=df_upload[ra_col].values, dec=df_upload[dec_col].values, unit='deg')
       
       df, coords = load_erosita()
