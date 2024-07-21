@@ -125,7 +125,7 @@ def main():
       
       st.markdown('##### RESULT:')
       st.write('Separation in arcmin')
-      st.dataframe(df_upload, height=500, hide_index=True, use_container_width=True)
+      st.dataframe(df_upload, height=600, hide_index=True, use_container_width=True)
 
 
 
