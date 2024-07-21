@@ -103,19 +103,19 @@ def main():
       coords_upload = SkyCoord(ra=df_upload[ra_col].values, dec=df_upload[dec_col].values, unit='deg')
       
       df, coords = load_erosita()
-      _, sep = match_coordinates_sky(coords_upload, coords)
+      _, sep, _ = match_coordinates_sky(coords_upload, coords)
       df_upload['erosita_sep'] = sep.to(u.arcmin).value
       
       df, coords = load_heasarc()
-      _, sep = match_coordinates_sky(coords_upload, coords)
+      _, sep, _ = match_coordinates_sky(coords_upload, coords)
       df_upload['heasarc_sep'] = sep.to(u.arcmin).value
       
       df, coords = load_chandra()
-      _, sep = match_coordinates_sky(coords_upload, coords)
+      _, sep, _ = match_coordinates_sky(coords_upload, coords)
       df_upload['chandra_sep'] = sep.to(u.arcmin).value
       
       df, coords = load_clusters_v5()
-      _, sep = match_coordinates_sky(coords_upload, coords)
+      _, sep, _ = match_coordinates_sky(coords_upload, coords)
       df_upload['v5_sep'] = sep.to(u.arcmin).value
       
       st.markdown('##### RESULT:')
