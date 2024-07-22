@@ -194,5 +194,5 @@ def clusters_v6_pipeline(clear: bool = False):
 
 if __name__ == "__main__":
   clusters_v5_remake_pipeline()
-  clusters_v6_pipeline()
-  hydra_neighbours_pipeline()
+  # clusters_v6_pipeline()
+  # hydra_neighbours_pipeline()
