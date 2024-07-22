@@ -6,6 +6,7 @@ import numpy as np
 import requests
 from astromodule.legacy import LegacyService
 from astromodule.pipeline import Pipeline, PipelineStage, PipelineStorage
+from pylegs.archive import RadialMatcher
 
 from splusclusters.configs import configs
 
@@ -50,6 +51,50 @@ class DownloadLegacyCatalogStage(PipelineStage):
       join_outputs=True, 
       workers=self.workers
     )
+
+
+
+class ArchiveDownloadLegacyCatalogStage(PipelineStage):
+  def __init__(
+    self, 
+    radius_key: str, 
+    overwrite: bool = False, 
+    overwrite_bricks: bool = False, 
+    workers: int = 3
+  ):
+    self.radius_key = radius_key
+    self.overwrite = overwrite
+    self.overwrite_bricks = overwrite_bricks
+    self.workers = workers
+    
+  def run(self, cls_ra: float, cls_dec: float, cls_name: str):
+    out_path = configs.LEG_PHOTO_FOLDER / f'{cls_name}.parquet'
+    if not self.overwrite and out_path.exists():
+      return
+    
+    def f(table):
+      mag_min, mag_max = configs.MAG_RANGE
+      mask = (table['type'] != 'PSF') & (table['mag_r'] > mag_min) & (table['mag_r'] < mag_max)
+      return table[mask]
+    
+    radius = self.get_data(self.radius_key)
+    matcher = RadialMatcher(ra=cls_ra, dec=cls_dec, radius=radius)
+    matcher.download_bricks(
+      bricks_dir=configs.LEG_BRICKS_FOLDER, 
+      columns=['ra', 'dec', 'type', 'mag_r'], 
+      brick_primary=True, 
+      compute_mag=['r'], 
+      overwrite=self.overwrite_bricks, 
+      workers=self.workers,
+      filter_function=f,
+    )
+    matcher.match(
+      output_path=out_path, 
+      bricks_dir=configs.LEG_BRICKS_FOLDER, 
+      overwrite=self.overwrite
+    )
+    
+
 
 
 class DownloadXRayStage(PipelineStage):

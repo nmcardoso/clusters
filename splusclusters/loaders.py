@@ -307,7 +307,7 @@ class LoadGenericInfoStage(PipelineStage):
   
   def run(self, cls_name: str):
     df_clusters = self.df_clusters
-    cluster = df_clusters[df_clusters.NAME == cls_name]
+    cluster = df_clusters[df_clusters.name == cls_name]
     cls_id = cluster['clsid'].values[0]
     z = cluster['z_spec'].values[0]
     ra = cluster['ra'].values[0]

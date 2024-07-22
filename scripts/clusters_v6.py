@@ -9,7 +9,8 @@ from astromodule.io import merge_pdf, read_table, write_table
 from astromodule.pipeline import Pipeline, PipelineStorage
 
 from splusclusters.configs import configs
-from splusclusters.external import DownloadLegacyCatalogStage
+from splusclusters.external import (ArchiveDownloadLegacyCatalogStage,
+                                    DownloadLegacyCatalogStage)
 from splusclusters.loaders import (LoadAllRadialStage, LoadClusterInfoStage,
                                    LoadGenericInfoStage, LoadLegacyRadialStage,
                                    LoadPauloInfoStage, LoadPhotozRadialStage,
@@ -41,7 +42,11 @@ def clusters_v5_remake_pipeline(clear: bool = False):
     LoadClusterInfoStage(df_clusters),
     PhotoZRadialSearchStage(overwrite=True),
     SpecZRadialSearchStage(overwrite=True),
-    DownloadLegacyCatalogStage('cls_search_radius_deg', overwrite=False, workers=5),
+    # DownloadLegacyCatalogStage('cls_search_radius_deg', overwrite=True, workers=5),
+    ArchiveDownloadLegacyCatalogStage(
+      radius_key='cls_search_radius_deg', workers=15,
+      overwrite=True, overwrite_bricks=False, 
+    ),
     LoadPhotozRadialStage(),
     LoadSpeczRadialStage(),
     LoadLegacyRadialStage(),
@@ -95,7 +100,10 @@ def hydra_neighbours_pipeline(clear: bool = False):
     LoadGenericInfoStage(df_clusters),
     PhotoZRadialSearchStage(overwrite=False),
     SpecZRadialSearchStage(overwrite=False),
-    DownloadLegacyCatalogStage(radius_key='cls_search_radius_deg', overwrite=True, workers=5),
+    ArchiveDownloadLegacyCatalogStage(
+      radius_key='cls_search_radius_deg', workers=15,
+      overwrite=True, overwrite_bricks=False, 
+    ),
     LoadPhotozRadialStage(),
     LoadSpeczRadialStage(),
     LoadLegacyRadialStage(),
@@ -110,16 +118,16 @@ def hydra_neighbours_pipeline(clear: bool = False):
   PipelineStorage().write('df_spec', df_spec)
   PipelineStorage().write('specz_skycoord', specz_skycoord)
   
-  pipe.map_run('cls_name', df_clusters.NAME.values, workers=1)
+  pipe.map_run('cls_name', df_clusters.name.values, workers=1)
   
-  plot_paths = [configs.PLOTS_FOLDER / f'cls_{c}.pdf' for c in df_clusters.NAME.values]
+  plot_paths = [configs.PLOTS_FOLDER / f'cls_{c}.pdf' for c in df_clusters.name.values]
   plot_paths = [p for p in plot_paths if p.exists()]
   concat_plot_path = configs.PLOTS_FOLDER / 'clusters_v6+hydra.pdf'
   merge_pdf(plot_paths, concat_plot_path)
   
   df_clusters['clsid'] = df_clusters.clsid.astype(str).str.zfill(4)
   
-  df_clusters = df_clusters.rename(columns={'NAME': 'name', 'z_spec': 'zspec'})
+  df_clusters = df_clusters.rename(columns={'z_spec': 'zspec'})
   write_table(
     df_clusters[['clsid', 'name', 'ra', 'dec', 'zspec']], 
     configs.SUBMIT_FOLDER / 'index.dat'
@@ -148,7 +156,11 @@ def clusters_v6_pipeline(clear: bool = False):
     LoadPauloInfoStage(df_clusters),
     PhotoZRadialSearchStage(overwrite=True),
     SpecZRadialSearchStage(overwrite=True),
-    DownloadLegacyCatalogStage('cls_search_radius_deg', overwrite=False, workers=5),
+    # DownloadLegacyCatalogStage('cls_search_radius_deg', overwrite=False, workers=5),
+    ArchiveDownloadLegacyCatalogStage(
+      radius_key='cls_search_radius_deg', workers=15,
+      overwrite=True, overwrite_bricks=False, 
+    ),
     LoadPhotozRadialStage(),
     LoadSpeczRadialStage(),
     LoadLegacyRadialStage(),
@@ -181,5 +193,5 @@ def clusters_v6_pipeline(clear: bool = False):
 
 if __name__ == "__main__":
   # clusters_v5_remake_pipeline()
-  clusters_v6_pipeline()
+  # clusters_v6_pipeline()
   hydra_neighbours_pipeline()

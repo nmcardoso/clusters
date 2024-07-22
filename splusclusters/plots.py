@@ -29,9 +29,9 @@ def get_plot_title(
   return (
     f'Cluster: {cls_name} (RA: {cls_ra:.5f}, DEC: {cls_dec:.5f})\n'
     f'Search Radius: {cls_search_radius_Mpc:.2f}Mpc = {cls_search_radius_deg:.3f}$^\\circ$ ($z_{{cluster}}={cls_z:.4f}$)\n'
-    f'Spec Z Range: $z_{{cluster}} \pm {configs.Z_SPEC_DELTA}$ = [{z_spec_range[0]:.4f}, {z_spec_range[1]:.4f}]\n'
-    f'Good Photo Z: $z_{{cluster}} \pm {configs.Z_PHOTO_DELTA}$ = [{z_photo_range[0]:.4f}, {z_photo_range[1]:.4f}]\n'
-    f'R Mag Range: [13, 22] $\cdot$ Spec Class = GALAXY*\n'
+    f'Spec Z Range: $z_{{cluster}} \\pm {configs.Z_SPEC_DELTA}$ = [{z_spec_range[0]:.4f}, {z_spec_range[1]:.4f}]\n'
+    f'Good Photo Z: $z_{{cluster}} \\pm {configs.Z_PHOTO_DELTA}$ = [{z_photo_range[0]:.4f}, {z_photo_range[1]:.4f}]\n'
+    f'R Mag Range: [13, 22] $\\cdot$ Spec Class = GALAXY*\n'
   )
 
 
@@ -697,8 +697,8 @@ class VelocityPlotStage(PlotStage):
     ax.set_aspect('equal', adjustable='datalim', anchor='C')
     ax.grid('on', color='k', linestyle='--', alpha=.5)
     ax.tick_params(direction='in')
-    ax.set_xlabel('$\Delta$RA/R200')
-    ax.set_ylabel('$\Delta$DEC/R200')
+    ax.set_xlabel('$\\Delta$RA/R200')
+    ax.set_ylabel('$\\Delta$DEC/R200')
     ax.set_title('Relative spatial distribution of spectroscopic members')
   
   
