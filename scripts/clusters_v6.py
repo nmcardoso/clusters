@@ -43,11 +43,11 @@ def clusters_v5_remake_pipeline(clear: bool = False):
     LoadClusterInfoStage(df_clusters),
     PhotoZRadialSearchStage(overwrite=True),
     SpecZRadialSearchStage(overwrite=True),
-    # DownloadLegacyCatalogStage('cls_search_radius_deg', overwrite=True, workers=6),
-    ArchiveDownloadLegacyCatalogStage(
-      radius_key='cls_search_radius_deg', workers=15,
-      overwrite=True, overwrite_bricks=False, 
-    ),
+    DownloadLegacyCatalogStage('cls_search_radius_deg', overwrite=True, workers=6),
+    # ArchiveDownloadLegacyCatalogStage(
+    #   radius_key='cls_search_radius_deg', workers=15,
+    #   overwrite=True, overwrite_bricks=False, 
+    # ),
     LoadPhotozRadialStage(),
     LoadSpeczRadialStage(),
     LoadLegacyRadialStage(),
@@ -193,6 +193,6 @@ def clusters_v6_pipeline(clear: bool = False):
 
 
 if __name__ == "__main__":
-  # clusters_v5_remake_pipeline()
-  clusters_v6_pipeline()
+  clusters_v5_remake_pipeline()
+  # clusters_v6_pipeline()
   # hydra_neighbours_pipeline()
