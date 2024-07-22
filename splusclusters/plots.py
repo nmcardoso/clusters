@@ -298,7 +298,7 @@ class ClusterPlotStage(PlotStage):
           s=6, 
           rasterized=True, 
           transform=ax.get_transform('icrs'),
-          label=f'False Neg ({len(df_photoz_bad_with_spec)} obj)'
+          label=f'False Negatives ({len(df_photoz_bad_with_spec)} obj)'
         )
       if len(df_photoz_good_with_spec) > 0:
         ra_col, dec_col = guess_coords_columns(df_photoz_good_with_spec)
@@ -309,7 +309,7 @@ class ClusterPlotStage(PlotStage):
           s=6, 
           rasterized=True, 
           transform=ax.get_transform('icrs'),
-          label=f'True Pos ({len(df_photoz_good_with_spec)} obj)'
+          label=f'True Positives ({len(df_photoz_good_with_spec)} obj)'
         )
     self.add_cluster_center(cls_ra, cls_dec, ax)
     self.add_all_circles(
