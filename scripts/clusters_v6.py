@@ -16,8 +16,9 @@ from splusclusters.loaders import (LoadAllRadialStage, LoadClusterInfoStage,
                                    LoadPauloInfoStage, LoadPhotozRadialStage,
                                    LoadSpeczRadialStage,
                                    PrepareCatalogToSubmitStage,
-                                   load_catalog_v6, load_clusters,
-                                   load_photoz2, load_spec)
+                                   load_catalog_v6, load_catalog_v6_hydra,
+                                   load_catalog_v6_old, load_photoz2,
+                                   load_spec)
 from splusclusters.match import (PhotoZRadialSearchStage,
                                  PhotozSpeczLegacyMatchStage,
                                  SpecZRadialSearchStage)
@@ -25,7 +26,7 @@ from splusclusters.plots import ClusterPlotStage
 
 
 def clusters_v5_remake_pipeline(clear: bool = False):
-  df_clusters = load_clusters()
+  df_clusters = load_catalog_v6_old()
   df_photoz, photoz_skycoord = load_photoz2()
   df_spec, specz_skycoord = load_spec()
   
@@ -82,7 +83,7 @@ def clusters_v5_remake_pipeline(clear: bool = False):
 
 
 def hydra_neighbours_pipeline(clear: bool = False):
-  df_clusters = read_table(configs.CATALOG_V6_HYDRA_TABLE_PATH)
+  df_clusters = load_catalog_v6_hydra()
   df_photoz, photoz_skycoord = load_photoz2()
   df_spec, specz_skycoord = load_spec()
   df_clusters['clsid'] = list(range(len(df_clusters)))
@@ -183,7 +184,6 @@ def clusters_v6_pipeline(clear: bool = False):
   concat_plot_path = configs.PLOTS_FOLDER / 'clusters_v6+novos.pdf'
   merge_pdf(plot_paths, concat_plot_path)
   
-  df_clusters['clsid'] = list(range(len(df_clusters)))
   df_clusters['clsid'] = df_clusters.clsid.astype(str).str.zfill(4)
   
   write_table(
