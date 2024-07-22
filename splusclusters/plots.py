@@ -29,8 +29,8 @@ def get_plot_title(
   return (
     f'Cluster: {cls_name} (RA: {cls_ra:.5f}, DEC: {cls_dec:.5f})\n'
     f'Search Radius: {cls_search_radius_Mpc:.2f}Mpc = {cls_search_radius_deg:.3f}$^\\circ$ ($z_{{cluster}}={cls_z:.4f}$)\n'
-    f'Spec Z Range: $z_{{cluster}} \\pm {configs.Z_SPEC_DELTA}$ = [{z_spec_range[0]:.4f}, {z_spec_range[1]:.4f}]\n'
-    f'Good Photo Z: $z_{{cluster}} \\pm {configs.Z_PHOTO_DELTA}$ = [{z_photo_range[0]:.4f}, {z_photo_range[1]:.4f}]\n'
+    f'$z_{{spec}}$: $z_{{cluster}} \\pm {configs.Z_SPEC_DELTA}$ = [{z_spec_range[0]:.4f}, {z_spec_range[1]:.4f}]\n'
+    f'$z_{{photo}}$: $z_{{cluster}} \\pm {configs.Z_PHOTO_DELTA}$ = [{z_photo_range[0]:.4f}, {z_photo_range[1]:.4f}]\n'
     f'R Mag Range: [13, 22] $\\cdot$ Spec Class = GALAXY*\n'
   )
 
@@ -298,7 +298,7 @@ class ClusterPlotStage(PlotStage):
           s=6, 
           rasterized=True, 
           transform=ax.get_transform('icrs'),
-          label=f'bad $z_{{photo}}$ w/ $z_{{spec}}$ ({len(df_photoz_bad_with_spec)} obj)'
+          label=f'False Neg ({len(df_photoz_bad_with_spec)} obj)'
         )
       if len(df_photoz_good_with_spec) > 0:
         ra_col, dec_col = guess_coords_columns(df_photoz_good_with_spec)
@@ -309,7 +309,7 @@ class ClusterPlotStage(PlotStage):
           s=6, 
           rasterized=True, 
           transform=ax.get_transform('icrs'),
-          label=f'good $z_{{photo}}$ w/ $z_{{spec}}$ ({len(df_photoz_good_with_spec)} obj)'
+          label=f'True Pos ({len(df_photoz_good_with_spec)} obj)'
         )
     self.add_cluster_center(cls_ra, cls_dec, ax)
     self.add_all_circles(
