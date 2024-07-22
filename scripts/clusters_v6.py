@@ -5,7 +5,7 @@ import pandas as pd
 
 sys.path.insert(0, str(Path(__file__).parent.parent.absolute()))
 
-from astromodule.io import merge_pdf, write_table
+from astromodule.io import merge_pdf, read_table, write_table
 from astromodule.pipeline import Pipeline, PipelineStorage
 
 from splusclusters.configs import configs
@@ -79,12 +79,17 @@ def clusters_v5_remake_pipeline(clear: bool = False):
 def hydra_neighbours_pipeline(clear: bool = False):
   df_clusters = pd.DataFrame([
     {'NAME': 'Hydra', 'ra': 159.17416, 'dec': -27.52444, 'z_spec': 0.0126, 'search_radius_Mpc': 12},
-    {'NAME': 'A636', 'ra': 157.148, 'dec': -35.642, 'z_spec': 0.0093, 'search_radius_Mpc': 12},
-    {'NAME': 'NGC3250', 'ra': 156.634499999,'dec': -39.94399999,'z_spec': .0084, 'search_radius_Mpc': 6},
-    {'NAME': 'NGC3263', 'ra': 157.305791666,'dec': -44.12291666,'z_spec': .0090, 'search_radius_Mpc': 6},
-    {'NAME': 'NGC3347', 'ra': 160.694291666,'dec': -36.35325,'z_spec': .0092, 'search_radius_Mpc': 6},
-    {'NAME': 'NGC3091', 'ra': 150.0588542,'dec': -19.6364777,'z_spec': .012166, 'search_radius_Mpc': 6},
+    {'NAME': 'Antlia', 'ra': 157.4211, 'dec': -35.3258, 'z_spec': 0.0111, 'search_radius_Mpc': 12},
+    {'NAME': 'NGC3250', 'ra': 156.634499999, 'dec': -39.94399999, 'z_spec': .0084, 'search_radius_Mpc': 6},
+    {'NAME': 'NGC3263', 'ra': 157.305791666, 'dec': -44.12291666, 'z_spec': .0090, 'search_radius_Mpc': 6},
+    {'NAME': 'NGC3347', 'ra': 160.694291666, 'dec': -36.35325, 'z_spec': .0092, 'search_radius_Mpc': 6},
+    {'NAME': 'NGC3091', 'ra': 150.0595, 'dec': -19.637,'z_spec': 0.0132, 'search_radius_Mpc': 6},
+    {'NAME': 'NGC3054', 'ra': 148.61911, 'dec': -25.70344, 'z_spec': 0.0077, 'search_radius_Mpc': 6},
+    {'NAME': 'ABELL639S', 'ra': 160.147, 'dec': -46.1833, 'z_spec': 0.0204},
+    {'NAME': '1eRASS J094851.7-260242', 'ra': 147.2158, 'dec': -26.0451, 'z_spec': 0.0499},
+    {'NAME': 'ABELL620S', 'ra': 147.25, 'dec': -26.0335, 'z_spec': 0.0499},
   ])
+  df_clusters = read_table(configs.CATALOG_V6_HYDRA_TABLE_PATH)
   df_photoz, photoz_skycoord = load_photoz2()
   df_spec, specz_skycoord = load_spec()
   df_clusters['clsid'] = list(range(len(df_clusters)))
