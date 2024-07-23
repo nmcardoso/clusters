@@ -5,7 +5,7 @@ sys.path.insert(0, str(Path(__file__).parent.parent.absolute()))
 
 from astromodule.pipeline import Pipeline
 
-from splusclusters.constants import *
+from splusclusters.configs import configs
 from splusclusters.external import DownloadLegacyCatalogStage
 from splusclusters.loaders import LoadERASSInfoStage, load_eRASS
 
@@ -14,7 +14,7 @@ def download_legacy_erass_pipeline(clear: bool = False):
   df_clusters = load_eRASS()
   
   if clear:
-    for p in LEG_PHOTO_FOLDER.glob('*.parquet'):
+    for p in configs.LEG_PHOTO_FOLDER.glob('*.parquet'):
       if p.stat().st_size < 650:
         p.unlink()
         
