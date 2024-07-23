@@ -25,7 +25,8 @@ class DownloadLegacyCatalogStage(PipelineStage):
     sql = """
       SELECT t.ra, t.dec, t.type, t.mag_r
       FROM ls_dr10.tractor AS t
-      WHERE q3c_radial_query(t.ra, t.dec, {ra}, {dec}, {radius})
+      WHERE (ra BETWEEN {ra_min} AND {ra_max}) AND 
+      (dec BETWEEN {dec_min} AND {dec_max}) AND
       (brick_primary = 1) AND 
       (mag_r BETWEEN {r_min:.2f} AND {r_max:.2f}) AND
       (type != 'PSF')
@@ -34,9 +35,10 @@ class DownloadLegacyCatalogStage(PipelineStage):
     radius = self.get_data(self.radius_key)
     queries = [
       sql.format(
-        ra=cls_ra,
-        dec=cls_dec,
-        radius=radius,
+        ra_min=cls_ra-radius, 
+        ra_max=cls_ra+radius, 
+        dec_min=cls_dec-radius,
+        dec_max=cls_dec+radius,
         r_min=_r,
         r_max=_r+.05
       )
