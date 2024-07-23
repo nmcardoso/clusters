@@ -196,6 +196,7 @@ class PhotozSpeczLegacyMatchStage(PipelineStage):
       ra1='ra_1',
       dec1='dec_1',
     )
+    print(df)
     
     print(f'Second crossmatch finished. Duration: {t.end()}')
     print('Objects with legacy:', len(df[~df.type.isna()]))

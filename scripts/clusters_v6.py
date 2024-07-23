@@ -99,9 +99,9 @@ def hydra_neighbours_pipeline(clear: bool = False):
   
   pipe = Pipeline(
     LoadGenericInfoStage(df_clusters),
-    PhotoZRadialSearchStage(overwrite=True),
-    SpecZRadialSearchStage(overwrite=True),
-    DownloadLegacyCatalogStage('cls_search_radius_deg', overwrite=True, workers=6),
+    PhotoZRadialSearchStage(overwrite=False),
+    SpecZRadialSearchStage(overwrite=False),
+    DownloadLegacyCatalogStage('cls_search_radius_deg', overwrite=False, workers=6),
     # ArchiveDownloadLegacyCatalogStage(
     #   radius_key='cls_search_radius_deg', workers=15,
     #   overwrite=True, overwrite_bricks=False, 
