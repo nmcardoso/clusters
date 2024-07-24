@@ -56,7 +56,8 @@ class RadialSearchStage(PipelineStage):
     if self.kind == 'spec':
       df_search = df_search[
         df_search.z.between(*z_spec_range) &
-        df_search.class_spec.str.startswith('GALAXY')
+        df_search.class_spec.str.upper().str.startswith('GALAXY') &
+        df_search.f_z.str.upper().str.startswith('KEEP')
       ]
     elif self.kind == 'photo':
       if 'r_auto' in df_search.columns:
