@@ -40,7 +40,7 @@ def clusters_v5_remake_pipeline(clear: bool = False):
         p.unlink()
   
   pipe = Pipeline(
-    LoadClusterInfoStage(df_clusters),
+    LoadPauloInfoStage(df_clusters),
     PhotoZRadialSearchStage(overwrite=False),
     SpecZRadialSearchStage(overwrite=False),
     DownloadLegacyCatalogStage('cls_search_radius_deg', overwrite=False, workers=6),
