@@ -398,7 +398,8 @@ class LoadPauloInfoStage(PipelineStage):
     name = cluster['name'].values[0]
     ra = cluster[ra_col].values[0]
     dec = cluster[dec_col].values[0]
-    z = cluster['zspec'].values[0]
+    z_col = 'zspec' if 'zspec' in cluster.columns else 'z_spec'
+    z = cluster[z_col].values[0]
     
     cosmo = LambdaCDM(H0=70, Om0=0.3, Ode0=0.7)
     if 'R500_Mpc' in cluster:
