@@ -429,7 +429,7 @@ class LoadPauloInfoStage(PipelineStage):
     df_members = None
     df_interlopers = None
     if name in df_class.name.values:
-      _cls_id = df_class[df_class.name == name].cldid.values[0]
+      _cls_id = df_class[df_class.name == name].clsid.values[0]
       paulo_path = configs.MEMBERS_FOLDER / f'cluster.gals.sel.shiftgap.iter.{str(_cls_id).zfill(5)}'
       if paulo_path.exists():
         col_names = [
