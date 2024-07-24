@@ -41,9 +41,9 @@ def clusters_v5_remake_pipeline(clear: bool = False):
   
   pipe = Pipeline(
     LoadClusterInfoStage(df_clusters),
-    PhotoZRadialSearchStage(overwrite=True),
-    SpecZRadialSearchStage(overwrite=True),
-    DownloadLegacyCatalogStage('cls_search_radius_deg', overwrite=True, workers=6),
+    PhotoZRadialSearchStage(overwrite=False),
+    SpecZRadialSearchStage(overwrite=False),
+    DownloadLegacyCatalogStage('cls_search_radius_deg', overwrite=False, workers=6),
     # ArchiveDownloadLegacyCatalogStage(
     #   radius_key='cls_search_radius_deg', workers=15,
     #   overwrite=True, overwrite_bricks=False, 
@@ -51,7 +51,7 @@ def clusters_v5_remake_pipeline(clear: bool = False):
     LoadPhotozRadialStage(),
     LoadSpeczRadialStage(),
     LoadLegacyRadialStage(),
-    PhotozSpeczLegacyMatchStage(overwrite=True),
+    PhotozSpeczLegacyMatchStage(overwrite=False),
     LoadAllRadialStage(),
     ClusterPlotStage(overwrite=True, splus_only=False),
     PrepareCatalogToSubmitStage(overwrite=True),
