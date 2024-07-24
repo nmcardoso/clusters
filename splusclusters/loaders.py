@@ -394,9 +394,10 @@ class LoadPauloInfoStage(PipelineStage):
     df_clusters = self.df_clusters
     cls_id = cls_id or self.cls_id
     cluster = df_clusters[df_clusters.clsid == cls_id]
+    ra_col, dec_col = guess_coords_columns(cluster)
     name = cluster['name'].values[0]
-    ra = cluster['RA'].values[0]
-    dec = cluster['DEC'].values[0]
+    ra = cluster[ra_col].values[0]
+    dec = cluster[dec_col].values[0]
     z = cluster['zspec'].values[0]
     
     cosmo = LambdaCDM(H0=70, Om0=0.3, Ode0=0.7)
