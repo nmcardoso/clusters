@@ -1,0 +1,51 @@
+# Tabela de inspeção Cláudia
+# Apenas os clusters presentes nesta tabela devem ser usados
+# HCG048 = Hydra
+# MCXCJ1506.4 = WBL550 
+cluster_name
+# objetos selecionados que tinham dado match com idr5:
+A151
+A1631
+A301
+A3128
+A3809
+A4049
+A912
+A978
+MCXCJ0108.9-1537
+MCXCJ0125.6-0125
+MCXCJ1253.2-1522
+N56-395
+NGC3258
+WBL074
+# obetos selecionados que não tinham dado match com idr5:
+HCG048
+Hydra
+A3128
+N56-395
+A1631
+WBL074
+A151
+A1750
+A3809
+# MCXCJ1506.4+0136
+WBL550
+NGC3258
+WBL079
+A912
+WBL081
+A301
+A978
+[YMV2007]3820
+[YMV2007]49
+[YMV2007]4713
+[YMV2007]7604
+[YMV2007]7609
+[YMV2007]3748
+[YMV2007]514
+[YMV2007]4832
+[YMV2007]3102
+# objetos que fazem parte do idr5 mas não foram selectionados:
+WBL288
+MKW1
+[YMV2007]2116
