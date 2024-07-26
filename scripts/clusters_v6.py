@@ -5,6 +5,8 @@ import pandas as pd
 
 sys.path.insert(0, str(Path(__file__).parent.parent.absolute()))
 
+from shutil import make_archive, rmtree
+
 from astromodule.io import merge_pdf, read_table, write_table
 from astromodule.pipeline import Pipeline, PipelineStorage
 
@@ -25,6 +27,15 @@ from splusclusters.match import (PhotoZRadialSearchStage,
 from splusclusters.plots import ClusterPlotStage
 
 
+def create_zip():
+  make_archive(
+    base_name=str(configs.SUBMIT_FOLDER / f'{configs.SUBMIT_FOLDER.name}.zip'), 
+    format='zip', 
+    root_dir=configs.SUBMIT_FOLDER,
+  )
+
+
+
 def clusters_v5_remake_pipeline(clear: bool = False):
   df_clusters = load_catalog_v6_old()
   df_photoz, photoz_skycoord = load_photoz2()
@@ -32,6 +43,7 @@ def clusters_v5_remake_pipeline(clear: bool = False):
   
   configs.Z_SPEC_DELTA = 0.02
   configs.SUBMIT_FOLDER = configs.SUBMIT_FOLDER / 'antigos'
+  rmtree(configs.SUBMIT_FOLDER, ignore_errors=True)
   configs.SUBMIT_FOLDER.mkdir(exist_ok=True, parents=True)
   
   if clear:
@@ -42,7 +54,7 @@ def clusters_v5_remake_pipeline(clear: bool = False):
   pipe = Pipeline(
     LoadPauloInfoStage(df_clusters),
     PhotoZRadialSearchStage(overwrite=False),
-    SpecZRadialSearchStage(overwrite=True),
+    SpecZRadialSearchStage(overwrite=False),
     DownloadLegacyCatalogStage('cls_search_radius_deg', overwrite=False, workers=6),
     # ArchiveDownloadLegacyCatalogStage(
     #   radius_key='cls_search_radius_deg', workers=15,
@@ -51,9 +63,9 @@ def clusters_v5_remake_pipeline(clear: bool = False):
     LoadPhotozRadialStage(),
     LoadSpeczRadialStage(),
     LoadLegacyRadialStage(),
-    PhotozSpeczLegacyMatchStage(overwrite=True),
+    PhotozSpeczLegacyMatchStage(overwrite=False),
     LoadAllRadialStage(),
-    ClusterPlotStage(overwrite=True, splus_only=False),
+    ClusterPlotStage(overwrite=False, splus_only=False),
     PrepareCatalogToSubmitStage(overwrite=True),
   )
   
@@ -76,7 +88,7 @@ def clusters_v5_remake_pipeline(clear: bool = False):
     df_clusters[['clsid', 'name', 'RA', 'DEC', 'zspec']], 
     configs.SUBMIT_FOLDER / 'index.dat'
   )
-
+  create_zip()
 
 
 
@@ -86,10 +98,10 @@ def hydra_neighbours_pipeline(clear: bool = False):
   df_clusters = load_catalog_v6_hydra()
   df_photoz, photoz_skycoord = load_photoz2()
   df_spec, specz_skycoord = load_spec()
-  df_clusters['clsid'] = list(range(len(df_clusters)))
   
   configs.Z_SPEC_DELTA = 0.02
   configs.SUBMIT_FOLDER = configs.SUBMIT_FOLDER / 'hydra'
+  rmtree(configs.SUBMIT_FOLDER, ignore_errors=True)
   configs.SUBMIT_FOLDER.mkdir(exist_ok=True, parents=True)
   
   if clear:
@@ -100,7 +112,7 @@ def hydra_neighbours_pipeline(clear: bool = False):
   pipe = Pipeline(
     LoadGenericInfoStage(df_clusters),
     PhotoZRadialSearchStage(overwrite=False),
-    SpecZRadialSearchStage(overwrite=True),
+    SpecZRadialSearchStage(overwrite=False),
     DownloadLegacyCatalogStage('cls_search_radius_deg', overwrite=False, workers=6),
     # ArchiveDownloadLegacyCatalogStage(
     #   radius_key='cls_search_radius_deg', workers=15,
@@ -109,9 +121,9 @@ def hydra_neighbours_pipeline(clear: bool = False):
     LoadPhotozRadialStage(),
     LoadSpeczRadialStage(),
     LoadLegacyRadialStage(),
-    PhotozSpeczLegacyMatchStage(overwrite=True),
+    PhotozSpeczLegacyMatchStage(overwrite=False),
     LoadAllRadialStage(),
-    ClusterPlotStage(overwrite=True, splus_only=False),
+    ClusterPlotStage(overwrite=False, splus_only=False),
     PrepareCatalogToSubmitStage(overwrite=True),
   )
   
@@ -134,7 +146,7 @@ def hydra_neighbours_pipeline(clear: bool = False):
     df_clusters[['clsid', 'name', 'ra', 'dec', 'zspec']], 
     configs.SUBMIT_FOLDER / 'index.dat'
   )
-
+  create_zip()
 
 
 
@@ -147,6 +159,7 @@ def clusters_v6_pipeline(clear: bool = False):
   
   configs.Z_SPEC_DELTA = 0.02
   configs.SUBMIT_FOLDER = configs.SUBMIT_FOLDER / 'novos'
+  rmtree(configs.SUBMIT_FOLDER, ignore_errors=True)
   configs.SUBMIT_FOLDER.mkdir(exist_ok=True, parents=True)
   
   if clear:
@@ -157,7 +170,7 @@ def clusters_v6_pipeline(clear: bool = False):
   ls10_pipe = Pipeline(
     LoadPauloInfoStage(df_clusters),
     PhotoZRadialSearchStage(overwrite=False),
-    SpecZRadialSearchStage(overwrite=True),
+    SpecZRadialSearchStage(overwrite=False),
     DownloadLegacyCatalogStage('cls_search_radius_deg', overwrite=False, workers=6),
     # ArchiveDownloadLegacyCatalogStage(
     #   radius_key='cls_search_radius_deg', workers=15,
@@ -166,9 +179,9 @@ def clusters_v6_pipeline(clear: bool = False):
     LoadPhotozRadialStage(),
     LoadSpeczRadialStage(),
     LoadLegacyRadialStage(),
-    PhotozSpeczLegacyMatchStage(overwrite=True),
+    PhotozSpeczLegacyMatchStage(overwrite=False),
     LoadAllRadialStage(),
-    ClusterPlotStage(overwrite=True, splus_only=False),
+    ClusterPlotStage(overwrite=False, splus_only=False),
     PrepareCatalogToSubmitStage(overwrite=True),
   )
   
@@ -190,6 +203,10 @@ def clusters_v6_pipeline(clear: bool = False):
     df_clusters[['clsid', 'name', 'RA', 'DEC', 'zspec']], 
     configs.SUBMIT_FOLDER / 'index.dat'
   )
+  create_zip()
+  
+  
+
 
 
 if __name__ == "__main__":
