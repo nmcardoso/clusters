@@ -27,15 +27,6 @@ from splusclusters.match import (PhotoZRadialSearchStage,
 from splusclusters.plots import ClusterPlotStage
 
 
-def create_zip():
-  make_archive(
-    base_name=str(configs.SUBMIT_FOLDER / f'{configs.SUBMIT_FOLDER.name}.zip'), 
-    format='zip', 
-    root_dir=configs.SUBMIT_FOLDER,
-  )
-
-
-
 def clusters_v5_remake_pipeline(clear: bool = False):
   df_clusters = load_catalog_v6_old()
   df_photoz, photoz_skycoord = load_photoz2()
@@ -88,7 +79,6 @@ def clusters_v5_remake_pipeline(clear: bool = False):
     df_clusters[['clsid', 'name', 'RA', 'DEC', 'zspec']], 
     configs.SUBMIT_FOLDER / 'index.dat'
   )
-  create_zip()
 
 
 
@@ -146,7 +136,6 @@ def hydra_neighbours_pipeline(clear: bool = False):
     df_clusters[['clsid', 'name', 'RA', 'DEC', 'zspec']], 
     configs.SUBMIT_FOLDER / 'index.dat'
   )
-  create_zip()
 
 
 
@@ -203,7 +192,6 @@ def clusters_v6_pipeline(clear: bool = False):
     df_clusters[['clsid', 'name', 'RA', 'DEC', 'zspec']], 
     configs.SUBMIT_FOLDER / 'index.dat'
   )
-  create_zip()
   
   
 
