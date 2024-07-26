@@ -197,7 +197,7 @@ def clusters_v6_pipeline(clear: bool = False):
 
 def create_zip():
   make_archive(
-    base_name=str(configs.OUT_PATH / 'submit' / 'clusters_v6.zip'), 
+    base_name=str(configs.OUT_PATH / 'submit' / 'clusters_v6'), 
     format='zip', 
     root_dir=configs.OUT_PATH / 'submit',
     base_dir=configs.OUT_PATH / 'submit',
