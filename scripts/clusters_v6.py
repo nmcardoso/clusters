@@ -5,7 +5,7 @@ import pandas as pd
 
 sys.path.insert(0, str(Path(__file__).parent.parent.absolute()))
 
-from shutil import make_archive, rmtree
+from shutil import rmtree
 
 from astromodule.io import merge_pdf, read_table, write_table
 from astromodule.pipeline import Pipeline, PipelineStorage
