@@ -511,7 +511,6 @@ class LoadERASS2InfoStage(PipelineStage):
 
 def remove_bad_objects(df: pd.DataFrame):
   filter_df = read_table(configs.ROOT / 'tables' / 'objects_to_exclude.csv', comment='#')
-  print(filter_df)
   return crossmatch(df, filter_df, radius=1*u.arcsec, join='1not2')
 
 
