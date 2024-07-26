@@ -72,7 +72,7 @@ def clusters_v5_remake_pipeline(clear: bool = False):
     PhotozSpeczLegacyMatchStage(overwrite=False),
     LoadAllRadialStage(),
     ClusterPlotStage(overwrite=False, splus_only=False),
-    PrepareCatalogToSubmitStage(overwrite=True),
+    PrepareCatalogToSubmitStage(overwrite=False),
   )
   
   PipelineStorage().write('df_photoz', df_photoz)
@@ -130,7 +130,7 @@ def hydra_neighbours_pipeline(clear: bool = False):
     PhotozSpeczLegacyMatchStage(overwrite=False),
     LoadAllRadialStage(),
     ClusterPlotStage(overwrite=False, splus_only=False),
-    PrepareCatalogToSubmitStage(overwrite=True),
+    PrepareCatalogToSubmitStage(overwrite=False),
   )
   
   PipelineStorage().write('df_photoz', df_photoz)
@@ -187,7 +187,7 @@ def clusters_v6_pipeline(clear: bool = False):
     PhotozSpeczLegacyMatchStage(overwrite=False),
     LoadAllRadialStage(),
     ClusterPlotStage(overwrite=False, splus_only=False),
-    PrepareCatalogToSubmitStage(overwrite=True),
+    PrepareCatalogToSubmitStage(overwrite=False),
   )
   
   PipelineStorage().write('df_photoz', df_photoz)
