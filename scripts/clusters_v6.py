@@ -5,7 +5,7 @@ import pandas as pd
 
 sys.path.insert(0, str(Path(__file__).parent.parent.absolute()))
 
-from shutil import rmtree
+from shutil import make_archive, rmtree
 
 from astromodule.io import merge_pdf, read_table, write_table
 from astromodule.pipeline import Pipeline, PipelineStorage
@@ -33,7 +33,7 @@ def clusters_v5_remake_pipeline(clear: bool = False):
   df_spec, specz_skycoord = load_spec()
   
   configs.Z_SPEC_DELTA = 0.02
-  configs.SUBMIT_FOLDER = configs.SUBMIT_FOLDER / 'antigos'
+  configs.SUBMIT_FOLDER = configs.OUT_PATH / 'submit' / 'antigos'
   rmtree(configs.SUBMIT_FOLDER, ignore_errors=True)
   configs.SUBMIT_FOLDER.mkdir(exist_ok=True, parents=True)
   
@@ -90,7 +90,7 @@ def hydra_neighbours_pipeline(clear: bool = False):
   df_spec, specz_skycoord = load_spec()
   
   configs.Z_SPEC_DELTA = 0.02
-  configs.SUBMIT_FOLDER = configs.SUBMIT_FOLDER / 'hydra'
+  configs.SUBMIT_FOLDER = configs.OUT_PATH / 'submit' / 'hydra'
   rmtree(configs.SUBMIT_FOLDER, ignore_errors=True)
   configs.SUBMIT_FOLDER.mkdir(exist_ok=True, parents=True)
   
@@ -140,14 +140,13 @@ def hydra_neighbours_pipeline(clear: bool = False):
 
 
 
-
 def clusters_v6_pipeline(clear: bool = False):
   df_clusters = load_catalog_v6()
   df_photoz, photoz_skycoord = load_photoz2()
   df_spec, specz_skycoord = load_spec()
   
   configs.Z_SPEC_DELTA = 0.02
-  configs.SUBMIT_FOLDER = configs.SUBMIT_FOLDER / 'novos'
+  configs.SUBMIT_FOLDER = configs.OUT_PATH / 'submit' / 'novos'
   rmtree(configs.SUBMIT_FOLDER, ignore_errors=True)
   configs.SUBMIT_FOLDER.mkdir(exist_ok=True, parents=True)
   
@@ -192,8 +191,19 @@ def clusters_v6_pipeline(clear: bool = False):
     df_clusters[['clsid', 'name', 'RA', 'DEC', 'zspec']], 
     configs.SUBMIT_FOLDER / 'index.dat'
   )
+
   
-  
+
+
+def create_zip():
+  make_archive(
+    base_name=str(configs.OUT_PATH / 'submit' / 'clusters_v6.zip'), 
+    format='zip', 
+    root_dir=configs.OUT_PATH / 'submit',
+    base_dir=configs.OUT_PATH / 'submit',
+  )
+
+
 
 
 
@@ -201,3 +211,4 @@ if __name__ == "__main__":
   hydra_neighbours_pipeline()
   clusters_v5_remake_pipeline()
   clusters_v6_pipeline()
+  create_zip()
