@@ -551,9 +551,9 @@ class PrepareCatalogToSubmitStage(PipelineStage):
       'type': 'ls10_morpho',
       'class_spec': 'zspec-class',
     })
-    print('Objects before inspection filter:', len(df_submit))
+    objects_before = len(df_submit)
     df_submit = remove_bad_objects(df_submit)
-    print('Objects after inspection filter:', len(df_submit))
+    print('Inspection filter:', objects_before, '->', len(df_submit))
     write_table(df_submit, out_path)
 
 
