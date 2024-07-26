@@ -20,6 +20,7 @@ class Configs(metaclass=SingletonMeta):
   CATALOG_V6_TABLE_PATH = ROOT / 'tables' / 'catalog_v6.csv'
   CATALOG_V6_HYDRA_TABLE_PATH = ROOT / 'tables' / 'catalog_v6_hydra.csv'
   CATALOG_V6_OLD_TABLE_PATH = ROOT / 'tables' / 'catalog_v6_old+ordered+pos.csv'
+  XRAY_TABLE_PATH = ROOT / 'tables' / 'catalog_chinese_xray.tsv'
   TABLES_PATH = ROOT / 'clusters_members'
   MEMBERS_FOLDER = ROOT / 'clusters_members/clusters'
   OUT_PATH = ROOT / 'outputs_v6'

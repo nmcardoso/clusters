@@ -147,6 +147,22 @@ def load_catalog_v6_hydra():
   return df
 
 
+def load_xray():
+  df = read_table(configs.XRAY_TABLE_PATH, comment='#')
+  df['name'] = df.name.str.replace(' ', '')
+  df['name'] = df.name.str.replace(r'^ABELL0+', 'A', regex=True)
+  df['name'] = df.name.str.replace(r'^ABELL', 'A', regex=True)
+  df['name'] = df.name.str.replace(r'^Abell0+', 'A', regex=True)
+  df['name'] = df.name.str.replace(r'^Abell', 'A', regex=True)
+  df['name'] = df.name.str.replace(r'^A0+', 'A', regex=True)
+  df['name'] = df.name.str.replace(r'^AS', 'A', regex=True)
+  df['name'] = df.name.str.replace(r'^ACO', 'A', regex=True)
+  df['name'] = df.name.str.replace(r'^A(\d+)\w*', r'A\1', regex=True)
+  df['name'] = df.name.str.replace(r'^RXC', 'MCXC', regex=True)
+  df['name'] = df.name.str.replace(r'^MKW0+', 'MKW', regex=True)
+  return df
+
+
 class LoadHeasarcInfoStage(PipelineStage):
   products = [
     'cls_name', 'cls_z', 'cls_ra', 'cls_dec', 'cls_search_radius_deg',
