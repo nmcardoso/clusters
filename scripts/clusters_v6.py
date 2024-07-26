@@ -49,7 +49,7 @@ def clusters_v5_remake_pipeline(clear: bool = False):
   
   configs.Z_SPEC_DELTA = 0.02
   configs.SUBMIT_FOLDER = configs.OUT_PATH / 'submit' / 'antigos'
-  rmtree(configs.SUBMIT_FOLDER, ignore_errors=True)
+  # rmtree(configs.SUBMIT_FOLDER, ignore_errors=True)
   configs.SUBMIT_FOLDER.mkdir(exist_ok=True, parents=True)
   
   if clear:
@@ -107,7 +107,7 @@ def hydra_neighbours_pipeline(clear: bool = False):
   
   configs.Z_SPEC_DELTA = 0.02
   configs.SUBMIT_FOLDER = configs.OUT_PATH / 'submit' / 'hydra'
-  rmtree(configs.SUBMIT_FOLDER, ignore_errors=True)
+  # rmtree(configs.SUBMIT_FOLDER, ignore_errors=True)
   configs.SUBMIT_FOLDER.mkdir(exist_ok=True, parents=True)
   
   if clear:
@@ -164,7 +164,7 @@ def clusters_v6_pipeline(clear: bool = False):
   
   configs.Z_SPEC_DELTA = 0.02
   configs.SUBMIT_FOLDER = configs.OUT_PATH / 'submit' / 'novos'
-  rmtree(configs.SUBMIT_FOLDER, ignore_errors=True)
+  # rmtree(configs.SUBMIT_FOLDER, ignore_errors=True)
   configs.SUBMIT_FOLDER.mkdir(exist_ok=True, parents=True)
   
   if clear:
