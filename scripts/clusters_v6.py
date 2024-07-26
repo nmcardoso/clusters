@@ -92,7 +92,7 @@ def clusters_v5_remake_pipeline(clear: bool = False):
   df_clusters = df_clusters.rename(columns={'ra': 'RA', 'dec': 'DEC', 'z_spec': 'zspec'})
   add_xray_flag(df_clusters)
   write_table(
-    df_clusters[['clsid', 'name', 'RA', 'DEC', 'zspec']], 
+    df_clusters[['clsid', 'name', 'RA', 'DEC', 'zspec', 'xray-flag']], 
     configs.SUBMIT_FOLDER / 'index.dat'
   )
 
@@ -150,7 +150,7 @@ def hydra_neighbours_pipeline(clear: bool = False):
   df_clusters = df_clusters.rename(columns={'z_spec': 'zspec', 'ra': 'RA', 'dec': 'DEC'})
   add_xray_flag(df_clusters)
   write_table(
-    df_clusters[['clsid', 'name', 'RA', 'DEC', 'zspec']], 
+    df_clusters[['clsid', 'name', 'RA', 'DEC', 'zspec', 'xray-flag']], 
     configs.SUBMIT_FOLDER / 'index.dat'
   )
 
@@ -205,7 +205,7 @@ def clusters_v6_pipeline(clear: bool = False):
   df_clusters['clsid'] = df_clusters.clsid.astype(str).str.zfill(4)
   add_xray_flag(df_clusters)
   write_table(
-    df_clusters[['clsid', 'name', 'RA', 'DEC', 'zspec']], 
+    df_clusters[['clsid', 'name', 'RA', 'DEC', 'zspec', 'xray-flag']], 
     configs.SUBMIT_FOLDER / 'index.dat'
   )
 
