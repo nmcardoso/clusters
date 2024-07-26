@@ -141,9 +141,9 @@ def hydra_neighbours_pipeline(clear: bool = False):
   
   df_clusters['clsid'] = df_clusters.clsid.astype(str).str.zfill(4)
   
-  df_clusters = df_clusters.rename(columns={'z_spec': 'zspec'})
+  df_clusters = df_clusters.rename(columns={'z_spec': 'zspec', 'ra': 'RA', 'dec': 'DEC'})
   write_table(
-    df_clusters[['clsid', 'name', 'ra', 'dec', 'zspec']], 
+    df_clusters[['clsid', 'name', 'RA', 'DEC', 'zspec']], 
     configs.SUBMIT_FOLDER / 'index.dat'
   )
   create_zip()
