@@ -511,6 +511,7 @@ class LoadERASS2InfoStage(PipelineStage):
 
 def remove_bad_objects(df: pd.DataFrame):
   filter_df = read_table(configs.ROOT / 'tables' / 'objects_to_exclude.csv')
+  print(filter_df)
   return crossmatch(df, filter_df, radius=1*u.arcsec, join='1not2')
 
 
@@ -551,7 +552,6 @@ class PrepareCatalogToSubmitStage(PipelineStage):
       'type': 'ls10_morpho',
       'class_spec': 'zspec-class',
     })
-    print(df_submit)
     print('Objects before inspection filter:', len(df_submit))
     df_submit = remove_bad_objects(df_submit)
     print('Objects after inspection filter:', len(df_submit))
