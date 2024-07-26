@@ -9,6 +9,9 @@ from shutil import make_archive, rmtree
 
 from astromodule.io import merge_pdf, read_table, write_table
 from astromodule.pipeline import Pipeline, PipelineStorage
+from astromodule.table import guess_coords_columns
+from astropy import units as u
+from astropy.coordinates import SkyCoord, match_coordinates_sky
 
 from splusclusters.configs import configs
 from splusclusters.external import (ArchiveDownloadLegacyCatalogStage,
@@ -20,11 +23,23 @@ from splusclusters.loaders import (LoadAllRadialStage, LoadClusterInfoStage,
                                    PrepareCatalogToSubmitStage,
                                    load_catalog_v6, load_catalog_v6_hydra,
                                    load_catalog_v6_old, load_photoz2,
-                                   load_spec)
+                                   load_spec, load_xray)
 from splusclusters.match import (PhotoZRadialSearchStage,
                                  PhotozSpeczLegacyMatchStage,
                                  SpecZRadialSearchStage)
 from splusclusters.plots import ClusterPlotStage
+
+
+def add_xray_flag(df: pd.DataFrame, threshold: float = 1):
+  df_xray = load_xray()
+  ra_col, dec_col = guess_coords_columns(df_xray)
+  xray_coords = SkyCoord(ra=df_xray[ra_col], dec=df_xray[dec_col], unit=u.deg)
+  ra_col, dec_col = guess_coords_columns(df)
+  df_coords = SkyCoord(ra=df[ra_col], dec=df[dec_col], unit=u.deg)
+  _, sep, _ = match_coordinates_sky(df_coords, xray_coords)
+  mask = sep > (threshold * u.arcsec)
+  df['xray-flag'] = mask.astype(int)
+  return df
 
 
 def clusters_v5_remake_pipeline(clear: bool = False):
@@ -75,6 +90,7 @@ def clusters_v5_remake_pipeline(clear: bool = False):
   df_clusters['clsid'] = df_clusters.clsid.astype(str).str.zfill(4)
   
   df_clusters = df_clusters.rename(columns={'ra': 'RA', 'dec': 'DEC', 'z_spec': 'zspec'})
+  add_xray_flag(df_clusters)
   write_table(
     df_clusters[['clsid', 'name', 'RA', 'DEC', 'zspec']], 
     configs.SUBMIT_FOLDER / 'index.dat'
@@ -132,6 +148,7 @@ def hydra_neighbours_pipeline(clear: bool = False):
   df_clusters['clsid'] = df_clusters.clsid.astype(str).str.zfill(4)
   
   df_clusters = df_clusters.rename(columns={'z_spec': 'zspec', 'ra': 'RA', 'dec': 'DEC'})
+  add_xray_flag(df_clusters)
   write_table(
     df_clusters[['clsid', 'name', 'RA', 'DEC', 'zspec']], 
     configs.SUBMIT_FOLDER / 'index.dat'
@@ -186,7 +203,7 @@ def clusters_v6_pipeline(clear: bool = False):
   merge_pdf(plot_paths, concat_plot_path)
   
   df_clusters['clsid'] = df_clusters.clsid.astype(str).str.zfill(4)
-  
+  add_xray_flag(df_clusters)
   write_table(
     df_clusters[['clsid', 'name', 'RA', 'DEC', 'zspec']], 
     configs.SUBMIT_FOLDER / 'index.dat'
