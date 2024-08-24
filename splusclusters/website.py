@@ -342,4 +342,4 @@ class WebsitePagesStage(PipelineStage):
     )
     
     if df_members is not None:
-      write_table(df_members, configs.WEBSITE_PATH / f'clusters_v{self.version}' / cls_name / 'members.csv')
+      write_table(df_members, folder_path / 'members.csv')
