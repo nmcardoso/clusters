@@ -1,3 +1,4 @@
+import os
 import subprocess
 from shutil import copy
 
@@ -6,6 +7,7 @@ import numpy as np
 import requests
 from astromodule.legacy import LegacyService
 from astromodule.pipeline import Pipeline, PipelineStage, PipelineStorage
+from astromodule.splus import SplusService
 from pylegs.archive import RadialMatcher
 
 from splusclusters.configs import configs
@@ -131,3 +133,45 @@ class CopyXrayStage(PipelineStage):
     dst = configs.WEBSITE_PATH / f'clusters_v{self.version}' / cls_name / f'xray.{self.fmt}'
     if (not dst.exists() or self.overwrite) and src.exists(): 
       copy(src, dst)
+      
+      
+      
+class SplusMatchStage(PipelineStage):
+  def __init__(self, overwrite: bool = False, workers: int = 6):
+    self.overwrite = overwrite
+    self.workers = workers
+  
+  def run(self, cls_name: str, cls_ra: float, cls_dec: float):
+    out_path = configs.LEG_PHOTO_FOLDER / f'{cls_name}.parquet'
+    if not self.overwrite and out_path.exists():
+      return
+    
+    sql = """
+      SELECT t.ra, t.dec, t.type, t.mag_r
+      FROM ls_dr10.tractor AS t
+      WHERE (ra BETWEEN {ra_min} AND {ra_max}) AND 
+      (dec BETWEEN {dec_min} AND {dec_max}) AND
+      (brick_primary = 1) AND 
+      (mag_r BETWEEN {r_min:.2f} AND {r_max:.2f}) AND
+      (type != 'PSF')
+    """.strip()
+    
+    radius = self.get_data(self.radius_key)
+    queries = [
+      sql.format(
+        ra_min=cls_ra-radius,
+        ra_max=cls_ra+radius, 
+        dec_min=cls_dec-radius,
+        dec_max=cls_dec+radius,
+        r_min=_r,
+        r_max=_r+.05
+      )
+      for _r in np.arange(*configs.MAG_RANGE, .05)
+    ]
+    service = SplusService(username=os.environ['SPLUS_USER'], password=os.environ['SPLUS_PASS'])
+    service.batch_query(
+      sql=queries,
+      save_path=out_path,
+      join=True,
+      workers=self.workers
+    )

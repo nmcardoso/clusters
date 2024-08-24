@@ -210,7 +210,7 @@ class WebsitePagesStage(PipelineStage):
       <hr />
       
       <div class="container-fluid">
-        <h2>Cluster: {cls_name}</h2>
+        <h2>Cluster {cls_name}</h2>
         <div class="row">
           <div class="col-4">
             <table class="table table-striped table-hover">
@@ -276,9 +276,11 @@ class WebsitePagesStage(PipelineStage):
         <h4>Gallery</h4>
         {' '.join(gallery)}
         <br /><br />
+      </div>
+
+      <div class="w-100 bg-dark text-white py-2">
         <h4>Legacy DR10</h4>
         <div id="aladin-lite-div" style="width: 90%; height: 700px; margin:0 auto;"></div>
-        <div class="mt-2">&nbsp;</div>
       </div>
       
       {self.get_scripts()}
