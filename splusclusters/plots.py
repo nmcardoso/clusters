@@ -545,7 +545,7 @@ class SpecDiffPlotStage(PlotStage):
     df_all_radial: pd.DataFrame,
     ax: plt.Axes,
   ):
-    ax.plot([0, 1], [0, 1], c='tab:gray', alpha=0.75, transform=ax.transAxes)
+    ax.plot([0, 1], [0, 1], c='tab:gray', alpha=0.75, ls='--', transform=ax.transAxes)
     if df_members is not None and df_interlopers is not None:
       members_match = fast_crossmatch(df_members, df_all_radial)
       ax.scatter(members_match.z, members_match.zml, c='tab:red', s=5, alpha=0.85, label='Members', rasterized=True)
@@ -553,6 +553,8 @@ class SpecDiffPlotStage(PlotStage):
       ax.scatter(interlopers_match.z, interlopers_match.zml, c='tab:blue', s=5, alpha=0.85, label='Interlopers', rasterized=True)
     else:
       ax.scatter(df_all_radial.z, df_all_radial.zml, c='tab:blue', s=5, label='Objects', rasterized=True)
+    ax.legend()
+    ax.tick_params(direction='in')
     ax.set_xlabel('$z_{{spec}}$')
     ax.set_ylabel('$z_{{photo}}$')
     ax.set_title('$z_{{spec}}$ x $z_{{photo}}$')
