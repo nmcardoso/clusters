@@ -944,6 +944,9 @@ class MagDiffPlotStage(PipelineStage):
     cls_search_radius_deg: float,
     cls_search_radius_Mpc: float,
   ):
+    if 'r_auto' not in df_all_radial.columns or 'mag_r' not in df_all_radial:
+      return
+    
     df = df_all_radial[
       (df_all_radial.type != 'PSF') & 
       df_all_radial.r_auto.between(*configs.MAG_RANGE) & 
