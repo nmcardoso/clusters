@@ -626,7 +626,7 @@ class SpecDiffPlotStage(PlotStage):
     out = configs.WEBSITE_PATH / f'clusters_v{self.version}' / cls_name / f'redshift_histogram_all.{self.fmt}'
     fig = plt.figure(figsize=(7.5, 7.5), dpi=150)
     ax = fig.add_subplot()
-    self.histogram_plot(df_all_radial=df_all_radial, ax=ax)
+    self.histogram_plot_all(df_all_radial=df_all_radial, ax=ax)
     plt.savefig(out, bbox_inches='tight', pad_inches=0.1)
     plt.close(fig)
     
