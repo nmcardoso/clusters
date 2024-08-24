@@ -203,10 +203,9 @@ class DownloadSplusPhotozStage(PipelineStage):
       return
     
     sql = """
-      SELECT photo.RA AS ra, photo.DEC AS dec, photo.r_auto, photoz.zml, 
-      photoz.odds, photo.Field AS field
-      FROM idr5.idr5_dual AS photo 
-      JOIN idr5_vacs.idr5_photoz AS photoz ON photo.ID = photoz.ID 
+      SELECT photo.RA AS ra, photo.DEC AS dec, photoz.r_auto, photoz.zml, 
+      photoz.odds
+      FROM idr5_vacs.idr5_photoz AS photoz
       WHERE 1 = CONTAINS( 
         POINT('ICRS', photo.RA, photo.DEC), 
         CIRCLE('ICRS', {ra:.6f}, {dec:.6f}, {radius:.6f}) 
