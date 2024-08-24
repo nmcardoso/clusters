@@ -545,7 +545,7 @@ class SpecDiffPlotStage(PlotStage):
     df_all_radial: pd.DataFrame,
     ax: plt.Axes,
   ):
-    ax.plot([0, 1], [0, 1], c='tab:gray', alpha=0.75, ls='--', transform=ax.transAxes)
+    ax.plot([0, 1], [0, 1], c='tab:gray', alpha=0.55, ls='--', transform=ax.transAxes)
     if df_members is not None and df_interlopers is not None:
       members_match = fast_crossmatch(df_members, df_all_radial)
       members_match = members_match[~members_match.z.isna() & ~members_match.zml.isna()]
