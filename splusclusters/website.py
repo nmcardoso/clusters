@@ -277,7 +277,7 @@ class WebsitePagesStage(PipelineStage):
         {' '.join(gallery)}
         <br /><br />
         <h4>Legacy DR10</h4>
-        <div id="aladin-lite-div" style="width: 100%; height: 700px; margin:0 auto;"></div>
+        <div id="aladin-lite-div" style="width: 90%; height: 700px; margin:0 auto;"></div>
         <div class="mt-2">&nbsp;</div>
       </div>
       
