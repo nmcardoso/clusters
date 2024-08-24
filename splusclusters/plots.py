@@ -556,14 +556,15 @@ class VelocityPlotStage(PlotStage):
     ax.set_ylim(-0.03, 0.03)
     
   def plot_photoz(self, df_members: pd.DataFrame, df_interlopers: pd.DataFrame, df_photoz_radial: pd.DataFrame, cls_z: float, ax: plt.Axes):
-    df_members_match = fast_crossmatch(df_members, df_photoz_radial)
-    df_interlopers_match = fast_crossmatch(df_interlopers, df_photoz_radial)
-    df_members_match['zml_offset'] = df_members_match['zml'] - cls_z
-    df_interlopers_match['zml_offset'] = df_interlopers_match['zml'] - cls_z
-    df_members_match2 = df_members_match[df_members_match['odds'] > self.photoz_odds]
-    df_interlopers_match2 = df_interlopers_match[df_interlopers_match['odds'] > self.photoz_odds]
-    ax.scatter(df_members_match2.radius_Mpc, df_members_match2.zml_offset, c='tab:red', s=5, label='Members', rasterized=True)  
-    ax.scatter(df_interlopers_match2.radius_Mpc, df_interlopers_match2.zml_offset, c='tab:blue', s=5, label='Interlopers', rasterized=True)
+    if len(df_photoz_radial) > 0:
+      df_members_match = fast_crossmatch(df_members, df_photoz_radial)
+      df_interlopers_match = fast_crossmatch(df_interlopers, df_photoz_radial)
+      df_members_match['zml_offset'] = df_members_match['zml'] - cls_z
+      df_interlopers_match['zml_offset'] = df_interlopers_match['zml'] - cls_z
+      df_members_match2 = df_members_match[df_members_match['odds'] > self.photoz_odds]
+      df_interlopers_match2 = df_interlopers_match[df_interlopers_match['odds'] > self.photoz_odds]
+      ax.scatter(df_members_match2.radius_Mpc, df_members_match2.zml_offset, c='tab:red', s=5, label='Members', rasterized=True)  
+      ax.scatter(df_interlopers_match2.radius_Mpc, df_interlopers_match2.zml_offset, c='tab:blue', s=5, label='Interlopers', rasterized=True)
     ax.legend()
     ax.grid('on', color='k', linestyle='--', alpha=.5)
     ax.tick_params(direction='in')
