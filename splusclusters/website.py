@@ -28,9 +28,10 @@ class WebsitePagesStage(PipelineStage):
     df: pd.DataFrame,
   ):
     cls_center = SkyCoord(cls_ra, cls_dec, unit='deg')
-    r200_path = configs.WEBSITE_PATH / 'clusters' / cls_name / 'splus_fields_5r200.csv'
-    r500_path = configs.WEBSITE_PATH / 'clusters' / cls_name / 'splus_fields_5r500.csv'
-    search_radius_path = configs.WEBSITE_PATH / 'clusters' / cls_name / 'splus_fields_search_radius.csv'
+    base_path = configs.WEBSITE_PATH / f'clusters_v{self.version}' / cls_name
+    r200_path = base_path / 'splus_fields_5r200.csv'
+    r500_path = base_path / 'splus_fields_5r500.csv'
+    search_radius_path = base_path / 'splus_fields_search_radius.csv'
     if not r200_path.exists() or not r500_path.exists() or not search_radius_path.exists():
     # if True:
       coords = SkyCoord(df.ra, df.dec, unit='deg')
