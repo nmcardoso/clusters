@@ -341,5 +341,6 @@ class WebsitePagesStage(PipelineStage):
       df=df_photoz_radial
     )
     
+    print(df_members)
     if df_members is not None:
       write_table(df_members, folder_path / 'members.csv')
