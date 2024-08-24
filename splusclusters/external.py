@@ -203,7 +203,7 @@ class DownloadSplusPhotozStage(PipelineStage):
       return
     
     sql = """
-      SELECT photo.RA AS ra, photo.DEC AS dec, photoz.r_auto, photoz.zml, 
+      SELECT photoz.RA AS ra, photoz.DEC AS dec, photoz.r_auto, photoz.zml, 
       photoz.odds
       FROM idr5_vacs.idr5_photoz AS photoz
       WHERE 1 = CONTAINS( 
