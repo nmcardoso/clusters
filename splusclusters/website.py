@@ -278,8 +278,8 @@ class WebsitePagesStage(PipelineStage):
         <br /><br />
       </div>
 
-      <div class="w-100 bg-dark text-white py-2">
-        <h4>Legacy DR10</h4>
+      <div style="background-color: #201F1F;" class="w-100 text-white py-3">
+        <center><h4>Legacy DR10</h4></center>
         <div id="aladin-lite-div" style="width: 90%; height: 700px; margin:0 auto;"></div>
       </div>
       
