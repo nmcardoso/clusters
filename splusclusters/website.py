@@ -150,7 +150,7 @@ class WebsitePagesStage(PipelineStage):
     if len(q) == 0: return ''
     id_v5 = q.clsid.values[0]
     catalog_v5 = load_members_v5(id_v5)
-    catalog_v6 = load_members_v6(name)
+    catalog_v6 = self.df_clusters
     df = crossmatch(catalog_v6, catalog_v5, join='1not2')
     html = f'<b>Objects included in v6:</b> members: {len(df[df.flag_member == 0])} &bullet; interlopers: {len(df[df.flag_member == 1])}<br /><br />'
     df = crossmatch(catalog_v6, catalog_v5, join='2not1')
