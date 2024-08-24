@@ -51,7 +51,7 @@ def load_members_index_v6():
     'sigma_p_lower', 'sigma_p_upper', 'R500_Mpc', 'R500_lower', 'R500_upper',
     'M500_solar', 'M500_lower', 'M500_upper', 'R200_Mpc', 'R200_lower',
     'R200_upper', 'M200_solar', 'M200_lower', 'M200_upper', 'znew', 'znew_err',
-    'Rap', 'Nmemb_wR200'
+    'Rap', 'Nmemb_wR200', 'col1', 'col2', 'col3', 'col4'
   ]
   info_df = read_table(path, fmt='dat', col_names=cols, comment='#')
   info_df['name'] = names_df['name'].values
