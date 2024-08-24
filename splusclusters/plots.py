@@ -576,7 +576,7 @@ class SpecDiffPlotStage(PlotStage):
     ax.set_ylabel('Count (%)')
     ax.set_title('$z_{{spec}}$ x $z_{{photo}}$ (Members)')
     
-  def histogram_interlopers_plo(
+  def histogram_interlopers_plot(
     self,
     
     df_interlopers: pd.DataFrame,
