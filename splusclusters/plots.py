@@ -599,8 +599,9 @@ class SpecDiffPlotStage(PlotStage):
     df_all_radial: pd.DataFrame, 
     ax: plt.Axes
   ):
-    ax.hist(df_all_radial.z, histtype='step', density=True, color='tab:red', alpha=0.75, lw=2, label='$z_{{spec}}$')
-    ax.hist(df_all_radial.zml, histtype='step', density=True, color='tab:blue', alpha=0.75, lw=2, label='$z_{{photo}}$')
+    df = df_all_radial[~df_all_radial.z.isna() & ~df_all_radial.zml.isna()]
+    ax.hist(df.z, histtype='step', density=True, color='tab:red', alpha=0.75, lw=2, label='$z_{{spec}}$')
+    ax.hist(df.zml, histtype='step', density=True, color='tab:blue', alpha=0.75, lw=2, label='$z_{{photo}}$')
     ax.legend()
     ax.tick_params(direction='in')
     ax.set_xlabel('z')
