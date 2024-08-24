@@ -210,7 +210,7 @@ class WebsitePagesStage(PipelineStage):
       <hr />
       
       <div class="container-fluid">
-        <h2>Cluster {cls_name}</h2>
+        <center><h2>{cls_name}</h2></center>
         <div class="row">
           <div class="col-4">
             <table class="table table-striped table-hover">
@@ -273,7 +273,7 @@ class WebsitePagesStage(PipelineStage):
           </div>
         </div>
         <br /><br />
-        <h4>Gallery</h4>
+        <center><h4>Gallery</h4></center>
         {' '.join(gallery)}
         <br /><br />
       </div>
