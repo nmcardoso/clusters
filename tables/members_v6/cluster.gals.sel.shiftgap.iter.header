@@ -1,0 +1,10 @@
+1) RA (J2000)
+2) DEC (J2000)
+3) zspec
+4) zspec-err
+5) velocity (km/s)
+6) velocity-err (km/s)
+7) Radius (degrees) [distance to the cluster center]
+8) Radius (Mpc) [distance to the cluster center]
+9) Velocity offset (km/s) [relative to the cluster central velocity]
+10) Flagm [0 = member; 1 = interloper]

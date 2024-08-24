@@ -1,0 +1,27 @@
+1) cluster index
+2) RA (J2000)
+3) DEC (J2000)
+4) z_spec
+5) Veli
+6) Velf
+7) Nwcls
+8) Nmemb
+9) SIGMA_p (km/s)
+10) Sigma_p lower limit
+11) Sigma_p upper limit
+12) R500 (Mpc)
+13) R500 lower limit
+14) R500 upper limit
+15) M500 (10^14 M_solar)
+16) M500 lower limit
+17) M500 upper limit
+18) R200 (Mpc)
+19) R200 lower limit
+20) R200 upper limit
+21) M200 (10^14 M_solar)
+22) M200 lower limit
+23) M200 upper limit
+24) znew (alternative redshift / not used)
+25) znew-err
+26) Rap
+27) Nmemb-wR200
