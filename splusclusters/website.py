@@ -116,7 +116,7 @@ class WebsitePagesStage(PipelineStage):
     <body>
       {self.get_nav()}
       <br /><br /><br />
-      <img src="all_sky.png" width="80%" style="display: block; margin: 0 auto;" />
+      <img src="/all_sky.png" width="80%" style="display: block; margin: 0 auto;" />
       {self.get_scripts()}
     </body>
     </html>
