@@ -219,7 +219,7 @@ class WebsitePagesStage(PipelineStage):
               <tbody>
                 <tr>
                   <td>Position</td>
-                  <td>{cls_ra:.5f} {'+' if cls_dec >= 0 else '-'}{cls_dec:.5f} (deg)</td>
+                  <td>{cls_ra:.5f} {'+' if cls_dec >= 0 else ''}{cls_dec:.5f} (deg)</td>
                 </tr>
                 <tr>
                   <td>Search Radius</td>
