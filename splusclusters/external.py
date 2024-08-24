@@ -187,7 +187,13 @@ class SplusMembersMatchStage(PipelineStage):
     
 
 class DownloadSplusPhotozStage(PipelineStage):
-  def __init__(self, overwrite: bool = False, workers: int = 10):
+  def __init__(
+    self, 
+    radius_key: str = 'cls_search_radius_deg', 
+    overwrite: bool = False, 
+    workers: int = 10
+  ):
+    self.radius_key = radius_key
     self.overwrite = overwrite
     self.workers = workers
   
