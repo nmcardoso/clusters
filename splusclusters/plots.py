@@ -568,8 +568,9 @@ class SpecDiffPlotStage(PlotStage):
     members_match = fast_crossmatch(df_members, df_all_radial)
     members_match = members_match[~members_match.z.isna() & ~members_match.zml.isna()]
     if len(members_match) == 0: return
-    ax.hist(members_match.z, histtype='step', bins=25, color='tab:red', alpha=0.75, lw=2, label=f'$z_{{spec}}$ ({len(members_match.z)} objects)')
-    ax.hist(members_match.zml, histtype='step', bins=25, color='tab:blue', alpha=0.75, lw=2, label=f'$z_{{photo}}$ ({len(members_match.z)} objects)')
+    rng = (min(members_match.z.min(), members_match.zml.min()), max(members_match.z.max(), members_match.zml.max()))
+    ax.hist(members_match.z, histtype='step', bins=30, range=rng, color='tab:red', alpha=0.75, lw=2, label=f'$z_{{spec}}$ ({len(members_match.z)} objects)')
+    ax.hist(members_match.zml, histtype='step', bins=30, range=rng, color='tab:blue', alpha=0.75, lw=2, label=f'$z_{{photo}}$ ({len(members_match.z)} objects)')
     ax.legend()
     ax.tick_params(direction='in')
     ax.set_xlabel('z')
@@ -585,8 +586,9 @@ class SpecDiffPlotStage(PlotStage):
     interlopers_match = fast_crossmatch(df_interlopers, df_all_radial)
     interlopers_match = interlopers_match[~interlopers_match.z.isna() & ~interlopers_match.zml.isna()]
     if len(interlopers_match) == 0: return
-    ax.hist(interlopers_match.z, histtype='step', bins=25, color='tab:red', alpha=0.75, lw=2, label=f'$z_{{spec}}$ ({len(interlopers_match.z)} objects)')
-    ax.hist(interlopers_match.zml, histtype='step', bins=25, color='tab:blue', alpha=0.75, lw=2, label=f'$z_{{photo}}$ ({len(interlopers_match.z)} objects)')
+    rng = (min(interlopers_match.z.min(), interlopers_match.zml.min()), max(interlopers_match.z.max(), interlopers_match.zml.max()))
+    ax.hist(interlopers_match.z, histtype='step', bins=30, range=rng, color='tab:red', alpha=0.75, lw=2, label=f'$z_{{spec}}$ ({len(interlopers_match.z)} objects)')
+    ax.hist(interlopers_match.zml, histtype='step', bins=30, range=rng, color='tab:blue', alpha=0.75, lw=2, label=f'$z_{{photo}}$ ({len(interlopers_match.z)} objects)')
     ax.legend()
     ax.tick_params(direction='in')
     ax.set_xlabel('z')
@@ -599,8 +601,9 @@ class SpecDiffPlotStage(PlotStage):
     ax: plt.Axes
   ):
     df = df_all_radial[~df_all_radial.z.isna() & ~df_all_radial.zml.isna()]
-    ax.hist(df.z, histtype='step', bins=25, color='tab:red', alpha=0.75, lw=2, label=f'$z_{{spec}}$ ({len(df.z)} objects)')
-    ax.hist(df.zml, histtype='step', bins=25, color='tab:blue', alpha=0.75, lw=2, label=f'$z_{{photo}}$ ({len(df.zml)} objects)')
+    rng = (min(df.z.min(), df.zml.min()), max(df.z.max(), df.zml.max()))
+    ax.hist(df.z, histtype='step', bins=30, range=rng, color='tab:red', alpha=0.75, lw=2, label=f'$z_{{spec}}$ ({len(df.z)} objects)')
+    ax.hist(df.zml, histtype='step', bins=30, range=rng, color='tab:blue', alpha=0.75, lw=2, label=f'$z_{{photo}}$ ({len(df.zml)} objects)')
     ax.legend()
     ax.tick_params(direction='in')
     ax.set_xlabel('z')
