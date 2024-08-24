@@ -559,8 +559,37 @@ class SpecDiffPlotStage(PlotStage):
     ax.set_ylabel('$z_{{photo}}$')
     ax.set_title('$z_{{spec}}$ x $z_{{photo}}$')
     
-  def distribution_plot(self):
-    pass
+  def histogram_plot(
+    self, 
+    df_members: pd.DataFrame, 
+    df_interlopers: pd.DataFrame, 
+    df_all_radial: pd.DataFrame, 
+    ax: plt.Axes
+  ):
+    members_match = fast_crossmatch(df_members, df_all_radial)
+    ax.hist(members_match.z, histtype='step', density=True, color='tab:red', alpha=0.75, ls='-', lw=2, label='Members z_{{spec}}')
+    ax.hist(members_match.zml, histtype='step', density=True, color='tab:red', alpha=0.75, ls='--', lw=2, label='Members z_{{photo}}')
+    interlopers_match = fast_crossmatch(df_interlopers, df_all_radial)
+    ax.hist(interlopers_match.z, histtype='step', density=True, color='tab:blue', alpha=0.75, ls='-', lw=2, label='Interlopers z_{{spec}}')
+    ax.hist(interlopers_match.zml, histtype='step', density=True, color='tab:blue', alpha=0.75, ls='--', lw=2, label='Interlopers z_{{photo}}')
+    ax.legend()
+    ax.tick_params(direction='in')
+    ax.set_xlabel('z')
+    ax.set_ylabel('Count (%)')
+    ax.set_title('$z_{{spec}}$ x $z_{{photo}}$ distributions')
+    
+  def histogram_plot_all(
+    self, 
+    df_all_radial: pd.DataFrame, 
+    ax: plt.Axes
+  ):
+    ax.hist(df_all_radial.z, histtype='step', density=True, color='tab:blue', alpha=0.75, lw=2, label='z_{{spec}}')
+    ax.hist(df_all_radial.zml, histtype='step', density=True, color='tab:red', alpha=0.75, lw=2, label='z_{{photo}}')
+    ax.legend()
+    ax.tick_params(direction='in')
+    ax.set_xlabel('z')
+    ax.set_ylabel('Count (%)')
+    ax.set_title('$z_{{spec}}$ x $z_{{photo}}$ distributions')
   
   def run(
     self, 
@@ -580,6 +609,28 @@ class SpecDiffPlotStage(PlotStage):
     )
     plt.savefig(out, bbox_inches='tight', pad_inches=0.1)
     plt.close(fig)
+    
+    if df_members is not None and df_interlopers is not None:
+      out = configs.WEBSITE_PATH / f'clusters_v{self.version}' / cls_name / f'redshift_histogram.{self.fmt}'
+      fig = plt.figure(figsize=(7.5, 7.5), dpi=150)
+      ax = fig.add_subplot()
+      self.histogram_plot(
+        df_members=df_members,
+        df_interlopers=df_interlopers,
+        df_all_radial=df_all_radial,
+        ax=ax,
+      )
+      plt.savefig(out, bbox_inches='tight', pad_inches=0.1)
+      plt.close(fig)
+    
+    out = configs.WEBSITE_PATH / f'clusters_v{self.version}' / cls_name / f'redshift_histogram_all.{self.fmt}'
+    fig = plt.figure(figsize=(7.5, 7.5), dpi=150)
+    ax = fig.add_subplot()
+    self.histogram_plot(df_all_radial=df_all_radial, ax=ax)
+    plt.savefig(out, bbox_inches='tight', pad_inches=0.1)
+    plt.close(fig)
+    
+    
 
 
 
