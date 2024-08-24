@@ -152,11 +152,11 @@ class WebsitePagesStage(PipelineStage):
     catalog_v5 = load_members_v5(id_v5)
     catalog_v6 = load_members_v6(name)
     df = crossmatch(catalog_v6, catalog_v5, join='1not2')
-    html = f'<b>Differences between v5 and v6:</b> <span class="badge badge-success">members included: {len(df[df.flag_member == 0])}</span> &nbsp; '
-    html += f'<span class="badge badge-success">interlopers included: {len(df[df.flag_member == 1])}</span> &nbsp; '
+    html = f'<b>Differences between v5 and v6:</b> <span class="badge text-bg-success">members included: {len(df[df.flag_member == 0])}</span> &nbsp; '
+    html += f'<span class="badge text-bg-success">interlopers included: {len(df[df.flag_member == 1])}</span> &nbsp; '
     df = crossmatch(catalog_v6, catalog_v5, join='2not1')
-    html += f'<span class="badge badge-danger">members excluded: {len(df[df.flag_member == 0])}</span> &nbsp; '
-    html += f'<span class="badge badge-danger">interlopers excluded: {len(df[df.flag_member == 1])}</span><br /><br />'
+    html += f'<span class="badge text-bg-danger">members excluded: {len(df[df.flag_member == 0])}</span> &nbsp; '
+    html += f'<span class="badge text-bg-danger">interlopers excluded: {len(df[df.flag_member == 1])}</span><br /><br />'
     return html
   
   def run(
