@@ -319,6 +319,7 @@ class LoadClusterInfoStage(PipelineStage):
     
     print('Cluster Name:', name)
     print(f'RA: {ra:.3f}, DEC: {dec:.3f}, z: {z:.2f}, search radius: {search_radius_deg:.2f}')
+    print(f'R200: {r200_Mpc:.2f} ({r200_deg:.2f}), R500: {r500_Mpc:.2f} ({r500_deg:.2f})')
     
     return {
       'cls_name': name,

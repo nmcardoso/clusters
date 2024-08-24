@@ -57,7 +57,6 @@ class PlotStage(PipelineStage):
       transform=ax.get_transform('icrs'), 
       label=label,
     )
-    print(ra, dec, radius)
     ax.add_patch(circle)
     
   def add_all_circles(
