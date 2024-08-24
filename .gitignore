@@ -1,19 +1,13 @@
 __pycache__
 
-tables/*
-!tables/*.csv
-!tables/*.dat
-!tables/*.txt
-!tables/*.tsv
-!tables/*.xml
+tables/*.parquet
+tables/*.fits
 
 plots
 
 outputs*
 
 laerte
-
-clusters_members
 
 astromorphlib
 
