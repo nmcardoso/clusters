@@ -147,7 +147,7 @@ class WebsitePagesStage(PipelineStage):
     if self.version != 6: return ''
     df_v5 = load_clusters()
     q = df_v5[df_v5.name == name]
-    if len(q) == 0: return '<i>not in v5 catalog</i>'
+    if len(q) == 0: return ''
     id_v5 = q.clsid[0]
     catalog_v5 = load_members_v5(id_v5)
     catalog_v6 = load_members_v6(name)
