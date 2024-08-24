@@ -2,6 +2,7 @@ from typing import Literal, Sequence, Tuple
 
 import astropy.units as u
 import matplotlib.pyplot as plt
+import matplotlib.tri as tri
 import numpy as np
 import pandas as pd
 from astromodule.pipeline import Pipeline, PipelineStage, PipelineStorage
@@ -513,6 +514,70 @@ class ClusterPlotStage(PlotStage):
       plt.savefig(out_path, bbox_inches='tight', pad_inches=0.1)
       plt.close(fig)
 
+
+
+
+class ContourPlotStage(PlotStage):
+  def specz_plot(self):
+    pass
+  
+  def run(
+    self, 
+    cls_ra: float,
+    cls_dec: float,
+    df_members: pd.DataFrame,
+  ):
+    pass
+    
+
+
+class SpecDiffPlotStage(PlotStage):
+  def __init__(self, overwrite: bool = False, separated: bool = True, fmt: str = 'jpg', version: int = 6):
+    self.overwrite = overwrite
+    self.separated = separated
+    self.fmt = fmt
+    self.version = version
+    
+  def diagonal_plot(
+    self, 
+    df_members: pd.DataFrame, 
+    df_interlopers: pd.DataFrame,
+    df_all_radial: pd.DataFrame,
+    ax: plt.Axes,
+  ):
+    ax.plot([0, 1], [0, 1], c='tab:gray', alpha=0.75, transform=ax.transAxes)
+    if df_members and df_interlopers:
+      members_match = fast_crossmatch(df_members, df_all_radial)
+      ax.scatter(members_match.z, members_match.zml, c='tab:red', s=5, alpha=0.85, label='Members', rasterized=True)
+      interlopers_match = fast_crossmatch(df_interlopers, df_all_radial)
+      ax.scatter(interlopers_match.z, interlopers_match.zml, c='tab:blue', s=5, alpha=0.85, label='Interlopers', rasterized=True)
+    else:
+      ax.scatter(df_all_radial.z, df_all_radial.zml, c='tab:blue', s=5, label='Objects', rasterized=True)
+    ax.set_xlabel('$z_{{spec}}$')
+    ax.set_ylabel('$z_{{photo}}$')
+    ax.set_title('$z_{{spec}}$ x $z_{{photo}}$')
+    
+  def distribution_plot(self):
+    pass
+  
+  def run(
+    self, 
+    cls_name: str,
+    df_members: pd.DataFrame,
+    df_interlopers: pd.DataFrame,
+    df_all_radial: pd.DataFrame,
+  ):
+    out = configs.WEBSITE_PATH / f'clusters_v{self.version}' / cls_name / f'diagonal.{self.fmt}'
+    fig = plt.figure(figsize=(7.5, 7.5), dpi=150)
+    ax = fig.add_subplot()
+    self.diagonal_plot(
+      df_members=df_members,
+      df_interlopers=df_interlopers,
+      df_all_radial=df_all_radial,
+      ax=ax,
+    )
+    plt.savefig(out, bbox_inches='tight', pad_inches=0.1)
+    plt.close(fig)
 
 
 

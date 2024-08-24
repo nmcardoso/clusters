@@ -12,7 +12,7 @@ from splusclusters.loaders import (LoadAllRadialStage, LoadClusterInfoStage,
                                    LoadPhotozRadialStage, LoadSpeczRadialStage,
                                    load_clusters, load_members_index_v6)
 from splusclusters.plots import (ClusterPlotStage, MagDiffPlotStage,
-                                 VelocityPlotStage)
+                                 SpecDiffPlotStage, VelocityPlotStage)
 from splusclusters.website import WebsitePagesStage
 
 
@@ -31,6 +31,7 @@ def website_pipeline(overwrite: bool = False, version: int = 6, dev: bool = Fals
     VelocityPlotStage(overwrite=overwrite, fmt='jpg', separated=True, version=version),
     MagDiffPlotStage(overwrite=overwrite, fmt='jpg', separated=True, version=version),
     CopyXrayStage(overwrite=overwrite, fmt='png', version=version),
+    SpecDiffPlotStage(overwrite=overwrite, fmt='jpg', separated=True, version=version),
     WebsitePagesStage(df_clusters=df_clusters, version=version),
   )
   
