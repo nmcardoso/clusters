@@ -17,7 +17,7 @@ from splusclusters.utils import Timming
 
 
 def load_clusters():
-  df_clusters = read_table(configs.TABLES_PATH / 'index.dat')
+  df_clusters = read_table(configs.MEMBERS_V5_PATH / 'index.dat')
   df_clusters['clsid'] = df_clusters['clsid'].astype('int')
   df_index = read_table(configs.ROOT / 'outputs_v5/paulo/G/index.dat', columns=['clsid', 'name'])
   df = df_clusters.set_index('clsid').join(df_index.set_index('clsid'), how='inner', rsuffix='_r')
@@ -28,6 +28,35 @@ def load_clusters():
 def load_index():
   df_index = read_table(configs.ROOT / 'outputs_v5/paulo/G/index.dat')
   return df_index
+
+def load_members_v5(cls_id):
+  path = configs.MEMBERS_V5_FOLDER / f'cluster.gals.sel.shiftgap.iter.{str(cls_id).zfill(5)}'
+  col_names = [
+    'ra', 'dec', 'z', 'z_err', 'v', 'v_err', 'radius_deg', 
+    'radius_Mpc', 'v_offset', 'flag_member'
+  ] # 0 - member; 1 - interloper
+  return read_table(path, fmt='dat', col_names=col_names)
+
+def load_members_index_v6():
+  cols = [
+    'clsid', 'ra', 'dec', 'z_spec', 'sigma_cl_kms', 'sigma_cl_lower', 
+    'sigma_cl_upper', 'r200', 'r200_lower', 'r200_upper', 'm200',
+    'm200_lower', 'm200_upper', 'nwcls', 'n_memb', 'n_memb_wR200', 'name'
+  ]
+  path = configs.MEMBERS_V6_PATH / 'info_cls_shiftgap_iter_10.0hmpcf_nrb.dat'
+  return read_table(path, col_names=cols, comment='#')
+
+def load_members_v6(cls_name: str = None, cls_id: str | int = None):
+  if cls_name is not None:
+    index_df = load_members_index_v6()
+    cls_id = index_df[index_df.cls_name == cls_name].clsid.values[0]
+  prefixed_id = str(int(cls_id)).zfill(4)
+  path = configs.MEMBERS_V6_FOLDER / f'cluster.gals.sel.shiftgap.iter.{prefixed_id}'
+  cols = [
+    'ra', 'dec', 'z', 'z_err', 'v', 'v_err', 'radius_deg', 
+    'radius_Mpc', 'v_offset', 'flag_member'
+  ]
+  return read_table(path, fmt='dat', col_names=cols)
 
 def load_spec(coords: bool = True):
   df_spec = read_table(configs.SPEC_TABLE_PATH)
@@ -224,9 +253,11 @@ class LoadClusterInfoStage(PipelineStage):
     self, 
     df_clusters: pd.DataFrame = None,
     cls_id: int = None, 
+    version: int = 5,
   ):
     self.df_clusters = df_clusters
     self.cls_id = cls_id
+    self.version = version
     
   def run(self, cls_id: int = None):
     df_clusters = self.df_clusters
@@ -261,7 +292,8 @@ class LoadClusterInfoStage(PipelineStage):
       print(f'Cluster angular radius @ 15Mpc = {search_radius_deg:.2f} deg, limiting to 17 deg')
       search_radius_deg = min(search_radius_deg, 17)
     
-    paulo_path = configs.MEMBERS_FOLDER / f'cluster.gals.sel.shiftgap.iter.{str(cls_id).zfill(5)}'
+    base_path = configs.MEMBERS_V5_FOLDER if self.version == 5 else configs.MEMBERS_V6_FOLDER
+    paulo_path = base_path / f'cluster.gals.sel.shiftgap.iter.{str(cls_id).zfill(5)}'
     if paulo_path.exists():
       col_names = [
         'ra', 'dec', 'z', 'z_err', 'v', 'v_err', 'radius_deg', 
@@ -446,7 +478,7 @@ class LoadPauloInfoStage(PipelineStage):
     df_interlopers = None
     if name in df_class.name.values:
       _cls_id = df_class[df_class.name == name].clsid.values[0]
-      paulo_path = configs.MEMBERS_FOLDER / f'cluster.gals.sel.shiftgap.iter.{str(_cls_id).zfill(5)}'
+      paulo_path = configs.MEMBERS_V5_FOLDER / f'cluster.gals.sel.shiftgap.iter.{str(_cls_id).zfill(5)}'
       if paulo_path.exists():
         col_names = [
           'ra', 'dec', 'z', 'z_err', 'v', 'v_err', 'radius_deg', 

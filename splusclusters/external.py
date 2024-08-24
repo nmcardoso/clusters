@@ -121,12 +121,13 @@ class DownloadXRayStage(PipelineStage):
 
 
 class CopyXrayStage(PipelineStage):
-  def __init__(self, overwrite: bool = False, fmt: str = 'png'):
+  def __init__(self, overwrite: bool = False, fmt: str = 'png', version: int = 6):
     self.overwrite = overwrite
     self.fmt = fmt
+    self.version = version
     
   def run(self, cls_name: str):
     src = configs.XRAY_PLOTS_FOLDER / f'{cls_name}.{self.fmt}'
-    dst = configs.WEBSITE_PATH / 'clusters' / cls_name / f'xray.{self.fmt}'
+    dst = configs.WEBSITE_PATH / f'clusters_v{self.version}' / cls_name / f'xray.{self.fmt}'
     if (not dst.exists() or self.overwrite) and src.exists(): 
       copy(src, dst)

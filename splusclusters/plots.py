@@ -123,12 +123,14 @@ class ClusterPlotStage(PlotStage):
     separated: bool = False,
     photoz_odds: float = 0.9,
     splus_only: bool = False,
+    version: int = 6,
   ):
     self.fmt = fmt
     self.overwrite = overwrite
     self.separated = separated
     self.photoz_odds = photoz_odds
     self.splus_only = splus_only
+    self.version = version
     
   def plot_specz(
     self,
@@ -378,7 +380,7 @@ class ClusterPlotStage(PlotStage):
       )
     
     if self.separated:
-      out = configs.WEBSITE_PATH / 'clusters' / cls_name / f'specz.{self.fmt}'
+      out = configs.WEBSITE_PATH / f'clusters_v{self.version}' / cls_name / f'specz.{self.fmt}'
       if self.overwrite or not out.exists():
         out.parent.mkdir(parents=True, exist_ok=True)
         fig = plt.figure(figsize=(7.5, 7.5), dpi=150)
@@ -392,6 +394,7 @@ class ClusterPlotStage(PlotStage):
           cls_r500_Mpc=cls_r500_Mpc, 
           cls_search_radius_deg=cls_search_radius_deg,
           cls_search_radius_Mpc=cls_search_radius_Mpc,
+          z_spec_range=z_spec_range,
           df_members=df_members,
           df_interlopers=df_interlopers,
           df_specz_radial=df_specz_radial,
@@ -400,7 +403,7 @@ class ClusterPlotStage(PlotStage):
         plt.savefig(out, bbox_inches='tight', pad_inches=0.1)
         plt.close(fig)
         
-      out = configs.WEBSITE_PATH / 'clusters' / cls_name / f'photoz.{self.fmt}'
+      out = configs.WEBSITE_PATH / f'clusters_v{self.version}' / cls_name / f'photoz.{self.fmt}'
       if self.overwrite or not out.exists():
         out.parent.mkdir(parents=True, exist_ok=True)
         fig = plt.figure(figsize=(7.5, 7.5), dpi=150)
@@ -421,7 +424,7 @@ class ClusterPlotStage(PlotStage):
         plt.savefig(out, bbox_inches='tight', pad_inches=0.1)
         plt.close(fig)
         
-      out = configs.WEBSITE_PATH / 'clusters' / cls_name / f'photoz_specz.{self.fmt}'
+      out = configs.WEBSITE_PATH / f'clusters_v{self.version}' / cls_name / f'photoz_specz.{self.fmt}'
       if self.overwrite or not out.exists():
         out.parent.mkdir(parents=True, exist_ok=True)
         fig = plt.figure(figsize=(7.5, 7.5), dpi=150)
@@ -520,11 +523,13 @@ class VelocityPlotStage(PlotStage):
     fmt: Literal['pdf', 'jpg', 'png'] = 'pdf',
     separated: bool = False,
     photoz_odds: float = 0.9,
+    version: int = 6,
   ):
     self.overwrite = overwrite
     self.separated = separated
     self.fmt = fmt
     self.photoz_odds = photoz_odds
+    self.version = version
     
   
   def plot_velocity(self, df_members: pd.DataFrame, df_interlopers: pd.DataFrame, ax: plt.Axes):
@@ -745,7 +750,7 @@ class VelocityPlotStage(PlotStage):
     )
       
     if self.separated:
-      out = configs.WEBSITE_PATH / 'clusters' / cls_name / f'spec_velocity.{self.fmt}'
+      out = configs.WEBSITE_PATH / f'clusters_v{self.version}' / cls_name / f'spec_velocity.{self.fmt}'
       if self.overwrite or not out.exists():
         out.parent.mkdir(parents=True, exist_ok=True)
         fig = plt.figure(figsize=(7.5, 7.5), dpi=150)
@@ -754,7 +759,7 @@ class VelocityPlotStage(PlotStage):
         plt.savefig(out, bbox_inches='tight', pad_inches=0.1)
         plt.close(fig)
         
-      out = configs.WEBSITE_PATH / 'clusters' / cls_name / f'specz_distance.{self.fmt}'
+      out = configs.WEBSITE_PATH / f'clusters_v{self.version}' / cls_name / f'specz_distance.{self.fmt}'
       if self.overwrite or not out.exists():
         out.parent.mkdir(parents=True, exist_ok=True)
         fig = plt.figure(figsize=(7.5, 7.5), dpi=150)
@@ -763,7 +768,7 @@ class VelocityPlotStage(PlotStage):
         plt.savefig(out, bbox_inches='tight', pad_inches=0.1)
         plt.close(fig)
         
-      out = configs.WEBSITE_PATH / 'clusters' / cls_name / f'photoz_distance.{self.fmt}'
+      out = configs.WEBSITE_PATH / f'clusters_v{self.version}' / cls_name / f'photoz_distance.{self.fmt}'
       if self.overwrite or not out.exists():
         out.parent.mkdir(parents=True, exist_ok=True)
         fig = plt.figure(figsize=(7.5, 7.5), dpi=150)
@@ -772,7 +777,7 @@ class VelocityPlotStage(PlotStage):
         plt.savefig(out, bbox_inches='tight', pad_inches=0.1)
         plt.close(fig)
         
-      out = configs.WEBSITE_PATH / 'clusters' / cls_name / f'spec_velocity_position.{self.fmt}'
+      out = configs.WEBSITE_PATH / f'clusters_v{self.version}' / cls_name / f'spec_velocity_position.{self.fmt}'
       if self.overwrite or not out.exists():
         out.parent.mkdir(parents=True, exist_ok=True)
         fig = plt.figure(figsize=(7.5, 7.5), dpi=150)
@@ -793,7 +798,7 @@ class VelocityPlotStage(PlotStage):
         plt.savefig(out, bbox_inches='tight', pad_inches=0.1)
         plt.close(fig)
         
-      out = configs.WEBSITE_PATH / 'clusters' / cls_name / f'spec_velocity_rel_position.{self.fmt}'
+      out = configs.WEBSITE_PATH / f'clusters_v{self.version}' / cls_name / f'spec_velocity_rel_position.{self.fmt}'
       if self.overwrite or not out.exists():
         out.parent.mkdir(parents=True, exist_ok=True)
         fig = plt.figure(figsize=(7.5, 7.5), dpi=150)
@@ -848,11 +853,13 @@ class MagDiffPlotStage(PipelineStage):
     self, 
     overwrite: bool = False, 
     fmt: Literal['pdf', 'jpg', 'png'] = 'pdf', 
-    separated: bool = False
+    separated: bool = False,
+    version: int = 6,
   ):
     self.overwrite = overwrite
     self.separated = separated
     self.fmt = fmt
+    self.version = version
     self.white_viridis = LinearSegmentedColormap.from_list(
       'white_viridis', 
       [
@@ -956,7 +963,7 @@ class MagDiffPlotStage(PipelineStage):
     )
     
     if self.separated:
-      out = configs.WEBSITE_PATH / 'clusters' / cls_name / f'mag_diff.{self.fmt}'
+      out = configs.WEBSITE_PATH / f'clusters_v{self.version}' / cls_name / f'mag_diff.{self.fmt}'
       if self.overwrite or not out.exists():
         out.parent.mkdir(parents=True, exist_ok=True)
         fig, axs = plt.subplots(figsize=(7.5, 7.5), dpi=150)
@@ -964,7 +971,7 @@ class MagDiffPlotStage(PipelineStage):
         plt.savefig(out, bbox_inches='tight', pad_inches=0.1)
         plt.close(fig)
       
-      out = configs.WEBSITE_PATH / 'clusters' / cls_name / f'mag_diff_hist.{self.fmt}'
+      out = configs.WEBSITE_PATH / f'clusters_v{self.version}' / cls_name / f'mag_diff_hist.{self.fmt}'
       if self.overwrite or not out.exists():
         out.parent.mkdir(parents=True, exist_ok=True)
         fig, axs = plt.subplots(figsize=(7.5, 7.5), dpi=150)
