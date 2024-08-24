@@ -54,7 +54,6 @@ def load_members_index_v6():
     'Rap', 'Nmemb_wR200'
   ]
   info_df = read_table(path, fmt='dat', col_names=cols, comment='#')
-  print(names_df['name'].values)
   info_df['name'] = names_df['name'].values
   return info_df
 
@@ -321,8 +320,6 @@ class LoadClusterInfoStage(PipelineStage):
     print('Cluster Name:', name)
     print(f'RA: {ra:.3f}, DEC: {dec:.3f}, z: {z:.2f}, search radius: {search_radius_deg:.2f}')
     print(f'R200: {r200_Mpc:.2f} ({r200_deg:.2f}), R500: {r500_Mpc:.2f} ({r500_deg:.2f})')
-    
-    print(df_clusters)
     
     return {
       'cls_name': name,
