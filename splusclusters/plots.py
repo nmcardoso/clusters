@@ -598,23 +598,12 @@ class SpecDiffPlotStage(PlotStage):
     df_interlopers: pd.DataFrame,
     df_all_radial: pd.DataFrame,
   ):
+    if len(df_all_radial) == 0: return
     out = configs.WEBSITE_PATH / f'clusters_v{self.version}' / cls_name / f'diagonal.{self.fmt}'
-    fig = plt.figure(figsize=(7.5, 7.5), dpi=150)
-    ax = fig.add_subplot()
-    self.diagonal_plot(
-      df_members=df_members,
-      df_interlopers=df_interlopers,
-      df_all_radial=df_all_radial,
-      ax=ax,
-    )
-    plt.savefig(out, bbox_inches='tight', pad_inches=0.1)
-    plt.close(fig)
-    
-    if df_members is not None and df_interlopers is not None:
-      out = configs.WEBSITE_PATH / f'clusters_v{self.version}' / cls_name / f'redshift_histogram.{self.fmt}'
+    if not out.exists() or self.overwrite:
       fig = plt.figure(figsize=(7.5, 7.5), dpi=150)
       ax = fig.add_subplot()
-      self.histogram_plot(
+      self.diagonal_plot(
         df_members=df_members,
         df_interlopers=df_interlopers,
         df_all_radial=df_all_radial,
@@ -623,12 +612,27 @@ class SpecDiffPlotStage(PlotStage):
       plt.savefig(out, bbox_inches='tight', pad_inches=0.1)
       plt.close(fig)
     
-    out = configs.WEBSITE_PATH / f'clusters_v{self.version}' / cls_name / f'redshift_histogram_all.{self.fmt}'
-    fig = plt.figure(figsize=(7.5, 7.5), dpi=150)
-    ax = fig.add_subplot()
-    self.histogram_plot_all(df_all_radial=df_all_radial, ax=ax)
-    plt.savefig(out, bbox_inches='tight', pad_inches=0.1)
-    plt.close(fig)
+    if df_members is not None and df_interlopers is not None:
+      out = configs.WEBSITE_PATH / f'clusters_v{self.version}' / cls_name / f'redshift_histogram.{self.fmt}'
+      if not out.exists() or self.overwrite:
+        fig = plt.figure(figsize=(7.5, 7.5), dpi=150)
+        ax = fig.add_subplot()
+        self.histogram_plot(
+          df_members=df_members,
+          df_interlopers=df_interlopers,
+          df_all_radial=df_all_radial,
+          ax=ax,
+        )
+        plt.savefig(out, bbox_inches='tight', pad_inches=0.1)
+        plt.close(fig)
+    
+      out = configs.WEBSITE_PATH / f'clusters_v{self.version}' / cls_name / f'redshift_histogram_all.{self.fmt}'
+      if not out.exists() or self.overwrite:
+        fig = plt.figure(figsize=(7.5, 7.5), dpi=150)
+        ax = fig.add_subplot()
+        self.histogram_plot_all(df_all_radial=df_all_radial, ax=ax)
+        plt.savefig(out, bbox_inches='tight', pad_inches=0.1)
+        plt.close(fig)
     
     
 
