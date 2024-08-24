@@ -16,7 +16,7 @@ from splusclusters.plots import (ClusterPlotStage, MagDiffPlotStage,
 from splusclusters.website import WebsitePagesStage
 
 
-def website_pipeline(overwrite: bool = False, version: int = 6, dev: bool = False):
+def website_pipeline(overwrite: bool = False, version: int = 6, dev: bool = False, index_only: bool = False):
   if version == 5:
     df_clusters = load_clusters()
   else:
@@ -34,10 +34,12 @@ def website_pipeline(overwrite: bool = False, version: int = 6, dev: bool = Fals
     WebsitePagesStage(df_clusters=df_clusters, version=version),
   )
   
-  if not dev:
-    pipe.map_run('cls_id', df_clusters.clsid.values, workers=1)
-  else:
-    pipe.map_run('cls_id', df_clusters.clsid.values[:2], workers=1)
+  if not index_only:
+    if not dev:
+      pipe.map_run('cls_id', df_clusters.clsid.values, workers=1)
+    else:
+      pipe.map_run('cls_id', df_clusters.clsid.values[:2], workers=1)
+  
   WebsitePagesStage(df_clusters=df_clusters).make_index()
   WebsitePagesStage(df_clusters=df_clusters).make_landing()
   
@@ -48,9 +50,10 @@ if __name__ == '__main__':
   parser.add_argument('--v6', action='store_true')
   parser.add_argument('--overwrite', action='store_true')
   parser.add_argument('--dev', action='store_true')
+  parser.add_argument('--index', action='store_true')
   args = parser.parse_args()
   
   if args.v5:
-    website_pipeline(overwrite=args.overwrite, version=5, dev=args.dev)
+    website_pipeline(overwrite=args.overwrite, version=5, dev=args.dev, index_only=args.index)
   if args.v6:
-    website_pipeline(overwrite=args.overwrite, version=6, dev=args.dev)
+    website_pipeline(overwrite=args.overwrite, version=6, dev=args.dev, index_only=args.index)
