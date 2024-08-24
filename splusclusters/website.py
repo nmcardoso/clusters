@@ -174,6 +174,7 @@ class WebsitePagesStage(PipelineStage):
     z_spec_range: Tuple[float, float],
     z_photo_range: Tuple[float, float],
     df_photoz_radial: pd.DataFrame,
+    df_members: pd.DataFrame,
   ):
     width = 400
     height = 400
@@ -339,3 +340,6 @@ class WebsitePagesStage(PipelineStage):
       cls_r500_deg=cls_r500_deg, 
       df=df_photoz_radial
     )
+    
+    if df_members is not None:
+      write_table(df_members, configs.WEBSITE_PATH / f'clusters_v{self.version}' / cls_name / 'members.csv')
