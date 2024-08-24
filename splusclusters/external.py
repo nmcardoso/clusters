@@ -207,9 +207,9 @@ class DownloadSplusPhotozStage(PipelineStage):
       photoz.odds
       FROM idr5_vacs.idr5_photoz AS photoz
       WHERE 1 = CONTAINS( 
-        POINT('ICRS', photo.RA, photo.DEC), 
+        POINT('ICRS', photoz.RA, photoz.DEC), 
         CIRCLE('ICRS', {ra:.6f}, {dec:.6f}, {radius:.6f}) 
-      ) AND photo.r_auto BETWEEN {r_min:.3f} AND {r_max:.3f} 
+      ) AND photoz.r_auto BETWEEN {r_min:.3f} AND {r_max:.3f} 
     """
     
     radius = self.get_data(self.radius_key)
