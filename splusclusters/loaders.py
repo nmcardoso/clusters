@@ -45,6 +45,7 @@ def load_members_index_v6():
   ]
   path = configs.MEMBERS_V6_PATH / 'info_cls_shiftgap_iter_10.0hmpcf_nrb.dat'
   names_df = read_table(path, col_names=cols, comment='#')
+  print(names_df)
   path = configs.MEMBERS_V6_PATH / 'info_cls_shiftgap_iter_10.0hmpcf.dat_nrb'
   cols = [
     'clsid', 'ra', 'dec', 'z_spec', 'veli', 'velf', 'Nwcls', 'Nmemb', 'sigma_p',
