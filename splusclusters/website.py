@@ -83,7 +83,7 @@ class WebsitePagesStage(PipelineStage):
       active = 'active' if name == curr_name else ''
       links += f'<li class="nav-item"><a class="nav-link {active}" href="/clusters_v{self.version}/{name}">{name}</a></li>'
     html = f'''
-      <nav class="navbar navbar-expand-lg bg-body-tertiary">
+      <nav class="navbar navbar-expand-lg bg-body-tertiary mt-2">
         <div class="container-fluid">
           <a class="navbar-brand" href="#">🌌 S-PLUS Clusters</a>
           <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarSupportedContent" aria-controls="navbarSupportedContent" aria-expanded="false" aria-label="Toggle navigation">
@@ -210,7 +210,7 @@ class WebsitePagesStage(PipelineStage):
       
       <hr />
       
-      <div class="container-fluid">
+      <div class="container-xxl">
         <center><h2>{cls_name}</h2></center>
         <div class="row">
           <div class="col-4">
@@ -275,12 +275,14 @@ class WebsitePagesStage(PipelineStage):
         </div>
         <br /><br />
         <center><h4>Gallery</h4></center>
-        {' '.join(gallery)}
+        <div class="grid text-center">
+          {' '.join(gallery)}
+        </div>
         <br /><br />
       </div>
 
-      <div style="background-color: #201F1F;" class="w-100 text-white py-3">
-        <center><h4>Legacy DR10</h4></center>
+      <div style="background-color: #201F1F;" class="w-100 text-white mt-2 py-3">
+        <center><h4 class="mb-2">Legacy DR10</h4></center>
         <div id="aladin-lite-div" style="width: 90%; height: 700px; margin:0 auto;"></div>
       </div>
       
