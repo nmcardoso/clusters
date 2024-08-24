@@ -551,13 +551,19 @@ class SpecDiffPlotStage(PlotStage):
       ax.scatter(members_match.z, members_match.zml, c='tab:red', s=5, alpha=0.85, label='Members', rasterized=True)
       interlopers_match = fast_crossmatch(df_interlopers, df_all_radial)
       ax.scatter(interlopers_match.z, interlopers_match.zml, c='tab:blue', s=5, alpha=0.85, label='Interlopers', rasterized=True)
+      xlim = (min(members_match.z.min(), interlopers_match.z.min()), max(members_match.z.max(), interlopers_match.z.max()))
+      ylim = (min(members_match.zml.min(), interlopers_match.zml.min()), max(members_match.zml.max(), interlopers_match.zml.max()))
     else:
       ax.scatter(df_all_radial.z, df_all_radial.zml, c='tab:blue', s=5, alpha=0.85, label='Objects', rasterized=True)
+      xlim = (df_all_radial.z.min(), df_all_radial.z.max())
+      ylim = (df_all_radial.zml.min(), df_all_radial.zml.max())
     ax.legend()
     ax.tick_params(direction='in')
     ax.set_xlabel('$z_{{spec}}$')
     ax.set_ylabel('$z_{{photo}}$')
     ax.set_title('$z_{{spec}}$ x $z_{{photo}}$')
+    ax.set_xlim(*xlim)
+    ax.set_ylim(*ylim)
     
   def histogram_members_plot(
     self, 
