@@ -548,8 +548,10 @@ class SpecDiffPlotStage(PlotStage):
     ax.plot([0, 1], [0, 1], c='tab:gray', alpha=0.75, ls='--', transform=ax.transAxes)
     if df_members is not None and df_interlopers is not None:
       members_match = fast_crossmatch(df_members, df_all_radial)
+      members_match = members_match[~members_match.z.isna() & ~members_match.zml.isna()]
       ax.scatter(members_match.z, members_match.zml, c='tab:red', s=5, alpha=0.85, label='Members', rasterized=True)
       interlopers_match = fast_crossmatch(df_interlopers, df_all_radial)
+      interlopers_match = interlopers_match[~interlopers_match.z.isna() & ~interlopers_match.zml.isna()]
       ax.scatter(interlopers_match.z, interlopers_match.zml, c='tab:blue', s=5, alpha=0.85, label='Interlopers', rasterized=True)
       xlim = (min(members_match.z.min(), interlopers_match.z.min()), max(members_match.z.max(), interlopers_match.z.max()))
       ylim = (min(members_match.zml.min(), interlopers_match.zml.min()), max(members_match.zml.max(), interlopers_match.zml.max()))
