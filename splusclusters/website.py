@@ -148,7 +148,7 @@ class WebsitePagesStage(PipelineStage):
     df_v5 = load_clusters()
     q = df_v5[df_v5.name == name]
     if len(q) == 0: return ''
-    id_v5 = q.clsid[0]
+    id_v5 = q.clsid.values[0]
     catalog_v5 = load_members_v5(id_v5)
     catalog_v6 = load_members_v6(name)
     df = crossmatch(catalog_v6, catalog_v5, join='1not2')
