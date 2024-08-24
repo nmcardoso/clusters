@@ -635,7 +635,6 @@ class SpecDiffPlotStage(PlotStage):
         ax = fig.add_subplot()
         self.histogram_members_plot(
           df_members=df_members,
-          df_interlopers=df_interlopers,
           df_all_radial=df_all_radial,
           ax=ax,
         )
@@ -647,8 +646,7 @@ class SpecDiffPlotStage(PlotStage):
       if not out.exists() or self.overwrite:
         fig = plt.figure(figsize=(7.5, 7.5), dpi=150)
         ax = fig.add_subplot()
-        self.histogram_members_plot(
-          df_members=df_members,
+        self.histogram_interlopers_plot(
           df_interlopers=df_interlopers,
           df_all_radial=df_all_radial,
           ax=ax,
