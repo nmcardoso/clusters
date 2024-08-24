@@ -612,7 +612,7 @@ class SpecDiffPlotStage(PlotStage):
       plt.savefig(out, bbox_inches='tight', pad_inches=0.1)
       plt.close(fig)
     
-    if df_members is not None and df_interlopers is not None:
+    if df_members is not None and len(df_members) > 0 and df_interlopers is not None and len(df_interlopers) > 0:
       out = configs.WEBSITE_PATH / f'clusters_v{self.version}' / cls_name / f'redshift_histogram.{self.fmt}'
       if not out.exists() or self.overwrite:
         fig = plt.figure(figsize=(7.5, 7.5), dpi=150)
@@ -626,6 +626,7 @@ class SpecDiffPlotStage(PlotStage):
         plt.savefig(out, bbox_inches='tight', pad_inches=0.1)
         plt.close(fig)
     
+    if df_all_radial is not None and len(df_all_radial) > 0:
       out = configs.WEBSITE_PATH / f'clusters_v{self.version}' / cls_name / f'redshift_histogram_all.{self.fmt}'
       if not out.exists() or self.overwrite:
         fig = plt.figure(figsize=(7.5, 7.5), dpi=150)
