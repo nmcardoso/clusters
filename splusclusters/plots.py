@@ -559,41 +559,53 @@ class SpecDiffPlotStage(PlotStage):
     ax.set_ylabel('$z_{{photo}}$')
     ax.set_title('$z_{{spec}}$ x $z_{{photo}}$')
     
-  def histogram_plot(
+  def histogram_plot_members(
     self, 
     df_members: pd.DataFrame, 
-    df_interlopers: pd.DataFrame, 
     df_all_radial: pd.DataFrame, 
     ax: plt.Axes
   ):
     members_match = fast_crossmatch(df_members, df_all_radial)
     members_match = members_match[~members_match.z.isna() & ~members_match.zml.isna()]
     if len(members_match) == 0: return
-    ax.hist(members_match.z, histtype='step', density=True, color='tab:red', alpha=0.75, ls='-', lw=2, label='Members z_{{spec}}')
-    ax.hist(members_match.zml, histtype='step', density=True, color='tab:red', alpha=0.75, ls='--', lw=2, label='Members z_{{photo}}')
-    interlopers_match = fast_crossmatch(df_interlopers, df_all_radial)
-    interlopers_match = interlopers_match[~interlopers_match.z.isna() & ~interlopers_match.zml.isna()]
-    if len(interlopers_match) == 0: return
-    ax.hist(interlopers_match.z, histtype='step', density=True, color='tab:blue', alpha=0.75, ls='-', lw=2, label='Interlopers z_{{spec}}')
-    ax.hist(interlopers_match.zml, histtype='step', density=True, color='tab:blue', alpha=0.75, ls='--', lw=2, label='Interlopers z_{{photo}}')
+    ax.hist(members_match.z, histtype='step', density=True, color='tab:red', alpha=0.75, lw=2, label='$z_{{spec}}$')
+    ax.hist(members_match.zml, histtype='step', density=True, color='tab:blue', alpha=0.75, lw=2, label='$z_{{photo}}$')
     ax.legend()
     ax.tick_params(direction='in')
     ax.set_xlabel('z')
     ax.set_ylabel('Count (%)')
-    ax.set_title('$z_{{spec}}$ x $z_{{photo}}$ distributions')
+    ax.set_title('$z_{{spec}}$ x $z_{{photo}}$ (Members)')
+    
+  def histogram_plot_interlopers(
+    self,
+    
+    df_interlopers: pd.DataFrame,
+    df_all_radial: pd.DataFrame,
+    ax: plt.Axes,
+  ):
+    interlopers_match = fast_crossmatch(df_interlopers, df_all_radial)
+    interlopers_match = interlopers_match[~interlopers_match.z.isna() & ~interlopers_match.zml.isna()]
+    if len(interlopers_match) == 0: return
+    ax.hist(interlopers_match.z, histtype='step', density=True, color='tab:red', alpha=0.75, lw=2, label='$z_{{spec}}$')
+    ax.hist(interlopers_match.zml, histtype='step', density=True, color='tab:blue', alpha=0.75, lw=2, label='$z_{{photo}}$')
+    ax.legend()
+    ax.tick_params(direction='in')
+    ax.set_xlabel('z')
+    ax.set_ylabel('Count (%)')
+    ax.set_title('$z_{{spec}}$ x $z_{{photo}}$ (Interlopers)')
     
   def histogram_plot_all(
     self, 
     df_all_radial: pd.DataFrame, 
     ax: plt.Axes
   ):
-    ax.hist(df_all_radial.z, histtype='step', density=True, color='tab:blue', alpha=0.75, lw=2, label='z_{{spec}}')
-    ax.hist(df_all_radial.zml, histtype='step', density=True, color='tab:red', alpha=0.75, lw=2, label='z_{{photo}}')
+    ax.hist(df_all_radial.z, histtype='step', density=True, color='tab:red', alpha=0.75, lw=2, label='$z_{{spec}}$')
+    ax.hist(df_all_radial.zml, histtype='step', density=True, color='tab:blue', alpha=0.75, lw=2, label='$z_{{photo}}$')
     ax.legend()
     ax.tick_params(direction='in')
     ax.set_xlabel('z')
     ax.set_ylabel('Count (%)')
-    ax.set_title('$z_{{spec}}$ x $z_{{photo}}$ distributions')
+    ax.set_title('$z_{{spec}}$ x $z_{{photo}}$ (All)')
   
   def run(
     self, 
