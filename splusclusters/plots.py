@@ -559,7 +559,7 @@ class SpecDiffPlotStage(PlotStage):
     ax.set_ylabel('$z_{{photo}}$')
     ax.set_title('$z_{{spec}}$ x $z_{{photo}}$')
     
-  def histogram_plot_members(
+  def histogram_members_plot(
     self, 
     df_members: pd.DataFrame, 
     df_all_radial: pd.DataFrame, 
@@ -576,7 +576,7 @@ class SpecDiffPlotStage(PlotStage):
     ax.set_ylabel('Count (%)')
     ax.set_title('$z_{{spec}}$ x $z_{{photo}}$ (Members)')
     
-  def histogram_plot_interlopers(
+  def histogram_interlopers_plo(
     self,
     
     df_interlopers: pd.DataFrame,
@@ -615,7 +615,7 @@ class SpecDiffPlotStage(PlotStage):
     df_all_radial: pd.DataFrame,
   ):
     if len(df_all_radial) == 0: return
-    out = configs.WEBSITE_PATH / f'clusters_v{self.version}' / cls_name / f'diagonal.{self.fmt}'
+    out = configs.WEBSITE_PATH / f'clusters_v{self.version}' / cls_name / f'redshift_diagonal.{self.fmt}'
     if not out.exists() or self.overwrite:
       fig = plt.figure(figsize=(7.5, 7.5), dpi=150)
       ax = fig.add_subplot()
@@ -628,12 +628,26 @@ class SpecDiffPlotStage(PlotStage):
       plt.savefig(out, bbox_inches='tight', pad_inches=0.1)
       plt.close(fig)
     
-    if df_members is not None and len(df_members) > 0 and df_interlopers is not None and len(df_interlopers) > 0:
-      out = configs.WEBSITE_PATH / f'clusters_v{self.version}' / cls_name / f'redshift_histogram.{self.fmt}'
+    if df_members is not None and len(df_members) > 0:
+      out = configs.WEBSITE_PATH / f'clusters_v{self.version}' / cls_name / f'redshift_histogram_members.{self.fmt}'
       if not out.exists() or self.overwrite:
         fig = plt.figure(figsize=(7.5, 7.5), dpi=150)
         ax = fig.add_subplot()
-        self.histogram_plot(
+        self.histogram_members_plot(
+          df_members=df_members,
+          df_interlopers=df_interlopers,
+          df_all_radial=df_all_radial,
+          ax=ax,
+        )
+        plt.savefig(out, bbox_inches='tight', pad_inches=0.1)
+        plt.close(fig)
+        
+    if df_interlopers is not None and len(df_interlopers) > 0:
+      out = configs.WEBSITE_PATH / f'clusters_v{self.version}' / cls_name / f'redshift_histogram_interlopers.{self.fmt}'
+      if not out.exists() or self.overwrite:
+        fig = plt.figure(figsize=(7.5, 7.5), dpi=150)
+        ax = fig.add_subplot()
+        self.histogram_members_plot(
           df_members=df_members,
           df_interlopers=df_interlopers,
           df_all_radial=df_all_radial,
