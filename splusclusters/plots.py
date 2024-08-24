@@ -366,7 +366,6 @@ class ClusterPlotStage(PlotStage):
       'CUNIT1': 'deg',
       'CUNIT2': 'deg'
     }
-    print(wcs_spec)
     wcs = WCS(wcs_spec)
     
     title = get_plot_title(
