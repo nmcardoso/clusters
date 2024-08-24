@@ -552,7 +552,7 @@ class SpecDiffPlotStage(PlotStage):
       interlopers_match = fast_crossmatch(df_interlopers, df_all_radial)
       ax.scatter(interlopers_match.z, interlopers_match.zml, c='tab:blue', s=5, alpha=0.85, label='Interlopers', rasterized=True)
     else:
-      ax.scatter(df_all_radial.z, df_all_radial.zml, c='tab:blue', s=5, label='Objects', rasterized=True)
+      ax.scatter(df_all_radial.z, df_all_radial.zml, c='tab:blue', s=5, alpha=0.85, label='Objects', rasterized=True)
     ax.legend()
     ax.tick_params(direction='in')
     ax.set_xlabel('$z_{{spec}}$')
