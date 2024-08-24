@@ -83,7 +83,7 @@ class WebsitePagesStage(PipelineStage):
       active = 'active' if name == curr_name else ''
       links += f'<li class="nav-item"><a class="nav-link {active}" href="/clusters_v{self.version}/{name}">{name}</a></li>'
     html = f'''
-      <nav class="navbar navbar-expand-lg bg-body-tertiary mt-2">
+      <nav class="navbar navbar-expand-lg bg-body-tertiary">
         <div class="container-fluid">
           <a class="navbar-brand" href="#">🌌 S-PLUS Clusters</a>
           <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarSupportedContent" aria-controls="navbarSupportedContent" aria-expanded="false" aria-label="Toggle navigation">
@@ -103,7 +103,7 @@ class WebsitePagesStage(PipelineStage):
           </div>
         </div>
       </nav>
-      <ul class="nav nav-pills">
+      <ul class="nav nav-pills mt-2">
         {links}
       </ul>
     '''
