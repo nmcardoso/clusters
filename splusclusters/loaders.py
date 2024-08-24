@@ -61,7 +61,7 @@ def load_members_v6(cls_name: str = None, cls_id: str | int = None):
   if cls_name is not None:
     index_df = load_members_index_v6()
     cls_id = index_df[index_df.name == cls_name].clsid.values[0]
-  prefixed_id = str(int(cls_id)).zfill(4)
+  prefixed_id = str(int(cls_id)).zfill(5)
   path = configs.MEMBERS_V6_FOLDER / f'cluster.gals.sel.shiftgap.iter.{prefixed_id}'
   cols = [
     'ra', 'dec', 'z', 'z_err', 'v', 'v_err', 'radius_deg', 
