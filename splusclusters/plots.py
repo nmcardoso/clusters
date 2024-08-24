@@ -548,13 +548,13 @@ class SpecDiffPlotStage(PlotStage):
     ax.plot([0, 1], [0, 1], c='tab:gray', alpha=0.75, ls='--', transform=ax.transAxes)
     if df_members is not None and df_interlopers is not None:
       members_match = fast_crossmatch(df_members, df_all_radial)
-      if len(members_match) == 0: return
       members_match = members_match[~members_match.z.isna() & ~members_match.zml.isna()]
+      if len(members_match) == 0: return
       ax.scatter(members_match.z, members_match.zml, c='tab:red', s=5, alpha=0.85, label='Members', rasterized=True)
       
       interlopers_match = fast_crossmatch(df_interlopers, df_all_radial)
-      if len(interlopers_match) == 0: return
       interlopers_match = interlopers_match[~interlopers_match.z.isna() & ~interlopers_match.zml.isna()]
+      if len(interlopers_match) == 0: return
       ax.scatter(interlopers_match.z, interlopers_match.zml, c='tab:blue', s=5, alpha=0.85, label='Interlopers', rasterized=True)
       
       xlim = (min(members_match.z.min(), interlopers_match.z.min()), max(members_match.z.max(), interlopers_match.z.max()))
@@ -615,6 +615,7 @@ class SpecDiffPlotStage(PlotStage):
     ax: plt.Axes
   ):
     df = df_all_radial[~df_all_radial.z.isna() & ~df_all_radial.zml.isna()]
+    if len(df) == 0: return
     rng = (min(df.z.min(), df.zml.min()), max(df.z.max(), df.zml.max()))
     ax.hist(df.z, histtype='step', bins=30, range=rng, color='tab:red', alpha=0.75, lw=2, label=f'$z_{{spec}}$ ({len(df.z)} objects)')
     ax.hist(df.zml, histtype='step', bins=30, range=rng, color='tab:blue', alpha=0.75, lw=2, label=f'$z_{{photo}}$ ({len(df.zml)} objects)')
