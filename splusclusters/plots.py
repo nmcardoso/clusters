@@ -557,21 +557,23 @@ class SpecDiffPlotStage(PlotStage):
       if len(interlopers_match) == 0: return
       ax.scatter(interlopers_match.z, interlopers_match.zml, c='tab:blue', s=5, alpha=0.85, label='Interlopers', rasterized=True)
       
-      xlim = (min(members_match.z.min(), interlopers_match.z.min()), max(members_match.z.max(), interlopers_match.z.max()))
-      ylim = (min(members_match.zml.min(), interlopers_match.zml.min()), max(members_match.zml.max(), interlopers_match.zml.max()))
+      rng_min = np.min([members_match.z.min(), interlopers_match.z.min(), members_match.zml.min(), interlopers_match.zml.min()])
+      rng_max = np.max([members_match.z.max(), interlopers_match.z.max(), members_match.zml.max(), interlopers_match.zml.max()])
+      rng = (rng_min, rng_max)
     elif df_all_radial is not None:
       df = df_all_radial[~df_all_radial.z.isna() & ~df_all_radial.zml.isna()]
       if len(df) == 0: return
       ax.scatter(df.z, df.zml, c='tab:blue', s=5, alpha=0.85, label='Objects', rasterized=True)
-      xlim = (df.z.min(), df.z.max())
-      ylim = (df.zml.min(), df.zml.max())
+      rng_min = min(df.z.min(), df.zml.min())
+      rng_max = max(df.z.max(), df.zml.max())
+      rng = (rng_min, rng_max)
     ax.legend()
     ax.tick_params(direction='in')
     ax.set_xlabel('$z_{{spec}}$')
     ax.set_ylabel('$z_{{photo}}$')
     ax.set_title('$z_{{spec}}$ x $z_{{photo}}$')
-    ax.set_xlim(*xlim)
-    ax.set_ylim(*ylim)
+    ax.set_xlim(*rng)
+    ax.set_ylim(*rng)
     
   def histogram_members_plot(
     self, 
