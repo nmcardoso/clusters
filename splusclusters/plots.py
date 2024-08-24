@@ -568,8 +568,8 @@ class SpecDiffPlotStage(PlotStage):
     members_match = fast_crossmatch(df_members, df_all_radial)
     members_match = members_match[~members_match.z.isna() & ~members_match.zml.isna()]
     if len(members_match) == 0: return
-    ax.hist(members_match.z, histtype='step', density=True, color='tab:red', alpha=0.75, lw=2, label='$z_{{spec}}$')
-    ax.hist(members_match.zml, histtype='step', density=True, color='tab:blue', alpha=0.75, lw=2, label='$z_{{photo}}$')
+    ax.hist(members_match.z, histtype='step', color='tab:red', alpha=0.75, lw=2, label=f'$z_{{spec}}$ ({len(members_match.z)} objects)')
+    ax.hist(members_match.zml, histtype='step', color='tab:blue', alpha=0.75, lw=2, label=f'$z_{{photo}}$ ({len(members_match.z)} objects)')
     ax.legend()
     ax.tick_params(direction='in')
     ax.set_xlabel('z')
@@ -578,7 +578,6 @@ class SpecDiffPlotStage(PlotStage):
     
   def histogram_interlopers_plot(
     self,
-    
     df_interlopers: pd.DataFrame,
     df_all_radial: pd.DataFrame,
     ax: plt.Axes,
@@ -586,8 +585,8 @@ class SpecDiffPlotStage(PlotStage):
     interlopers_match = fast_crossmatch(df_interlopers, df_all_radial)
     interlopers_match = interlopers_match[~interlopers_match.z.isna() & ~interlopers_match.zml.isna()]
     if len(interlopers_match) == 0: return
-    ax.hist(interlopers_match.z, histtype='step', density=True, color='tab:red', alpha=0.75, lw=2, label='$z_{{spec}}$')
-    ax.hist(interlopers_match.zml, histtype='step', density=True, color='tab:blue', alpha=0.75, lw=2, label='$z_{{photo}}$')
+    ax.hist(interlopers_match.z, histtype='step', color='tab:red', alpha=0.75, lw=2, label=f'$z_{{spec}}$ ({len(interlopers_match.z)} objects)')
+    ax.hist(interlopers_match.zml, histtype='step', color='tab:blue', alpha=0.75, lw=2, label=f'$z_{{photo}}$ ({len(interlopers_match.z)} objects)')
     ax.legend()
     ax.tick_params(direction='in')
     ax.set_xlabel('z')
@@ -600,8 +599,8 @@ class SpecDiffPlotStage(PlotStage):
     ax: plt.Axes
   ):
     df = df_all_radial[~df_all_radial.z.isna() & ~df_all_radial.zml.isna()]
-    ax.hist(df.z, histtype='step', density=True, color='tab:red', alpha=0.75, lw=2, label='$z_{{spec}}$')
-    ax.hist(df.zml, histtype='step', density=True, color='tab:blue', alpha=0.75, lw=2, label='$z_{{photo}}$')
+    ax.hist(df.z, histtype='step', color='tab:red', alpha=0.75, lw=2, label=f'$z_{{spec}}$ ({len(df.z)} objects)')
+    ax.hist(df.zml, histtype='step', color='tab:blue', alpha=0.75, lw=2, label=f'$z_{{photo}}$ ({len(df.zml)} objects)')
     ax.legend()
     ax.tick_params(direction='in')
     ax.set_xlabel('z')
