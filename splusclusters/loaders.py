@@ -44,7 +44,18 @@ def load_members_index_v6():
     'm200_lower', 'm200_upper', 'nwcls', 'n_memb', 'n_memb_wR200', 'name'
   ]
   path = configs.MEMBERS_V6_PATH / 'info_cls_shiftgap_iter_10.0hmpcf_nrb.dat'
-  return read_table(path, col_names=cols, comment='#')
+  names_df = read_table(path, col_names=cols, comment='#')
+  info_df = configs.MEMBERS_V6_PATH / 'info_cls_shiftgap_iter_10.0hmpcf.dat_nrb'
+  cols = [
+    'clsid', 'ra', 'dec', 'z_spec', 'veli', 'velf', 'Nwcls', 'Nmemb', 'sigma_p',
+    'sigma_p_lower', 'sigma_p_upper', 'R500_Mpc', 'R500_lower', 'R500_upper',
+    'M500_solar', 'M500_lower', 'M500_upper', 'R200_Mpc', 'R200_lower',
+    'R200_upper', 'M200_solar', 'M200_lower', 'M200_upper', 'znew', 'znew_err',
+    'Rap', 'Nmemb_wR200'
+  ]
+  info_df = read_table(path, fmt='dat', col_names=cols, comment='#')
+  info_df['name'] = names_df['name']
+  return info_df
 
 def load_members_v6(cls_name: str = None, cls_id: str | int = None):
   if cls_name is not None:
