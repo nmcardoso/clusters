@@ -103,7 +103,6 @@ class WebsitePagesStage(PipelineStage):
           </div>
         </div>
       </nav>
-      <h6 class="ms-3 mt-3">Clusters Index:</h6>
       <ul class="nav nav-pills">
         {links}
       </ul>
@@ -270,11 +269,12 @@ class WebsitePagesStage(PipelineStage):
           </div>
         </div>
         <br /><br />
-        <p><b>Gallery:</b></p>
+        <h4>Gallery</h4>
         {' '.join(gallery)}
         <br /><br />
-        <p><b>Legacy DR10:</b></p>
-        <div id="aladin-lite-div" style="width: 850px; height: 700px; margin:0 auto;"></div>
+        <h4>Legacy DR10</h4>
+        <div id="aladin-lite-div" style="width: 80%; height: 700px; margin:0 auto;"></div>
+        <div class="mt-5">&nbsp;</div>
       </div>
       
       {self.get_scripts()}
