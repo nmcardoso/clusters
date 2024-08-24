@@ -40,8 +40,8 @@ def website_pipeline(overwrite: bool = False, version: int = 6, dev: bool = Fals
     else:
       pipe.map_run('cls_id', df_clusters.clsid.values[:2], workers=1)
   
-  WebsitePagesStage(df_clusters=df_clusters).make_index()
-  WebsitePagesStage(df_clusters=df_clusters).make_landing()
+  WebsitePagesStage(df_clusters=df_clusters, version=version).make_index()
+  WebsitePagesStage(df_clusters=df_clusters, version=version).make_landing()
   
 
 if __name__ == '__main__':
