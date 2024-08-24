@@ -147,16 +147,16 @@ class WebsitePagesStage(PipelineStage):
     if self.version != 6: return ''
     df_v5 = load_clusters()
     q = df_v5[df_v5.name == name]
-    if len(q) == 0: return '<b>Differences between v5 and v6:</b> <i>not included in v5</i>'
+    if len(q) == 0: return '<b>Differences between v5 and v6:</b> <i>not included in v5</i><br /><br />'
     id_v5 = q.clsid.values[0]
     catalog_v5 = load_members_v5(id_v5)
     catalog_v6 = load_members_v6(name)
     df = crossmatch(catalog_v6, catalog_v5, join='1not2')
-    html = f'<b>Differences between v5 and v6:</b> members included: {len(df[df.flag_member == 0])} &bullet; '
-    html += f'interlopers included: {len(df[df.flag_member == 1])} &bullet; '
+    html = f'<b>Differences between v5 and v6:</b> <span class="badge badge-success">members included: {len(df[df.flag_member == 0])}</span> &nbsp; '
+    html += f'<span class="badge badge-success">interlopers included: {len(df[df.flag_member == 1])}</span> &nbsp; '
     df = crossmatch(catalog_v6, catalog_v5, join='2not1')
-    html += f'members: {len(df[df.flag_member == 0])} &bullet; '
-    html += f'interlopers: {len(df[df.flag_member == 1])}<br /><br />'
+    html += f'<span class="badge badge-danger">members excluded: {len(df[df.flag_member == 0])}</span> &nbsp; '
+    html += f'<span class="badge badge-danger">interlopers excluded: {len(df[df.flag_member == 1])}</span><br /><br />'
     return html
   
   def run(
