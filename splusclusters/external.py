@@ -4,6 +4,7 @@ from shutil import copy
 
 import matplotlib.pyplot as plt
 import numpy as np
+import pandas as pd
 import requests
 from astromodule.legacy import LegacyService
 from astromodule.pipeline import Pipeline, PipelineStage, PipelineStorage
@@ -137,17 +138,17 @@ class CopyXrayStage(PipelineStage):
       
       
 class SplusMembersMatchStage(PipelineStage):
-  def __init__(self, overwrite: bool = False, workers: int = 6):
+  def __init__(self, overwrite: bool = False, version: int = 6):
     self.overwrite = overwrite
-    self.workers = workers
+    self.version = version
   
-  def run(self, cls_name: str, cls_ra: float, cls_dec: float):
-    out_path = configs.LEG_PHOTO_FOLDER / f'{cls_name}.parquet'
+  def run(self, cls_name: str, df_members: pd.DataFrame):
+    out_path = configs.WEBSITE_PATH / f'clusters_v{self.version}' / cls_name / f'members_ext.csv'
     if not self.overwrite and out_path.exists():
       return
     
     sql = """
-      SELECT photo.RA, photo.DEC, photo.g_auto, photo.i_auto, photo.J0378_auto, 
+      SELECT photo.RA AS RA_splus, photo.DEC AS DEC_splus, photo.g_auto, photo.i_auto, photo.J0378_auto, 
       photo.J0395_auto, photo.J0410_auto, photo.J0430_auto, photo.J0515_auto, 
       photo.J0660_auto, photo.J0861_auto, photo.r_auto, photo.u_auto, 
       photo.z_auto, photo.e_g_auto, photo.e_i_auto, photo.e_J0378_auto, 
@@ -156,33 +157,22 @@ class SplusMembersMatchStage(PipelineStage):
       photo.e_r_auto, photo.e_u_auto, photo.e_z_auto, photo.THETA, 
       photo.ELLIPTICITY, photo.ELONGATION, photo.A, photo.PETRO_RADIUS, 
       photo.FLUX_RADIUS_50, photo.FLUX_RADIUS_90, photo.MU_MAX_g, photo.MU_MAX_r, 
-      photo.BACKGROUND_g, photo.BACKGROUND_r, photo.s2n_g_auto, photo.s2n_r_auto, 
-      photoz.zml, photoz.odds 
-      FROM idr5.idr5_dual AS photo 
-      JOIN idr5_vacs.idr5_photoz AS photoz ON photo.ID = photoz.ID 
+      photo.BACKGROUND_g, photo.BACKGROUND_r, photo.s2n_g_auto, photo.s2n_r_auto,
+      photoz.zml, photoz.odds
+      FROM idr5.idr5_dual AS photo
+      LEFT JOIN idr5_vacs.idr5_photoz AS photoz ON photo.ID = photoz.ID
+      RIGHT JOIN TAP_UPLOAD.upload AS upl
       WHERE 1 = CONTAINS( 
         POINT('ICRS', photo.RA, photo.DEC), 
-        CIRCLE('ICRS', {ra:.6f}, {dec:.6f}, {radius:.6f}) 
-      ) AND photo.r_auto BETWEEN {r_min:.3f} AND {r_max:.3f} 
+        CIRCLE('ICRS', upl.ra, upl.dec, 0.000277777777778) 
+      )
     """
     
-    radius = self.get_data(self.radius_key)
-    queries = [
-      sql.format(
-        ra=cls_ra,
-        dec=cls_dec,
-        radius=radius,
-        r_min=_r,
-        r_max=_r+.05
-      )
-      for _r in np.arange(*configs.MAG_RANGE, .05)
-    ]
     service = SplusService(username=os.environ['SPLUS_USER'], password=os.environ['SPLUS_PASS'])
-    service.batch_query(
-      sql=queries,
+    service.query(
+      sql=sql,
       save_path=out_path,
-      join=True,
-      workers=self.workers
+      table=df_members,
     )
     
 
