@@ -33,7 +33,7 @@ def website_pipeline(overwrite: bool = False, version: int = 6, dev: bool = Fals
     VelocityPlotStage(overwrite=overwrite, fmt='jpg', separated=True, version=version),
     MagDiffPlotStage(overwrite=overwrite, fmt='jpg', separated=True, version=version),
     SpecDiffPlotStage(overwrite=overwrite, fmt='jpg', separated=True, version=version),
-    ContourPlotStage(overwrite=overwrite, fmt='jpg', version=version),
+    ContourPlotStage(overwrite=True, fmt='jpg', version=version),
     # DownloadXRayStage(overwrite=overwrite, fmt='png'),
     CopyXrayStage(overwrite=overwrite, fmt='png', version=version),
     # SplusMembersMatchStage(overwrite=overwrite, version=version),
