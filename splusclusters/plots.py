@@ -536,9 +536,9 @@ class ContourPlotStage(PlotStage):
     ax: plt.Axes,
     use_photoz: bool = False
   ):
-    center = SkyCoord(ra=cls_ra, dec=cls_dec, unit='deg')
-    dfm = radial_search(center, df_members, 5*cls_r200_deg)
-    dfi = radial_search(center, df_interlopers, 5*cls_r200_deg)
+    center = SkyCoord(ra=cls_ra, dec=cls_dec, unit=u.deg)
+    dfm = radial_search(center, df_members, 5*cls_r200_deg*u.deg)
+    dfi = radial_search(center, df_interlopers, 5*cls_r200_deg*u.deg)
     z = dfm.z.values if not use_photoz else dfm.zml.values
     
     self.add_all_circles(
