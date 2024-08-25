@@ -518,9 +518,10 @@ class ClusterPlotStage(PlotStage):
 
 
 class ContourPlotStage(PlotStage):
-  def __init__(self, overwrite: bool = False, version: int = 6):
+  def __init__(self, overwrite: bool = False, version: int = 6, fmt: str = 'jpg'):
     self.overwrite = overwrite
     self.version = version
+    self.fmt = fmt
 
   def contour_plot(
     self, 
