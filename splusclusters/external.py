@@ -1,6 +1,7 @@
 import os
 import subprocess
 from shutil import copy
+from typing import Tuple
 
 import matplotlib.pyplot as plt
 import numpy as np
@@ -192,7 +193,7 @@ class DownloadSplusPhotozStage(PipelineStage):
     self.overwrite = overwrite
     self.workers = workers
   
-  def run(self, cls_name: str, cls_ra: float, cls_dec: float):
+  def run(self, cls_name: str, cls_ra: float, cls_dec: float, z_photo_range: Tuple[float, float]):
     out_path = configs.PHOTOZ_FOLDER / f'{cls_name}.parquet'
     if not self.overwrite and out_path.exists():
       return
@@ -205,6 +206,7 @@ class DownloadSplusPhotozStage(PipelineStage):
         POINT('ICRS', photoz.RA, photoz.DEC), 
         CIRCLE('ICRS', {ra:.6f}, {dec:.6f}, {radius:.6f}) 
       ) AND photoz.r_auto BETWEEN {r_min:.3f} AND {r_max:.3f} 
+      AND photoz.zml BETWEEN {z_min:.3f} AND {z_max:.3f}
     """
     
     radius = self.get_data(self.radius_key)
@@ -214,7 +216,9 @@ class DownloadSplusPhotozStage(PipelineStage):
         dec=cls_dec,
         radius=radius,
         r_min=_r,
-        r_max=_r+.05
+        r_max=_r+.05,
+        z_min=z_photo_range[0],
+        z_max=z_photo_range[1],
       )
       for _r in np.arange(*configs.MAG_RANGE, .05)
     ]
