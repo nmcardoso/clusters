@@ -668,25 +668,25 @@ class SpecDiffPlotStage(PlotStage):
     df_all_radial: pd.DataFrame,
     ax: plt.Axes,
   ):
-    ax.plot([0, 1], [0, 1], c='tab:gray', alpha=0.55, ls='--', transform=ax.transAxes)
+    ax.plot([0, 1], [0, 0], c='tab:gray', alpha=0.55, ls='--', transform=ax.transAxes)
     if df_members is not None and df_interlopers is not None:
       members_match = fast_crossmatch(df_members, df_all_radial)
       members_match = members_match[~members_match.z.isna() & ~members_match.zml.isna()]
       if len(members_match) == 0: return
-      ax.scatter(members_match.z, members_match.zml, c='tab:red', s=5, alpha=0.85, label='Members', rasterized=True)
+      ax.scatter(members_match.z, members_match.zml - members_match.z, c='tab:red', s=5, alpha=0.85, label='Members', rasterized=True)
       
       interlopers_match = fast_crossmatch(df_interlopers, df_all_radial)
       interlopers_match = interlopers_match[~interlopers_match.z.isna() & ~interlopers_match.zml.isna()]
       if len(interlopers_match) == 0: return
-      ax.scatter(interlopers_match.z, interlopers_match.zml, c='tab:blue', s=5, alpha=0.85, label='Interlopers', rasterized=True)
+      ax.scatter(interlopers_match.z, interlopers_match.zml - interlopers_match.z, c='tab:blue', s=5, alpha=0.85, label='Interlopers', rasterized=True)
     elif df_all_radial is not None:
       df = df_all_radial[~df_all_radial.z.isna() & ~df_all_radial.zml.isna()]
       if len(df) == 0: return
-      ax.scatter(df.z, df.zml, c='tab:blue', s=5, alpha=0.85, label='Objects', rasterized=True)
+      ax.scatter(df.z, df.zml - df.z, c='tab:blue', s=5, alpha=0.85, label='Objects', rasterized=True)
     ax.legend()
     ax.tick_params(direction='in')
     ax.set_xlabel('$z_{{spec}}$')
-    ax.set_ylabel('$z_{{photo}}$')
+    ax.set_ylabel('$z_{{photo}} - z_{{spec}}$ ')
     ax.set_title('$z_{{spec}}$ x $z_{{photo}}$')
     
   def histogram_members_plot(
