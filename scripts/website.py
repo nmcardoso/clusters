@@ -12,8 +12,9 @@ from splusclusters.external import (CopyXrayStage, DownloadXRayStage,
 from splusclusters.loaders import (LoadAllRadialStage, LoadClusterInfoStage,
                                    LoadPhotozRadialStage, LoadSpeczRadialStage,
                                    load_clusters, load_members_index_v6)
-from splusclusters.plots import (ClusterPlotStage, MagDiffPlotStage,
-                                 SpecDiffPlotStage, VelocityPlotStage)
+from splusclusters.plots import (ClusterPlotStage, ContourPlotStage,
+                                 MagDiffPlotStage, SpecDiffPlotStage,
+                                 VelocityPlotStage)
 from splusclusters.website import WebsitePagesStage
 
 
@@ -32,6 +33,7 @@ def website_pipeline(overwrite: bool = False, version: int = 6, dev: bool = Fals
     VelocityPlotStage(overwrite=overwrite, fmt='jpg', separated=True, version=version),
     MagDiffPlotStage(overwrite=overwrite, fmt='jpg', separated=True, version=version),
     SpecDiffPlotStage(overwrite=overwrite, fmt='jpg', separated=True, version=version),
+    ContourPlotStage(overwrite=overwrite, fmt='jpg', version=version),
     # DownloadXRayStage(overwrite=overwrite, fmt='png'),
     CopyXrayStage(overwrite=overwrite, fmt='png', version=version),
     # SplusMembersMatchStage(overwrite=overwrite, version=version),

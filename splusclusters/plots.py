@@ -8,6 +8,7 @@ import pandas as pd
 from astromodule.pipeline import Pipeline, PipelineStage, PipelineStorage
 from astromodule.table import (concat_tables, crossmatch, fast_crossmatch,
                                guess_coords_columns, radial_search, selfmatch)
+from astropy.coordinates import SkyCoord
 from astropy.visualization.wcsaxes import SphericalCircle
 from astropy.wcs import WCS
 from matplotlib.colors import LinearSegmentedColormap
@@ -111,7 +112,6 @@ class PlotStage(PipelineStage):
       c='tab:red', 
       rasterized=True, 
       transform=ax.get_transform('icrs'),
-      label='Cluster Center'
     )
 
 
@@ -518,17 +518,128 @@ class ClusterPlotStage(PlotStage):
 
 
 class ContourPlotStage(PlotStage):
-  def specz_plot(self):
-    pass
-  
-  def run(
+  def __init__(self, overwrite: bool = False, version: int = 6):
+    self.overwrite = overwrite
+    self.version = version
+
+  def contour_plot(
     self, 
     cls_ra: float,
     cls_dec: float,
-    df_members: pd.DataFrame,
+    cls_r200_deg: float,
+    cls_r200_Mpc: float,
+    cls_r500_deg: float,
+    cls_r500_Mpc: float,
+    df_members: pd.DataFrame, 
+    df_interlopers: pd.DataFrame, 
+    ax: plt.Axes,
+    use_photoz: bool = False
   ):
-    pass
+    center = SkyCoord(ra=cls_ra, dec=cls_dec, unit='deg')
+    dfm = radial_search(center, df_members, 5*cls_r200_deg)
+    dfi = radial_search(center, df_interlopers, 5*cls_r200_deg)
+    z = dfm.z.values if use_photoz else dfm.zml.values
     
+    self.add_all_circles(
+      cls_ra=cls_ra, 
+      cls_dec=cls_dec, 
+      r200_deg=cls_r200_deg, 
+      r200_Mpc=cls_r200_Mpc, 
+      r500_deg=cls_r500_deg, 
+      r500_Mpc=cls_r500_Mpc, 
+      search_radius_deg=None,
+      search_radius_Mpc=None,
+      ax=ax
+    )
+    ax.scatter(
+      dfm.ra, 
+      dfm.dec, 
+      c=z, 
+      s=5,
+      label=f'Members ({len(dfm)})', 
+      transform=ax.get_transform('icrs'), 
+      rasterized=True,
+      cmap='inferno',
+    )
+    ax.scatter(
+      dfi.ra, 
+      dfi.dec, 
+      c='tab:gray', 
+      s=5,
+      label=f'Interlopers ({len(dfi)})', 
+      transform=ax.get_transform('icrs'), 
+      rasterized=True,
+    )
+    self.add_cluster_center(cls_ra, cls_dec, ax)
+    
+    triang = tri.Triangulation(dfm.ra.values, dfm.dec.values)
+    interpolator = tri.LinearTriInterpolator(triang, z)
+    xi = np.linspace(dfm.ra.min(), dfm.dec.max(), 300)
+    yi = np.linspace(dfm.dec.min(), dfm.dec.max(), 300)
+    Xi, Yi = np.meshgrid(xi, yi)
+    zi = interpolator(Xi, Yi)
+    ax.contour(
+      xi, yi, zi, 
+      levels=14, 
+      linewidths=0.5, 
+      colors='k', 
+      transform=ax.get_transform('icrs')
+    )
+    # cntr1 = ax.contourf(xi, yi, zi, levels=14, cmap="RdBu_r")
+    # ax.figure.colorbar(cntr1, ax=ax)
+    
+    ax.invert_xaxis()
+    ax.set_aspect('equal', adjustable='datalim', anchor='C')
+    ax.grid('on', color='k', linestyle='--', alpha=.25)
+    ax.tick_params(direction='in')
+    ax.legend()
+    ax.set_xlabel('RA')
+    ax.set_ylabel('DEC')
+    ax.set_title('Spectroscopic Redshift')
+  
+  def run(
+    self, 
+    cls_name: str,
+    cls_ra: float,
+    cls_dec: float,
+    cls_r200_deg: float,
+    cls_r200_Mpc: float,
+    cls_r500_deg: float,
+    cls_r500_Mpc: float,
+    df_members: pd.DataFrame,
+    df_interlopers: pd.DataFrame, 
+  ):
+    wcs_spec =  {
+      'CRVAL1': cls_ra,
+      'CRVAL2': cls_dec,
+      'CTYPE1': 'RA---AIT',
+      'CTYPE2': 'DEC--AIT',
+      'CUNIT1': 'deg',
+      'CUNIT2': 'deg'
+    }
+    wcs = WCS(wcs_spec)
+    
+    out = configs.WEBSITE_PATH / f'clusters_v{self.version}' / cls_name / f'specz_contours.{self.fmt}'
+    if self.overwrite or not out.exists():
+      out.parent.mkdir(parents=True, exist_ok=True)
+      fig = plt.figure(figsize=(7.5, 7.5), dpi=150)
+      ax = fig.add_subplot(projection=wcs)
+      self.contour_plot(
+        cls_ra=cls_ra,
+        cls_dec=cls_dec,
+        cls_r200_deg=cls_r200_deg,
+        cls_r200_Mpc=cls_r200_Mpc,
+        cls_r500_deg=cls_r500_deg,
+        cls_r500_Mpc=cls_r500_Mpc,
+        df_members=df_members,
+        df_interlopers=df_interlopers,
+        ax=ax,
+        use_photoz=False,
+      )
+      plt.savefig(out, bbox_inches='tight', pad_inches=0.1)
+      plt.close(fig)
+        
+
 
 
 class SpecDiffPlotStage(PlotStage):
@@ -857,8 +968,7 @@ class VelocityPlotStage(PlotStage):
       linewidths=1.5, 
       s=80, 
       c='k', 
-      rasterized=True, 
-      label='Cluster Center'
+      rasterized=True,
     )
     ax.invert_xaxis()
     ax.legend()

@@ -223,11 +223,11 @@ class WebsitePagesStage(PipelineStage):
               </thead>
               <tbody>
                 <tr>
-                  <td>Position</td>
+                  <td>position</td>
                   <td>{cls_ra:.5f} {'+' if cls_dec >= 0 else ''}{cls_dec:.5f} (deg)</td>
                 </tr>
                 <tr>
-                  <td>Search Radius</td>
+                  <td>search radius</td>
                   <td>{cls_search_radius_Mpc:.2f} Mpc ({cls_search_radius_deg:.3f} deg)</td>
                 </tr>
                 <tr>
@@ -243,15 +243,15 @@ class WebsitePagesStage(PipelineStage):
                   <td>{cls_z:.4f}</td>
                 </tr>
                 <tr>
-                  <td>z<sub>spec</sub></td>
+                  <td>z<sub>spec</sub> range</td>
                   <td>{cls_z:.4f} &plusmn; 0.007 = [{z_spec_range[0]:.4f}, {z_spec_range[1]:.4f}]</td>
                 </tr>
                 <tr>
-                  <td>z<sub>photo</sub></td>
+                  <td>z<sub>photo</sub> range</td>
                   <td>{cls_z:.4f} &plusmn; 0.015 = [{z_photo_range[0]:.4f}, {z_photo_range[1]:.4f}]</td>
                 </tr>
                 <tr>
-                  <td>mag<sub>r</sub></td>
+                  <td>mag<sub>r</sub> range</td>
                   <td>[13, 22]</td>
                 </tr>
                 <tr>
