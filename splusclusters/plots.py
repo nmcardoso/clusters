@@ -571,13 +571,14 @@ class ContourPlotStage(PlotStage):
       s=5,
       label=f'Members ({len(dfm)})',
       rasterized=True,
+      zorder=99,
     )
     ax.scatter(
       (dfi.ra - cls_ra) / cls_r200_deg, 
       (dfi.dec - cls_dec) / cls_r200_deg, 
-      marker='x',
+      marker='v',
       c='tab:gray', 
-      s=5,
+      s=4,
       label=f'Interlopers ({len(dfi)})',
       rasterized=True,
     )
@@ -601,6 +602,7 @@ class ContourPlotStage(PlotStage):
       levels=6, 
       linewidths=0.5, 
       colors='k',
+      alpha=0.5,
     )
     cntr1 = ax.contourf(xi, yi, zi, levels=6, cmap='Blues', alpha=0.25)
     # ax.figure.colorbar(cntr1, ax=ax)
