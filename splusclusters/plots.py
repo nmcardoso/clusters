@@ -668,7 +668,6 @@ class SpecDiffPlotStage(PlotStage):
     df_all_radial: pd.DataFrame,
     ax: plt.Axes,
   ):
-    ax.plot([0, 1], [0, 0], c='tab:gray', alpha=0.55, ls='--', transform=ax.transAxes)
     if df_members is not None and df_interlopers is not None:
       members_match = fast_crossmatch(df_members, df_all_radial)
       members_match = members_match[~members_match.z.isna() & ~members_match.zml.isna()]
@@ -688,6 +687,7 @@ class SpecDiffPlotStage(PlotStage):
     ax.set_xlabel('$z_{{spec}}$')
     ax.set_ylabel('$z_{{photo}} - z_{{spec}}$ ')
     ax.set_title('$z_{{spec}}$ x $z_{{photo}}$')
+    ax.grid('on', color='k', linestyle='--', alpha=.25)
     
   def histogram_members_plot(
     self, 
