@@ -590,7 +590,7 @@ class ContourPlotStage(PlotStage):
       rasterized=True,
     )
     
-    triang = tri.Triangulation((dfs.ra - cls_ra) / cls_r200_deg, (dfs.dec - cls_dec) / cls_r200_deg)
+    triang = tri.Triangulation((dfs.RA - cls_ra) / cls_r200_deg, (dfs.DEC - cls_dec) / cls_r200_deg)
     interpolator = tri.LinearTriInterpolator(triang, z)
     xi = np.linspace(-5, 5, 1000)
     yi = np.linspace(-5, 5, 1000)
@@ -602,7 +602,7 @@ class ContourPlotStage(PlotStage):
       linewidths=0.5, 
       colors='k',
     )
-    cntr1 = ax.contourf(xi, yi, zi, levels=6, cmap='Blues', alpha=0.3)
+    cntr1 = ax.contourf(xi, yi, zi, levels=6, cmap='Blues', alpha=0.25)
     ax.figure.colorbar(cntr1, ax=ax)
     
     ax.invert_xaxis()
