@@ -34,7 +34,7 @@ def website_pipeline(overwrite: bool = False, version: int = 6, dev: bool = Fals
     SpecDiffPlotStage(overwrite=overwrite, fmt='jpg', separated=True, version=version),
     # DownloadXRayStage(overwrite=overwrite, fmt='png'),
     CopyXrayStage(overwrite=overwrite, fmt='png', version=version),
-    SplusMembersMatchStage(overwrite=overwrite, version=version),
+    # SplusMembersMatchStage(overwrite=overwrite, version=version),
     WebsitePagesStage(df_clusters=df_clusters, version=version),
   )
   
