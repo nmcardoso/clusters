@@ -48,6 +48,8 @@ def photoz_pipeline_v6(overwrite: bool = False):
   
   
 def photoz_fix_pipeline():
+  configs.Z_PHOTO_DELTA = configs.Z_SPEC_DELTA_PAULO
+  configs.Z_SPEC_DELTA = configs.Z_SPEC_DELTA_PAULO
   df_clusters = load_members_index_v6()
   
   pipe = Pipeline(
