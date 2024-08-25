@@ -173,6 +173,7 @@ class SplusMembersMatchStage(PipelineStage):
       sql=sql,
       save_path=out_path,
       table=df_members,
+      scope='private',
     )
     
 
