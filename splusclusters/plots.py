@@ -625,6 +625,7 @@ class ContourPlotStage(PlotStage):
     cls_r500_Mpc: float,
     df_members: pd.DataFrame,
     df_interlopers: pd.DataFrame, 
+    df_specz_radial: pd.DataFrame,
   ):
     out = configs.WEBSITE_PATH / f'clusters_v{self.version}' / cls_name / f'specz_contours.{self.fmt}'
     if self.overwrite or not out.exists():
@@ -640,6 +641,7 @@ class ContourPlotStage(PlotStage):
         cls_r500_Mpc=cls_r500_Mpc,
         df_members=df_members,
         df_interlopers=df_interlopers,
+        df_specz_radial=df_specz_radial,
         ax=ax,
         use_photoz=False,
       )
