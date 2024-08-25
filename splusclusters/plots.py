@@ -541,39 +541,53 @@ class ContourPlotStage(PlotStage):
     dfi = radial_search(center, df_interlopers, 5*cls_r200_deg*u.deg)
     z = dfm.z.values if not use_photoz else dfm.zml.values
     
-    self.add_all_circles(
-      cls_ra=cls_ra, 
-      cls_dec=cls_dec, 
-      r200_deg=cls_r200_deg, 
-      r200_Mpc=cls_r200_Mpc, 
-      r500_deg=cls_r500_deg, 
-      r500_Mpc=cls_r500_Mpc, 
-      search_radius_deg=None,
-      search_radius_Mpc=None,
-      ax=ax
+    circle = Circle(
+      (0, 0), 
+      5,
+      fc='none', 
+      lw=2, 
+      linestyle='-',
+      ec='tab:green',
+      label='5$\\times$R200',
     )
+    ax.add_patch(circle)
+    circle = Circle(
+      (0, 0), 
+      5*(cls_r500_deg/cls_r200_deg),
+      fc='none', 
+      lw=2, 
+      linestyle='--',
+      ec='tab:green',
+      label='5$\\times$R500',
+    )
+    ax.add_patch(circle)
     ax.scatter(
-      dfm.ra, 
-      dfm.dec, 
-      c=z, 
+      (dfm.ra - cls_ra) / cls_r200_deg, 
+      (dfm.dec - cls_dec) / cls_r200_deg, 
+      c=z,
+      cmap='plasma', 
       s=5,
-      label=f'Members ({len(dfm)})', 
-      transform=ax.get_transform('icrs'), 
+      label=f'Members ({len(dfm)})',
       rasterized=True,
-      cmap='inferno',
     )
     ax.scatter(
-      dfi.ra, 
-      dfi.dec, 
+      (dfi.ra - cls_ra) / cls_r200_deg, 
+      (dfi.dec - cls_dec) / cls_r200_deg, 
       c='tab:gray', 
       s=5,
-      label=f'Interlopers ({len(dfi)})', 
-      transform=ax.get_transform('icrs'), 
+      label=f'Interlopers ({len(dfi)})',
       rasterized=True,
     )
-    self.add_cluster_center(cls_ra, cls_dec, ax)
+    ax.scatter(
+      0, 0,
+      marker='+', 
+      linewidths=1.5, 
+      s=80, 
+      c='k', 
+      rasterized=True,
+    )
     
-    triang = tri.Triangulation(dfm.ra.values, dfm.dec.values)
+    triang = tri.Triangulation((dfm.ra - cls_ra) / cls_r200_deg, (dfm.dec - cls_dec) / cls_r200_deg)
     interpolator = tri.LinearTriInterpolator(triang, z)
     xi = np.linspace(dfm.ra.min(), dfm.dec.max(), 300)
     yi = np.linspace(dfm.dec.min(), dfm.dec.max(), 300)
@@ -593,8 +607,8 @@ class ContourPlotStage(PlotStage):
     ax.grid('on', color='k', linestyle='--', alpha=.25)
     ax.tick_params(direction='in')
     ax.legend()
-    ax.set_xlabel('RA')
-    ax.set_ylabel('DEC')
+    ax.set_xlabel('$\\Delta$RA/R200')
+    ax.set_ylabel('$\\Delta$DEC/R200')
     ax.set_title('Spectroscopic Redshift')
   
   def run(
