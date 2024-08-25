@@ -598,10 +598,10 @@ class ContourPlotStage(PlotStage):
       xi, yi, zi, 
       levels=6, 
       linewidths=0.5, 
-      colors='Blues',
+      colors='k',
     )
-    # cntr1 = ax.contourf(xi, yi, zi, levels=14, cmap="RdBu_r")
-    # ax.figure.colorbar(cntr1, ax=ax)
+    cntr1 = ax.contourf(xi, yi, zi, levels=6, cmap="Blues")
+    ax.figure.colorbar(cntr1, ax=ax)
     
     ax.invert_xaxis()
     ax.set_aspect('equal', adjustable='datalim', anchor='C')
