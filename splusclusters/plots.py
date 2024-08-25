@@ -583,17 +583,8 @@ class ContourPlotStage(PlotStage):
       xi, yi, zi, 
       levels=14, 
       linewidths=0.5, 
-      colors='k', 
-      transform=ax.get_transform('icrs')
+      colors='k',
     )
-    print(f'{z = }')
-    print(f'{dfm.ra.values = }')
-    print(f'{dfm.dec.values = }')
-    print(f'{xi = }')
-    print(f'{yi = }')
-    print(f'{zi = }')
-    print(f'{Xi = }')
-    print(f'{Yi = }')
     # cntr1 = ax.contourf(xi, yi, zi, levels=14, cmap="RdBu_r")
     # ax.figure.colorbar(cntr1, ax=ax)
     
