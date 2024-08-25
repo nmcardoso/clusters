@@ -10,7 +10,7 @@ from astromodule.io import merge_pdf
 from astromodule.pipeline import Pipeline, PipelineStorage
 
 from splusclusters.configs import configs
-from splusclusters.external import DownloadSplusPhotozStage
+from splusclusters.external import DownloadSplusPhotozStage, FixZRange
 from splusclusters.loaders import (LoadClusterInfoStage, LoadLegacyRadialStage,
                                    LoadSpeczRadialStage, load_clusters,
                                    load_eRASS, load_members_index_v6,
@@ -46,14 +46,30 @@ def photoz_pipeline_v6(overwrite: bool = False):
   pipe.map_run('cls_id', df_clusters.clsid.values, workers=1)
   
   
+  
+def photoz_fix_pipeline():
+  df_clusters = load_members_index_v6()
+  
+  pipe = Pipeline(
+    LoadClusterInfoStage(df_clusters),
+    FixZRange(),
+  )
+  
+  pipe.map_run('cls_id', df_clusters.clsid.values, workers=1)
+
+
+  
 if __name__ == "__main__":
   parser = ArgumentParser(description="Website")
   parser.add_argument('--v5', action='store_true')
   parser.add_argument('--v6', action='store_true')
   parser.add_argument('--overwrite', action='store_true')
+  parser.add_argument('--fix', action='store_true')
   args = parser.parse_args()
   
   if args.v5:
     photoz_pipeline_v5(overwrite=args.overwrite)
   if args.v6:
     photoz_pipeline_v6(overwrite=args.overwrite)
+  if args.fix:
+    photoz_fix_pipeline()

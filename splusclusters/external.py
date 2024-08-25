@@ -7,6 +7,7 @@ import matplotlib.pyplot as plt
 import numpy as np
 import pandas as pd
 import requests
+from astromodule.io import read_table, write_table
 from astromodule.legacy import LegacyService
 from astromodule.pipeline import Pipeline, PipelineStage, PipelineStorage
 from astromodule.splus import SplusService
@@ -230,3 +231,11 @@ class DownloadSplusPhotozStage(PipelineStage):
       workers=self.workers,
       scope='private'
     )
+    
+class FixZRange(PipelineStage):
+  def run(self, cls_name: str, z_photo_range: Tuple[float, float]):
+    out_path = configs.PHOTOZ_FOLDER / f'{cls_name}.parquet'
+    if out_path.exists():
+      df = read_table(out_path)
+      df = df[df.zml.between(*z_photo_range)]
+      write_table(df, out_path)
