@@ -567,7 +567,7 @@ class ContourPlotStage(PlotStage):
       (dfm.ra - cls_ra) / cls_r200_deg, 
       (dfm.dec - cls_dec) / cls_r200_deg, 
       c=z,
-      cmap='plasma', 
+      cmap='Blues', 
       s=5,
       label=f'Members ({len(dfm)})',
       rasterized=True,
@@ -603,7 +603,7 @@ class ContourPlotStage(PlotStage):
       colors='k',
     )
     cntr1 = ax.contourf(xi, yi, zi, levels=6, cmap='Blues', alpha=0.25)
-    ax.figure.colorbar(cntr1, ax=ax)
+    # ax.figure.colorbar(cntr1, ax=ax)
     
     ax.invert_xaxis()
     ax.set_aspect('equal', adjustable='datalim', anchor='C')
