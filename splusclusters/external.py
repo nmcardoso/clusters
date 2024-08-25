@@ -237,5 +237,6 @@ class FixZRange(PipelineStage):
     out_path = configs.PHOTOZ_FOLDER / f'{cls_name}.parquet'
     if out_path.exists():
       df = read_table(out_path)
-      df = df[df.zml.between(*z_photo_range)]
-      write_table(df, out_path)
+      if len(df) > 0:
+        df = df[df.zml.between(*z_photo_range)]
+        write_table(df, out_path)
