@@ -168,19 +168,26 @@ class PhotozSpeczLegacyMatchStage(PipelineStage):
     print('Starting first crossmatch: photo-z UNION spec-z')
     
     t = Timming()
-    df = crossmatch(
-      table1=df_photoz_radial,
-      table2=df_specz_radial,
-      join='1or2',
-    )
-    
-    if 'RA_1' in df.columns:
-      df = df.rename(columns={'RA_1': 'ra_1'})
-    if 'DEC_1' in df.columns:
-      df = df.rename(columns={'DEC_1': 'dec_1'})
-    
-    df['ra_1'] = df['ra_1'].fillna(df['RA_2'])
-    df['dec_1'] = df['dec_1'].fillna(df['DEC_2'])
+    if len(df_photoz_radial) > 0 and len(df_specz_radial) > 0:
+      df = crossmatch(
+        table1=df_photoz_radial,
+        table2=df_specz_radial,
+        join='1or2',
+      )
+      if 'RA_1' in df.columns: df = df.rename(columns={'RA_1': 'ra_1'})
+      if 'DEC_1' in df.columns: df = df.rename(columns={'DEC_1': 'dec_1'})
+      df['ra_1'] = df['ra_1'].fillna(df['RA_2'])
+      df['dec_1'] = df['dec_1'].fillna(df['DEC_2'])
+    elif len(df_photoz_radial) == 0 and len(df_specz_radial) > 0:
+      df = df_specz_radial
+      if 'RA_1' in df.columns: df = df.rename(columns={'RA_1': 'ra_1'})
+      if 'DEC_1' in df.columns: df = df.rename(columns={'DEC_1': 'dec_1'})
+    elif len(df_photoz_radial) > 0 and len(df_specz_radial) == 0:
+      df = df_photoz_radial
+      if 'RA_1' in df.columns: df = df.rename(columns={'RA_1': 'ra_1'})
+      if 'DEC_1' in df.columns: df = df.rename(columns={'DEC_1': 'dec_1'})
+    elif len(df_photoz_radial) == 0 and len(df_specz_radial) == 0:
+      return
     
     print(f'First crossmatch finished. Duration: {t.end()}')
     print('Objects with photo-z only:', len(df[~df.zml.isna() & df.z.isna()]))
@@ -190,13 +197,14 @@ class PhotozSpeczLegacyMatchStage(PipelineStage):
     print('starting second crossmatch: match-1 LEFT OUTER JOIN legacy')
     
     t = Timming()
-    df = crossmatch(
-      table1=df,
-      table2=df_legacy_radial,
-      join='all1',
-      ra1='ra_1',
-      dec1='dec_1',
-    )
+    if len(df_legacy_radial) > 0:
+      df = crossmatch(
+        table1=df,
+        table2=df_legacy_radial,
+        join='all1',
+        ra1='ra_1',
+        dec1='dec_1',
+      )
     print(df)
     
     print(f'Second crossmatch finished. Duration: {t.end()}')
