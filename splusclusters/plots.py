@@ -590,15 +590,15 @@ class ContourPlotStage(PlotStage):
     
     triang = tri.Triangulation((dfm.ra - cls_ra) / cls_r200_deg, (dfm.dec - cls_dec) / cls_r200_deg)
     interpolator = tri.LinearTriInterpolator(triang, z)
-    xi = np.linspace(-5, 5, 150)
-    yi = np.linspace(-5, 5, 150)
+    xi = np.linspace(-5, 5, 1500)
+    yi = np.linspace(-5, 5, 1500)
     Xi, Yi = np.meshgrid(xi, yi)
     zi = interpolator(Xi, Yi)
     ax.contour(
       xi, yi, zi, 
       levels=6, 
       linewidths=0.5, 
-      colors='k',
+      colors='Blues',
     )
     # cntr1 = ax.contourf(xi, yi, zi, levels=14, cmap="RdBu_r")
     # ax.figure.colorbar(cntr1, ax=ax)
