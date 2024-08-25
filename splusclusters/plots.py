@@ -532,13 +532,15 @@ class ContourPlotStage(PlotStage):
     cls_r500_deg: float,
     cls_r500_Mpc: float,
     df_members: pd.DataFrame, 
-    df_interlopers: pd.DataFrame, 
+    df_interlopers: pd.DataFrame,
+    df_specz_radial: pd.DataFrame,
     ax: plt.Axes,
     use_photoz: bool = False
   ):
     center = SkyCoord(ra=cls_ra, dec=cls_dec, unit=u.deg)
     dfm = radial_search(center, df_members, 5*cls_r200_deg*u.deg)
     dfi = radial_search(center, df_interlopers, 5*cls_r200_deg*u.deg)
+    dfs = df_specz_radial
     z = dfm.z.values if not use_photoz else dfm.zml.values
     
     circle = Circle(
@@ -588,10 +590,10 @@ class ContourPlotStage(PlotStage):
       rasterized=True,
     )
     
-    triang = tri.Triangulation((dfm.ra - cls_ra) / cls_r200_deg, (dfm.dec - cls_dec) / cls_r200_deg)
+    triang = tri.Triangulation((dfs.ra - cls_ra) / cls_r200_deg, (dfs.dec - cls_dec) / cls_r200_deg)
     interpolator = tri.LinearTriInterpolator(triang, z)
-    xi = np.linspace(-5, 5, 1500)
-    yi = np.linspace(-5, 5, 1500)
+    xi = np.linspace(-5, 5, 1000)
+    yi = np.linspace(-5, 5, 1000)
     Xi, Yi = np.meshgrid(xi, yi)
     zi = interpolator(Xi, Yi)
     ax.contour(
@@ -600,7 +602,7 @@ class ContourPlotStage(PlotStage):
       linewidths=0.5, 
       colors='k',
     )
-    cntr1 = ax.contourf(xi, yi, zi, levels=6, cmap="Blues")
+    cntr1 = ax.contourf(xi, yi, zi, levels=6, cmap='Blues', alpha=0.3)
     ax.figure.colorbar(cntr1, ax=ax)
     
     ax.invert_xaxis()
