@@ -623,21 +623,11 @@ class ContourPlotStage(PlotStage):
     df_members: pd.DataFrame,
     df_interlopers: pd.DataFrame, 
   ):
-    wcs_spec =  {
-      'CRVAL1': cls_ra,
-      'CRVAL2': cls_dec,
-      'CTYPE1': 'RA---AIT',
-      'CTYPE2': 'DEC--AIT',
-      'CUNIT1': 'deg',
-      'CUNIT2': 'deg'
-    }
-    wcs = WCS(wcs_spec)
-    
     out = configs.WEBSITE_PATH / f'clusters_v{self.version}' / cls_name / f'specz_contours.{self.fmt}'
     if self.overwrite or not out.exists():
       out.parent.mkdir(parents=True, exist_ok=True)
       fig = plt.figure(figsize=(7.5, 7.5), dpi=150)
-      ax = fig.add_subplot(projection=wcs)
+      ax = fig.add_subplot()
       self.contour_plot(
         cls_ra=cls_ra,
         cls_dec=cls_dec,
