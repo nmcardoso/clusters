@@ -162,7 +162,7 @@ class SplusMembersMatchStage(PipelineStage):
       FROM idr5.idr5_dual AS photo
       LEFT JOIN idr5_vacs.idr5_photoz AS photoz ON photo.ID = photoz.ID
       RIGHT JOIN TAP_UPLOAD.upload AS upl
-      WHERE 1 = CONTAINS( 
+      ON 1 = CONTAINS( 
         POINT('ICRS', photo.RA, photo.DEC), 
         CIRCLE('ICRS', upl.ra, upl.dec, 0.000277777777778) 
       )
