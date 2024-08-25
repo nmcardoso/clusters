@@ -168,13 +168,17 @@ class SplusMembersMatchStage(PipelineStage):
       )
     """
     
-    service = SplusService(username=os.environ['SPLUS_USER'], password=os.environ['SPLUS_PASS'])
-    service.query(
-      sql=sql,
-      save_path=out_path,
-      table=df_members,
-      scope='private',
-    )
+    if df_members is not None and len(df_members) > 0:
+      u, p = os.environ['SPLUS_USER'], os.environ['SPLUS_PASS']
+      service = SplusService(username=u, password=p)
+      service.query(
+        sql=sql,
+        save_path=out_path,
+        table=df_members,
+        scope='private',
+      )
+    else:
+      print('members dataframe not found, skiping')
     
 
 class DownloadSplusPhotozStage(PipelineStage):
