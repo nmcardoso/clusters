@@ -589,8 +589,8 @@ class ContourPlotStage(PlotStage):
     
     triang = tri.Triangulation((dfm.ra - cls_ra) / cls_r200_deg, (dfm.dec - cls_dec) / cls_r200_deg)
     interpolator = tri.LinearTriInterpolator(triang, z)
-    xi = np.linspace(dfm.ra.min(), dfm.dec.max(), 300)
-    yi = np.linspace(dfm.dec.min(), dfm.dec.max(), 300)
+    xi = np.linspace(-5, 5, 300)
+    yi = np.linspace(-5, 5, 300)
     Xi, Yi = np.meshgrid(xi, yi)
     zi = interpolator(Xi, Yi)
     ax.contour(
