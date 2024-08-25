@@ -603,8 +603,9 @@ class ContourPlotStage(PlotStage):
       linewidths=0.5, 
       colors='k',
       alpha=0.5,
+      nchunk=0,
     )
-    cntr1 = ax.contourf(xi, yi, zi, levels=6, cmap='Blues', alpha=0.25)
+    cntr1 = ax.contourf(xi, yi, zi, levels=6, cmap='Blues', alpha=0.3, nchunk=0)
     # ax.figure.colorbar(cntr1, ax=ax)
     
     ax.invert_xaxis()
