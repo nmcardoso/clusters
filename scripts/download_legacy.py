@@ -37,6 +37,7 @@ def download_legacy_pipeline(clear: bool = False, overwrite: bool = False, versi
   
 if __name__ == "__main__":
   parser = ArgumentParser(description="Legacy")
+  parser.add_argument('--clear', action='store_true')
   parser.add_argument('--v5', action='store_true')
   parser.add_argument('--v6', action='store_true')
   parser.add_argument('--overwrite', action='store_true')
