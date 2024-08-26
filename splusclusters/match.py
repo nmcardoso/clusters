@@ -1,6 +1,7 @@
 from pathlib import Path
 from typing import Literal, Sequence, Tuple
 
+import numpy as np
 import pandas as pd
 from astromodule.io import merge_pdf, read_table, write_table
 from astromodule.pipeline import Pipeline, PipelineStage, PipelineStorage
@@ -180,10 +181,16 @@ class PhotozSpeczLegacyMatchStage(PipelineStage):
       df['dec_1'] = df['dec_1'].fillna(df['DEC_2'])
     elif len(df_photoz_radial) == 0 and len(df_specz_radial) > 0:
       df = df_specz_radial
+      df['zml'] = np.nan
+      df['odds'] = np.nan
       if 'RA_1' in df.columns: df = df.rename(columns={'RA_1': 'ra_1'})
       if 'DEC_1' in df.columns: df = df.rename(columns={'DEC_1': 'dec_1'})
     elif len(df_photoz_radial) > 0 and len(df_specz_radial) == 0:
       df = df_photoz_radial
+      df['z'] = np.nan
+      df['e_z'] = np.nan
+      df['f_z'] = np.nan
+      df['class_spec'] = np.nan
       if 'RA_1' in df.columns: df = df.rename(columns={'RA_1': 'ra_1'})
       if 'DEC_1' in df.columns: df = df.rename(columns={'DEC_1': 'dec_1'})
     elif len(df_photoz_radial) == 0 and len(df_specz_radial) == 0:
@@ -205,6 +212,12 @@ class PhotozSpeczLegacyMatchStage(PipelineStage):
         ra1='ra_1',
         dec1='dec_1',
       )
+      del df['ra'] # legacy ra
+      del df['dec'] # legacy dec
+      df = df.rename(columns={'ra_1': 'ra', 'dec_1': 'dec'}) # use photoz ra/dec
+    else:
+      df['type'] = np.nan
+      df['mag_r'] = np.nan
     print(df)
     
     print(f'Second crossmatch finished. Duration: {t.end()}')
@@ -212,10 +225,6 @@ class PhotozSpeczLegacyMatchStage(PipelineStage):
     print('Objects without legacy:', len(df[df.type.isna()]))
     print('Galaxies:', len(df[df.type != 'PSF']), ', Stars:', len(df[df.type == 'PSF']))
     print('Total of objects after second match:', len(df))
-    
-    del df['ra'] # legacy ra
-    del df['dec'] # legacy dec
-    df = df.rename(columns={'ra_1': 'ra', 'dec_1': 'dec'}) # use photoz ra/dec
     
     photoz_cols = ['ra', 'dec', 'zml', 'odds']
     if 'r_auto' in df.columns:
