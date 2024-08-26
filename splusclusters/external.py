@@ -33,8 +33,7 @@ class DownloadLegacyCatalogStage(PipelineStage):
       WHERE (ra BETWEEN {ra_min} AND {ra_max}) AND 
       (dec BETWEEN {dec_min} AND {dec_max}) AND
       (brick_primary = 1) AND 
-      (mag_r BETWEEN {r_min:.2f} AND {r_max:.2f}) AND
-      (type != 'PSF')
+      (mag_r BETWEEN {r_min:.2f} AND {r_max:.2f})
     """.strip()
     
     radius = self.get_data(self.radius_key)
