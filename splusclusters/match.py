@@ -183,16 +183,16 @@ class PhotozSpeczLegacyMatchStage(PipelineStage):
       df = df_specz_radial
       df['zml'] = np.nan
       df['odds'] = np.nan
-      if 'RA_1' in df.columns: df = df.rename(columns={'RA_1': 'ra_1'})
-      if 'DEC_1' in df.columns: df = df.rename(columns={'DEC_1': 'dec_1'})
+      ra, dec = guess_coords_columns(df)
+      df = df.rename(columns={ra: 'ra_1', dec: 'dec_1'})
     elif len(df_photoz_radial) > 0 and len(df_specz_radial) == 0:
       df = df_photoz_radial
       df['z'] = np.nan
       df['e_z'] = np.nan
       df['f_z'] = np.nan
       df['class_spec'] = np.nan
-      if 'RA_1' in df.columns: df = df.rename(columns={'RA_1': 'ra_1'})
-      if 'DEC_1' in df.columns: df = df.rename(columns={'DEC_1': 'dec_1'})
+      ra, dec = guess_coords_columns(df)
+      df = df.rename(columns={ra: 'ra_1', dec: 'dec_1'})
     elif len(df_photoz_radial) == 0 and len(df_specz_radial) == 0:
       return
     
