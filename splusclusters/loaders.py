@@ -636,9 +636,17 @@ class LoadDataFrameStage(PipelineStage):
     self.base_path = base_path
     self.products = [key]
     
-  def run(self, cls_name: str, z_spec_range: Tuple[float, float]):
+  def run(self, cls_name: str, z_spec_range: Tuple[float, float], cls_z: float):
     t = Timming()
     df = read_table(self.base_path / f'{cls_name}.parquet')
+    if 'z' in df.columns:
+      z_delta1 = cls_z - df.z.min()
+      z_delta2 = df.z.max() - cls_z
+      print(f'z range: [{cls_z:.3f} - {z_delta1:.3f}, {cls_z:.3f} + {z_delta2:.3f}]')
+    if 'zml' in df.columns:
+      zml_delta1 = cls_z - df.zml.min()
+      zml_delta2 = df.zml.max() - cls_z
+      print(f'z range: [{cls_z:.3f} - {zml_delta1:.3f}, {cls_z:.3f} + {zml_delta2:.3f}]')
     # if 'z' in df.columns:
     #   df = df[df.z.between(*z_spec_range)].reset_index(drop=True)
     print(f'Table loaded. Duration: {t.end()}. Number of objects: {len(df)}')
