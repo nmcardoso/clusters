@@ -275,12 +275,13 @@ class PhotozSpeczLegacyMatchStage(PipelineStage):
     print('Objects without legacy:', len(df[df.type.isna()]))
     print('Galaxies:', len(df[df.type != 'PSF']), ', Stars:', len(df[df.type == 'PSF']))
     print('Total of objects after second match:', len(df))
+    print(df)
     
     df = df[df.type != 'PSF']
     
     if 'flag_member' in df.columns:
       df.loc[~df.flag_member.isin([0, 1]), 'flag_member'] = 1
-      
+
     df = df.rename(columns={'ra_photo': 'ra', 'dec_photo': 'dec'})
     # photoz_cols = ['ra_photo', 'dec_photo', 'zml', 'odds']
     # if 'r_auto' in df.columns:
@@ -291,5 +292,11 @@ class PhotozSpeczLegacyMatchStage(PipelineStage):
     # legacy_cols = ['mag_r', 'type']
     # cols = photoz_cols + specz_cols + legacy_cols
     # df = df[cols]
-    
+
+    if 'xmatch_sep' in df.columns:
+      del df['xmatch_sep']
+    if 'xmatch_sep_1' in df.columns:
+      del df['xmatch_sep_1']
+    if 'xmatch_sep_2' in df.columns:
+      del df['xmatch_sep_2']
     write_table(df, out_path)
