@@ -35,7 +35,8 @@ def match_all_pipeline(overwrite: bool = False, version: int = 6):
     PhotozSpeczLegacyMatchStage(overwrite=overwrite),
   )
   
-  pipe.map_run('cls_id', df_clusters.clsid.values, workers=1)
+  pipe.map_run('cls_id', ['A168', 'MKW4'], workers=1)
+  # pipe.map_run('cls_id', df_clusters.clsid.values, workers=1)
   
 if __name__ == "__main__":
   parser = ArgumentParser(description="Website")
