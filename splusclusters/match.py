@@ -178,13 +178,13 @@ class PhotozSpeczLegacyMatchStage(PipelineStage):
     df_spec['f_z'] = df_spec['f_z'].astype('str')
     df_spec['original_class_spec'] = df_spec['original_class_spec'].astype('str')
     
-    print('Photo-z objects:', len(df_photoz_radial))
-    print('Spec-z objects:', len(df_specz_radial))
-    print('Legacy objects:', len(df_legacy_radial))
+    print('Photo-z objects:', len(df_photo))
+    print('Spec-z objects:', len(df_spec))
+    print('Legacy objects:', len(df_legacy))
     print('Starting first crossmatch: photo-z UNION spec-z')
     
     t = Timming()
-    if df_ret is not None and len(df_ret) > 0 and len(df_photoz_radial) > 0:
+    if df_ret is not None and len(df_ret) > 0 and len(df_photo) > 0:
       df = crossmatch(
         table1=df_photo,
         table2=df_r,
@@ -196,7 +196,7 @@ class PhotozSpeczLegacyMatchStage(PipelineStage):
       )
       df['ra_photo'] = df['ra_photo'].fillna(df['ra_spec'])
       df['dec_photo'] = df['dec_photo'].fillna(df['dec_spec'])
-    elif len(df_photoz_radial) > 0 and len(df_specz_radial) > 0:
+    elif len(df_photo) > 0 and len(df_spec) > 0:
       df = crossmatch(
         table1=df_photo,
         table2=df_spec,
@@ -208,19 +208,19 @@ class PhotozSpeczLegacyMatchStage(PipelineStage):
       )
       df['ra_photo'] = df['ra_photo'].fillna(df['ra_spec'])
       df['dec_photo'] = df['dec_photo'].fillna(df['dec_spec'])
-    elif len(df_photoz_radial) == 0 and len(df_specz_radial) > 0:
-      df = df_specz_radial.copy()
+    elif len(df_photo) == 0 and len(df_spec) > 0:
+      df = df_spec
       df['ra_photo'] = df['ra_spec']
       df['dec_photo'] = df['dec_spec']
       df['zml'] = np.nan
       df['odds'] = np.nan
-    elif len(df_photoz_radial) > 0 and len(df_specz_radial) == 0:
-      df = df_photoz_radial.copy()
+    elif len(df_photo) > 0 and len(df_spec) == 0:
+      df = df_photo
       df['z'] = np.nan
       df['e_z'] = np.nan
       df['f_z'] = np.nan
       df['class_spec'] = np.nan
-    elif len(df_photoz_radial) == 0 and len(df_specz_radial) == 0:
+    elif len(df_photo) == 0 and len(df_spec) == 0:
       return
     
     if 'ra_spec' in df.columns:
@@ -235,10 +235,10 @@ class PhotozSpeczLegacyMatchStage(PipelineStage):
     print('starting second crossmatch: match-1 LEFT OUTER JOIN legacy')
     
     t = Timming()
-    if len(df_legacy_radial) > 0:
+    if len(df_legacy) > 0:
       df = crossmatch(
         table1=df,
-        table2=df_legacy_radial,
+        table2=df_legacy,
         join='all1',
         ra1='ra_photo',
         dec1='dec_photo',
@@ -261,8 +261,6 @@ class PhotozSpeczLegacyMatchStage(PipelineStage):
     print('Total of objects after second match:', len(df))
     
     df = df[df.type != 'PSF']
-    del df['ra_spec']
-    del df['dec_spec']
     # photoz_cols = ['ra_photo', 'dec_photo', 'zml', 'odds']
     # if 'r_auto' in df.columns:
     #   photoz_cols.append('r_auto')
