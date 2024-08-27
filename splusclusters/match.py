@@ -172,7 +172,7 @@ class PhotozSpeczLegacyMatchStage(PipelineStage):
     if len(df_photo) > 0:
       ra, dec = guess_coords_columns(df_photo)
       df_photo = df_photo.rename(columns={ra: 'ra_photo', dec: 'dec_photo'})
-    if len(df_photo) > 0:
+    if len(df_legacy) > 0:
       ra, dec = guess_coords_columns(df_legacy)
       df_legacy = df_legacy.rename(columns={ra: 'ra_legacy', dec: 'dec_legacy'})
     if len(df_r) > 0:
