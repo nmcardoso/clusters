@@ -184,19 +184,20 @@ class PhotozSpeczLegacyMatchStage(PipelineStage):
     print('Starting first crossmatch: photo-z UNION spec-z')
     
     t = Timming()
-    if df_ret is not None and len(df_ret) > 0 and len(df_photo) > 0:
-      df = crossmatch(
-        table1=df_photo,
-        table2=df_r,
-        join='1or2',
-        ra1='ra_photo',
-        dec1='dec_photo',
-        ra2='ra_spec',
-        dec2='dec_spec',
-      )
-      df['ra_photo'] = df['ra_photo'].fillna(df['ra_spec'])
-      df['dec_photo'] = df['dec_photo'].fillna(df['dec_spec'])
-    elif len(df_photo) > 0 and len(df_spec) > 0:
+    # if df_ret is not None and len(df_ret) > 0 and len(df_photo) > 0:
+    #   df = crossmatch(
+    #     table1=df_photo,
+    #     table2=df_r,
+    #     join='1or2',
+    #     ra1='ra_photo',
+    #     dec1='dec_photo',
+    #     ra2='ra_spec',
+    #     dec2='dec_spec',
+    #   )
+    #   df['ra_photo'] = df['ra_photo'].fillna(df['ra_spec'])
+    #   df['dec_photo'] = df['dec_photo'].fillna(df['dec_spec'])
+    # el
+    if len(df_photo) > 0 and len(df_spec) > 0:
       df = crossmatch(
         table1=df_photo,
         table2=df_spec,
@@ -261,6 +262,9 @@ class PhotozSpeczLegacyMatchStage(PipelineStage):
     print('Total of objects after second match:', len(df))
     
     df = df[df.type != 'PSF']
+    
+    if 'flag_member' in df.columns:
+      df[~df.flag_member.isin([0, 1])]['flag_member'] = 1
     # photoz_cols = ['ra_photo', 'dec_photo', 'zml', 'odds']
     # if 'r_auto' in df.columns:
     #   photoz_cols.append('r_auto')
