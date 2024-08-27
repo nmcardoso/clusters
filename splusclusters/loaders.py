@@ -305,19 +305,21 @@ class LoadClusterInfoStage(PipelineStage):
       search_radius_deg = min(search_radius_deg, 17)
     
     base_path = configs.MEMBERS_V5_FOLDER if self.version == 5 else configs.MEMBERS_V6_FOLDER
-    paulo_path = base_path / f'cluster.gals.sel.shiftgap.iter.{str(cls_id).zfill(5)}'
-    if paulo_path.exists():
+    ret_path = base_path / f'cluster.gals.sel.shiftgap.iter.{str(cls_id).zfill(5)}'
+    if ret_path.exists():
       col_names = [
         'ra', 'dec', 'z', 'z_err', 'v', 'v_err', 'radius_deg', 
         'radius_Mpc', 'v_offset', 'flag_member'
       ] # 0 - member; 1 - interloper
-      df_ret = read_table(paulo_path, fmt='dat', col_names=col_names)
+      df_ret = read_table(ret_path, fmt='dat', col_names=col_names)
       df_members = df_ret[df_ret.flag_member == 0]
       df_interlopers = df_ret[df_ret.flag_member == 1]
     else:
       df_members = None
       df_interlopers = None
       df_ret = None
+    
+    print(f'{df_ret = }')
     
     print('Cluster Name:', name)
     print(f'RA: {ra:.3f}, DEC: {dec:.3f}, z: {z:.2f}, search radius: {search_radius_deg:.2f}')
