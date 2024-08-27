@@ -248,6 +248,7 @@ class LoadHeasarcInfoStage(PipelineStage):
       'z_spec_range': (z - configs.Z_SPEC_DELTA, z + configs.Z_SPEC_DELTA),
       'df_members': None,
       'df_interlopers': None,
+      'df_ret': None,
     }
     
 
@@ -257,7 +258,7 @@ class LoadClusterInfoStage(PipelineStage):
     'cls_name', 'cls_z', 'cls_ra', 'cls_dec', 'cls_search_radius_deg',
     'cls_r500_Mpc', 'cls_r500_deg', 'cls_r200_Mpc', 'cls_r200_deg',
     'z_photo_range', 'z_spec_range', 'df_members', 'df_interlopers',
-    'cls_search_radius_Mpc',
+    'cls_search_radius_Mpc', 'df_ret'
   ]
   
   def __init__(
@@ -310,12 +311,13 @@ class LoadClusterInfoStage(PipelineStage):
         'ra', 'dec', 'z', 'z_err', 'v', 'v_err', 'radius_deg', 
         'radius_Mpc', 'v_offset', 'flag_member'
       ] # 0 - member; 1 - interloper
-      df_paulo = read_table(paulo_path, fmt='dat', col_names=col_names)
-      df_members = df_paulo[df_paulo.flag_member == 0]
-      df_interlopers = df_paulo[df_paulo.flag_member == 1]
+      df_ret = read_table(paulo_path, fmt='dat', col_names=col_names)
+      df_members = df_ret[df_ret.flag_member == 0]
+      df_interlopers = df_ret[df_ret.flag_member == 1]
     else:
       df_members = None
       df_interlopers = None
+      df_ret = None
     
     print('Cluster Name:', name)
     print(f'RA: {ra:.3f}, DEC: {dec:.3f}, z: {z:.2f}, search radius: {search_radius_deg:.2f}')
@@ -337,6 +339,7 @@ class LoadClusterInfoStage(PipelineStage):
       'z_spec_range': (z - configs.Z_SPEC_DELTA, z + configs.Z_SPEC_DELTA),
       'df_members': df_members,
       'df_interlopers': df_interlopers,
+      'df_ret': df_ret,
     }
     
     
@@ -382,6 +385,7 @@ class LoadERASSInfoStage(PipelineStage):
       'z_spec_range': (z - configs.Z_SPEC_DELTA, z + configs.Z_SPEC_DELTA),
       'df_members': None,
       'df_interlopers': None,
+      'df_ret': None,
     }
     
     
@@ -432,6 +436,7 @@ class LoadGenericInfoStage(PipelineStage):
       'z_spec_range': (z - configs.Z_SPEC_DELTA, z + configs.Z_SPEC_DELTA),
       'df_members': None,
       'df_interlopers': None,
+      'df_ret': None,
     }
 
 
@@ -489,6 +494,7 @@ class LoadPauloInfoStage(PipelineStage):
     df_class = load_clusters()
     df_members = None
     df_interlopers = None
+    df_ret = None
     if name in df_class.name.values:
       _cls_id = df_class[df_class.name == name].clsid.values[0]
       paulo_path = configs.MEMBERS_V5_FOLDER / f'cluster.gals.sel.shiftgap.iter.{str(_cls_id).zfill(5)}'
@@ -497,9 +503,9 @@ class LoadPauloInfoStage(PipelineStage):
           'ra', 'dec', 'z', 'z_err', 'v', 'v_err', 'radius_deg', 
           'radius_Mpc', 'v_offset', 'flag_member'
         ] # 0 - member; 1 - interloper
-        df_paulo = read_table(paulo_path, fmt='dat', col_names=col_names)
-        df_members = df_paulo[df_paulo.flag_member == 0]
-        df_interlopers = df_paulo[df_paulo.flag_member == 1]
+        df_ret = read_table(paulo_path, fmt='dat', col_names=col_names)
+        df_members = df_ret[df_ret.flag_member == 0]
+        df_interlopers = df_ret[df_ret.flag_member == 1]
     
     print('Cluster Name:', name)
     print(f'RA: {ra:.3f}, DEC: {dec:.3f}, z: {z:.2f}, search radius: {search_radius_deg:.2f}')
@@ -519,6 +525,7 @@ class LoadPauloInfoStage(PipelineStage):
       'z_spec_range': (z - configs.Z_SPEC_DELTA, z + configs.Z_SPEC_DELTA),
       'df_members': df_members,
       'df_interlopers': df_interlopers,
+      'df_ret': df_ret,
     }
 
 
@@ -566,6 +573,7 @@ class LoadERASS2InfoStage(PipelineStage):
       'z_spec_range': (z - configs.Z_SPEC_DELTA, z + configs.Z_SPEC_DELTA),
       'df_members': None,
       'df_interlopers': None,
+      'df_ret': None,
     }
 
 

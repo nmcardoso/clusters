@@ -154,14 +154,29 @@ class PhotozSpeczLegacyMatchStage(PipelineStage):
     cls_name: str, 
     df_specz_radial: pd.DataFrame,
     df_photoz_radial: pd.DataFrame, 
-    df_legacy_radial: pd.DataFrame
+    df_legacy_radial: pd.DataFrame,
+    df_ret: pd.DataFrame | None,
   ):
     out_path = configs.PHOTOZ_SPECZ_LEG_FOLDER / f'{cls_name}.parquet'
     if out_path.exists() and not self.overwrite:
       return
     
-    df_specz_radial['f_z'] = df_specz_radial['f_z'].astype('str')
-    df_specz_radial['original_class_spec'] = df_specz_radial['original_class_spec'].astype('str')
+    df_spec = df_specz_radial.copy()
+    df_photo = df_photoz_radial.copy()
+    df_legacy = df_legacy_radial.copy()
+    df_r = df_ret.copy()
+    
+    ra, dec = guess_coords_columns(df_spec)
+    df_spec = df_spec.rename({ra: 'ra_spec', dec: 'dec_spec'})
+    ra, dec = guess_coords_columns(df_photo)
+    df_photo = df_photo.rename({ra: 'ra_photo', dec: 'dec_photo'})
+    ra, dec = guess_coords_columns(df_legacy)
+    df_legacy = df_legacy.rename({ra: 'ra_legacy', dec: 'dec_legacy'})
+    ra, dec = guess_coords_columns(df_r)
+    df_r = df_r.rename({ra: 'ra_spec', dec: 'dec_spec'})
+    
+    df_spec['f_z'] = df_spec['f_z'].astype('str')
+    df_spec['original_class_spec'] = df_spec['original_class_spec'].astype('str')
     
     print('Photo-z objects:', len(df_photoz_radial))
     print('Spec-z objects:', len(df_specz_radial))
@@ -169,32 +184,48 @@ class PhotozSpeczLegacyMatchStage(PipelineStage):
     print('Starting first crossmatch: photo-z UNION spec-z')
     
     t = Timming()
-    if len(df_photoz_radial) > 0 and len(df_specz_radial) > 0:
+    if df_ret is not None and len(df_ret) > 0 and len(df_photoz_radial) > 0:
       df = crossmatch(
-        table1=df_photoz_radial,
-        table2=df_specz_radial,
+        table1=df_photo,
+        table2=df_r,
         join='1or2',
+        ra1='ra_photo',
+        dec1='dec_photo',
+        ra2='ra_spec',
+        dec2='dec_spec',
       )
-      if 'RA_1' in df.columns: df = df.rename(columns={'RA_1': 'ra_1'})
-      if 'DEC_1' in df.columns: df = df.rename(columns={'DEC_1': 'dec_1'})
-      df['ra_1'] = df['ra_1'].fillna(df['RA_2'])
-      df['dec_1'] = df['dec_1'].fillna(df['DEC_2'])
+      df['ra_photo'] = df['ra_photo'].fillna(df['ra_spec'])
+      df['dec_photo'] = df['dec_photo'].fillna(df['dec_spec'])
+    elif len(df_photoz_radial) > 0 and len(df_specz_radial) > 0:
+      df = crossmatch(
+        table1=df_photo,
+        table2=df_spec,
+        join='1or2',
+        ra1='ra_photo',
+        dec1='dec_photo',
+        ra2='ra_spec',
+        dec2='dec_spec',
+      )
+      df['ra_photo'] = df['ra_photo'].fillna(df['ra_spec'])
+      df['dec_photo'] = df['dec_photo'].fillna(df['dec_spec'])
     elif len(df_photoz_radial) == 0 and len(df_specz_radial) > 0:
-      df = df_specz_radial
+      df = df_specz_radial.copy()
+      df['ra_photo'] = df['ra_spec']
+      df['dec_photo'] = df['dec_spec']
       df['zml'] = np.nan
       df['odds'] = np.nan
-      ra, dec = guess_coords_columns(df)
-      df = df.rename(columns={ra: 'ra_1', dec: 'dec_1'})
     elif len(df_photoz_radial) > 0 and len(df_specz_radial) == 0:
-      df = df_photoz_radial
+      df = df_photoz_radial.copy()
       df['z'] = np.nan
       df['e_z'] = np.nan
       df['f_z'] = np.nan
       df['class_spec'] = np.nan
-      ra, dec = guess_coords_columns(df)
-      df = df.rename(columns={ra: 'ra_1', dec: 'dec_1'})
     elif len(df_photoz_radial) == 0 and len(df_specz_radial) == 0:
       return
+    
+    if 'ra_spec' in df.columns:
+      del df['ra_spec']
+      del df['dec_spec']
     
     print(f'First crossmatch finished. Duration: {t.end()}')
     print('Objects with photo-z only:', len(df[~df.zml.isna() & df.z.isna()]))
@@ -209,12 +240,15 @@ class PhotozSpeczLegacyMatchStage(PipelineStage):
         table1=df,
         table2=df_legacy_radial,
         join='all1',
-        ra1='ra_1',
-        dec1='dec_1',
+        ra1='ra_photo',
+        dec1='dec_photo',
+        ra2='ra_legacy',
+        dec2='dec_legacy',
       )
-      del df['ra'] # legacy ra
-      del df['dec'] # legacy dec
-      df = df.rename(columns={'ra_1': 'ra', 'dec_1': 'dec'}) # use photoz ra/dec
+      df['ra_photo'] = df['ra_photo'].fillna(df['ra_legacy'])
+      df['dec_photo'] = df['dec_photo'].fillna(df['dec_legacy'])
+      del df['ra_legacy']
+      del df['dec_legacy']
     else:
       df['type'] = np.nan
       df['mag_r'] = np.nan
@@ -226,14 +260,17 @@ class PhotozSpeczLegacyMatchStage(PipelineStage):
     print('Galaxies:', len(df[df.type != 'PSF']), ', Stars:', len(df[df.type == 'PSF']))
     print('Total of objects after second match:', len(df))
     
-    photoz_cols = ['ra', 'dec', 'zml', 'odds']
-    if 'r_auto' in df.columns:
-      photoz_cols.append('r_auto')
-    if 'field' in df.columns:
-      photoz_cols.append('field')
-    specz_cols = ['z', 'e_z', 'f_z', 'class_spec']
-    legacy_cols = ['mag_r', 'type']
-    cols = photoz_cols + specz_cols + legacy_cols
-    df = df[cols]
+    df = df[df.type != 'PSF']
+    del df['ra_spec']
+    del df['dec_spec']
+    # photoz_cols = ['ra_photo', 'dec_photo', 'zml', 'odds']
+    # if 'r_auto' in df.columns:
+    #   photoz_cols.append('r_auto')
+    # if 'field' in df.columns:
+    #   photoz_cols.append('field')
+    # specz_cols = ['z', 'e_z', 'f_z', 'class_spec']
+    # legacy_cols = ['mag_r', 'type']
+    # cols = photoz_cols + specz_cols + legacy_cols
+    # df = df[cols]
     
     write_table(df, out_path)
