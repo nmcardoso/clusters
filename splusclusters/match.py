@@ -167,13 +167,13 @@ class PhotozSpeczLegacyMatchStage(PipelineStage):
     df_r = df_ret.copy()
     
     ra, dec = guess_coords_columns(df_spec)
-    df_spec = df_spec.rename({ra: 'ra_spec', dec: 'dec_spec'})
+    df_spec = df_spec.rename(columns={ra: 'ra_spec', dec: 'dec_spec'})
     ra, dec = guess_coords_columns(df_photo)
-    df_photo = df_photo.rename({ra: 'ra_photo', dec: 'dec_photo'})
+    df_photo = df_photo.rename(columns={ra: 'ra_photo', dec: 'dec_photo'})
     ra, dec = guess_coords_columns(df_legacy)
-    df_legacy = df_legacy.rename({ra: 'ra_legacy', dec: 'dec_legacy'})
+    df_legacy = df_legacy.rename(columns={ra: 'ra_legacy', dec: 'dec_legacy'})
     ra, dec = guess_coords_columns(df_r)
-    df_r = df_r.rename({ra: 'ra_spec', dec: 'dec_spec'})
+    df_r = df_r.rename(columns={ra: 'ra_spec', dec: 'dec_spec'})
     
     df_spec['f_z'] = df_spec['f_z'].astype('str')
     df_spec['original_class_spec'] = df_spec['original_class_spec'].astype('str')
