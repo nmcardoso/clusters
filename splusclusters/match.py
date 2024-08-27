@@ -257,6 +257,7 @@ class PhotozSpeczLegacyMatchStage(PipelineStage):
     
     t = Timming()
     if len(df_legacy) > 0:
+      print(df_legacy)
       df = crossmatch(
         table1=df,
         table2=df_legacy,
