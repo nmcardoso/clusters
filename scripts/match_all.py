@@ -20,7 +20,7 @@ from splusclusters.match import (PhotoZRadialSearchStage,
 from splusclusters.plots import ClusterPlotStage
 
 
-def match_all_pipeline(overwrite: bool = False):
+def match_all_pipeline(overwrite: bool = False, version: int = 6):
   configs.Z_SPEC_DELTA = configs.Z_SPEC_DELTA_PAULO
   configs.Z_PHOTO_DELTA = configs.Z_SPEC_DELTA_PAULO
   
@@ -28,7 +28,7 @@ def match_all_pipeline(overwrite: bool = False):
   df_clusters = load_members_index_v6()
   
   pipe = Pipeline(
-    LoadClusterInfoStage(df_clusters),
+    LoadClusterInfoStage(df_clusters, version=version),
     LoadPhotozRadialStage(),
     LoadSpeczRadialStage(),
     LoadLegacyRadialStage(),
@@ -44,4 +44,5 @@ if __name__ == "__main__":
   parser.add_argument('--overwrite', action='store_true')
   args = parser.parse_args()
   
-  match_all_pipeline(overwrite=args.overwrite)
+  v = 6 if args.v6 else 5
+  match_all_pipeline(overwrite=args.overwrite, version=v)
