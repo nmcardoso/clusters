@@ -173,7 +173,7 @@ class PhotozSpeczLegacyMatchStage(PipelineStage):
     ra, dec = guess_coords_columns(df_legacy)
     df_legacy = df_legacy.rename(columns={ra: 'ra_legacy', dec: 'dec_legacy'})
     ra, dec = guess_coords_columns(df_r)
-    df_r = df_r.rename(columns={ra: 'ra_spec', dec: 'dec_spec'})
+    df_r = df_r.rename(columns={ra: 'ra_r', dec: 'dec_r', 'z': 'z_r'})
     
     df_spec['f_z'] = df_spec['f_z'].astype('str')
     df_spec['original_class_spec'] = df_spec['original_class_spec'].astype('str')
@@ -184,20 +184,36 @@ class PhotozSpeczLegacyMatchStage(PipelineStage):
     print('Starting first crossmatch: photo-z UNION spec-z')
     
     t = Timming()
-    # if df_ret is not None and len(df_ret) > 0 and len(df_photo) > 0:
-    #   df = crossmatch(
-    #     table1=df_photo,
-    #     table2=df_r,
-    #     join='1or2',
-    #     ra1='ra_photo',
-    #     dec1='dec_photo',
-    #     ra2='ra_spec',
-    #     dec2='dec_spec',
-    #   )
-    #   df['ra_photo'] = df['ra_photo'].fillna(df['ra_spec'])
-    #   df['dec_photo'] = df['dec_photo'].fillna(df['dec_spec'])
-    # el
-    if len(df_photo) > 0 and len(df_spec) > 0:
+    if df_ret is not None and len(df_ret) > 0 and len(df_photo) > 0:
+      df_spec_union = crossmatch(
+        table1=df_r,
+        table2=df_spec,
+        join='1or2',
+        ra1='ra_r',
+        dec1='dec_r',
+        ra2='ra_spec',
+        dec2='dec_spec',
+      )
+      df_spec_union['z'] = df_spec_union['z'].fillna(df_spec_union['z_r'])
+      del df_spec_union['z_r']
+      df_spec_union['e_z'] = df_spec_union['e_z'].fillna(df_spec_union['z_err'])
+      del df_spec_union['z_err']
+      df_spec_union['ra_spec'] = df_spec_union['ra_spec'].fillna(df_spec_union['ra_r'])
+      del df_spec_union['ra_r']
+      df_spec_union['dec_spec'] = df_spec_union['dec_spec'].fillna(df_spec_union['dec_r'])
+      del df_spec_union['dec_r']
+      df = crossmatch(
+        table1=df_photo,
+        table2=df_spec_union,
+        join='1or2',
+        ra1='ra_photo',
+        dec1='dec_photo',
+        ra2='ra_spec',
+        dec2='dec_spec',
+      )
+      df['ra_photo'] = df['ra_photo'].fillna(df['ra_spec'])
+      df['dec_photo'] = df['dec_photo'].fillna(df['dec_spec'])
+    elif len(df_photo) > 0 and len(df_spec) > 0:
       df = crossmatch(
         table1=df_photo,
         table2=df_spec,
@@ -253,7 +269,6 @@ class PhotozSpeczLegacyMatchStage(PipelineStage):
     else:
       df['type'] = np.nan
       df['mag_r'] = np.nan
-    print(df)
     
     print(f'Second crossmatch finished. Duration: {t.end()}')
     print('Objects with legacy:', len(df[~df.type.isna()]))
@@ -265,6 +280,8 @@ class PhotozSpeczLegacyMatchStage(PipelineStage):
     
     if 'flag_member' in df.columns:
       df[~df.flag_member.isin([0, 1])]['flag_member'] = 1
+      
+    df = df.rename(columns={'ra_photo': 'ra', 'dec_photo': 'dec'})
     # photoz_cols = ['ra_photo', 'dec_photo', 'zml', 'odds']
     # if 'r_auto' in df.columns:
     #   photoz_cols.append('r_auto')
