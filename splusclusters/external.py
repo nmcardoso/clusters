@@ -3,6 +3,7 @@ import subprocess
 from shutil import copy
 from typing import Tuple
 
+import astropy.units as u
 import matplotlib.pyplot as plt
 import numpy as np
 import pandas as pd
@@ -11,6 +12,7 @@ from astromodule.io import read_table, write_table
 from astromodule.legacy import LegacyService
 from astromodule.pipeline import Pipeline, PipelineStage, PipelineStorage
 from astromodule.splus import SplusService
+from astropy.units import Quantity
 from pylegs.archive import RadialMatcher
 
 from splusclusters.configs import configs
@@ -204,23 +206,27 @@ class DownloadSplusPhotozStage(PipelineStage):
       FROM idr5_vacs.idr5_photoz AS photoz
       WHERE 1 = CONTAINS( 
         POINT('ICRS', photoz.RA, photoz.DEC), 
-        CIRCLE('ICRS', {ra:.6f}, {dec:.6f}, {radius:.6f}) 
-      ) AND photoz.r_auto BETWEEN {r_min:.3f} AND {r_max:.3f} 
-      AND photoz.zml BETWEEN {z_min:.3f} AND {z_max:.3f}
+        CIRCLE('ICRS', {ra:.10f}, {dec:.10f}, {radius:.10f}) 
+      ) AND photoz.r_auto BETWEEN {r_min:.5f} AND {r_max:.5f} 
+      AND photoz.zml BETWEEN {z_min:.6f} AND {z_max:.6f}
+      AND photoz.RA BETWEEN {ra_min:.12f} AND {ra_max:.12f}
     """
     
     radius = self.get_data(self.radius_key)
+    delta = Quantity('2 arcmin').to(u.deg).value
     queries = [
       sql.format(
         ra=cls_ra,
         dec=cls_dec,
         radius=radius,
-        r_min=_r,
-        r_max=_r+.05,
+        r_min=configs.MAG_RANGE[0],
+        r_max=configs.MAG_RANGE[1],
         z_min=z_photo_range[0],
         z_max=z_photo_range[1],
+        ra_min=_ra,
+        ra_max=_ra+delta,
       )
-      for _r in np.arange(*configs.MAG_RANGE, .05)
+      for _ra in np.arange(*configs.MAG_RANGE, delta)
     ]
     service = SplusService(username=os.environ['SPLUS_USER'], password=os.environ['SPLUS_PASS'])
     service.batch_query(
