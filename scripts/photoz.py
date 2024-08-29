@@ -73,7 +73,7 @@ if __name__ == "__main__":
   parser.add_argument('--v6', action='store_true')
   parser.add_argument('--overwrite', action='store_true')
   parser.add_argument('--fix', action='store_true')
-  parser.add_argument('--delta', action='store', default=None)
+  parser.add_argument('--delta', action='store', default=None, type=float)
   args = parser.parse_args()
   
   if args.v5:
