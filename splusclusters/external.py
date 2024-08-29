@@ -213,7 +213,7 @@ class DownloadSplusPhotozStage(PipelineStage):
     """
     
     radius = self.get_data(self.radius_key)
-    delta = Quantity('15 arcmin').to(u.deg).value
+    delta = Quantity('12 arcmin').to(u.deg).value
     queries = [
       sql.format(
         ra=cls_ra,
