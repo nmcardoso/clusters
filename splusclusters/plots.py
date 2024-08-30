@@ -232,7 +232,7 @@ class ClusterPlotStage(PlotStage):
         df_photoz_radial[dec_col].values,
         c='tab:blue', 
         s=2, 
-        alpha=0.01 if len(df_photoz_radial) > 1_000_000 else 0.2,
+        alpha=0.001 if len(df_photoz_radial) > 1_000_000 else 0.1,
         rasterized=True, 
         transform=ax.get_transform('icrs'),
         label=f'iDR5 objects'
@@ -281,7 +281,7 @@ class ClusterPlotStage(PlotStage):
           df[dec_col].values,
           c='tab:blue', 
           s=2, 
-          alpha=0.01 if len(df) > 1_000_000 else 0.2,
+          alpha=0.001 if len(df) > 1_000_000 else 0.1,
           rasterized=True, 
           transform=ax.get_transform('icrs'),
           label=f'Legacy objects'
