@@ -188,7 +188,7 @@ class WebsitePagesStage(PipelineStage):
       'specz', 'photoz', 'legacy_coverage', 'photoz_specz', 
       'spec_velocity_position', 'spec_velocity_rel_position', 
       'spec_velocity', 'specz_distance', 'photoz_distance', 
-      'mag_diff', 'mag_diff_hist', 'redshift_diagonal', 
+      'mag_diff', 'mag_diff_hist', 'redshift_diagonal', 'redshift_diff_mag',
       'redshift_histogram_members', 'redshift_histogram_interlopers', 
       'redshift_histogram_all', 'specz_contours', 'xray',
     ]
