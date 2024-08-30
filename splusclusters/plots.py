@@ -13,6 +13,7 @@ from astropy.visualization.wcsaxes import SphericalCircle
 from astropy.wcs import WCS
 from matplotlib.colors import LinearSegmentedColormap
 from matplotlib.patches import Circle
+from scipy.ndimage.filters import gaussian_filter
 from tqdm import tqdm
 
 from splusclusters.configs import configs
@@ -680,10 +681,10 @@ class ContourPlotStage(PlotStage):
     xi = np.linspace(-5, 5, 1000)
     yi = np.linspace(-5, 5, 1000)
     Xi, Yi = np.meshgrid(xi, yi)
-    zi = interpolator(Xi, Yi)
+    zi = gaussian_filter(interpolator(Xi, Yi), 0.7)
     ax.contour(
       xi, yi, zi, 
-      levels=10, 
+      levels=8, 
       linewidths=0.5, 
       colors='k',
       alpha=0.5,
@@ -692,7 +693,7 @@ class ContourPlotStage(PlotStage):
     )
     cntr1 = ax.contourf(
       xi, yi, zi, 
-      levels=10, 
+      levels=8, 
       cmap='Blues', 
       alpha=0.3, 
       nchunk=0, 
