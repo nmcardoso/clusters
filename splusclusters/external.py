@@ -4,10 +4,12 @@ from shutil import copy
 from typing import Tuple
 
 import astropy.units as u
+import lsdb
 import matplotlib.pyplot as plt
 import numpy as np
 import pandas as pd
 import requests
+import splusdata
 from astromodule.io import read_table, write_table
 from astromodule.legacy import LegacyService
 from astromodule.pipeline import Pipeline, PipelineStage, PipelineStorage
@@ -200,6 +202,23 @@ class DownloadSplusPhotozStage(PipelineStage):
     if not self.overwrite and out_path.exists():
       return
     
+    # conn = splusdata.Core(os.environ['SPLUS_USER'], os.environ['SPLUS_PASS'])
+    # idr5_links = splusdata.get_hipscats('idr5/photo-z', headers=conn.headers)[0]
+    # idr5_margin = lsdb.read_hipscat(idr5_links[1], storage_options=dict(headers=conn.headers))
+
+    # dual = lsdb.read_hipscat(
+    #   idr5_links[0],
+    #   margin_cache=idr5_margin,
+    #   storage_options=dict(headers=conn.headers),
+    #   columns = ["ID", "RA", "DEC"]
+    # )
+    
+    # dual.cone_search(
+    #   0.1,  # ra
+    #   0.1,  # dec
+    #   1 * 3600 # radius in arcsecs
+    # )
+    
     sql = """
       SELECT photoz.RA AS ra, photoz.DEC AS dec, photoz.r_auto, photoz.zml, 
       photoz.odds
@@ -209,11 +228,11 @@ class DownloadSplusPhotozStage(PipelineStage):
         CIRCLE('ICRS', {ra:.10f}, {dec:.10f}, {radius:.10f}) 
       ) AND photoz.r_auto BETWEEN {r_min:.5f} AND {r_max:.5f} 
       AND photoz.zml BETWEEN {z_min:.6f} AND {z_max:.6f}
-      AND photoz.RA BETWEEN {ra_min:.12f} AND {ra_max:.12f}
+      AND photoz.DEC BETWEEN {dec_min:.12f} AND {dec_max:.12f}
     """
     
     radius = self.get_data(self.radius_key)
-    delta = Quantity('12 arcmin').to(u.deg).value
+    delta = Quantity('10 arcmin').to(u.deg).value
     queries = [
       sql.format(
         ra=cls_ra,
@@ -223,10 +242,10 @@ class DownloadSplusPhotozStage(PipelineStage):
         r_max=configs.MAG_RANGE[1],
         z_min=z_photo_range[0],
         z_max=z_photo_range[1],
-        ra_min=_ra,
-        ra_max=_ra+delta,
+        dec_min=_dec,
+        dec_max=_dec+delta,
       )
-      for _ra in np.arange(*configs.MAG_RANGE, delta)
+      for _dec in np.arange(cls_dec-radius-0.05, cls_dec+radius+0.05, delta)
     ]
     service = SplusService(username=os.environ['SPLUS_USER'], password=os.environ['SPLUS_PASS'])
     service.batch_query(
