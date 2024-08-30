@@ -681,7 +681,7 @@ class ContourPlotStage(PlotStage):
     xi = np.linspace(-5, 5, 1000)
     yi = np.linspace(-5, 5, 1000)
     Xi, Yi = np.meshgrid(xi, yi)
-    zi = gaussian_filter(interpolator(Xi, Yi), 1.5)
+    zi = gaussian_filter(interpolator(Xi, Yi), 2.5)
     ax.contour(
       xi, yi, zi, 
       levels=8, 
