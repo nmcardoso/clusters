@@ -108,6 +108,19 @@ def load_photoz2(coords: bool = True):
     return df_photoz, coords
   return df_photoz.rename(columns={'RA': 'ra', 'DEC': 'dec'})
 
+def load_legacy(coords: bool = True):
+  df = read_table(configs.LEGACY_TABLE_PATH)
+  if coords:
+    ra, dec = guess_coords_columns(df)
+    coords = SkyCoord(
+      ra=df[ra].values, 
+      dec=df[dec].values, 
+      unit=u.deg, 
+      frame='icrs'
+    )
+    return df, coords
+  return df
+
 def load_eRASS():
   df_erass = read_table(configs.ERASS_TABLE_PATH)
   return df_erass

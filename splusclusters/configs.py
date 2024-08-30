@@ -16,6 +16,7 @@ class Configs(metaclass=SingletonMeta):
   ERASS_TABLE_PATH = Path('/mnt/hd/natanael/astrodata/liana_erass.csv')
   FULL_ERASS_TABLE_PATH = Path('/mnt/hd/natanael/astrodata/eRASS1_min.parquet')
   ERASS2_TABLE_PATH = ROOT / 'tables/Kluge_Bulbul_joint_selected_clusters_zlt0.2.csv'
+  LEGACY_TABLE_PATH = '/home/natanaelmc/repos/ls/ls10.parquet'
   HEASARC_TABLE_PATH = ROOT / 'public/heasarc_all.parquet'
   CATALOG_V6_TABLE_PATH = ROOT / 'tables' / 'catalog_v6.csv'
   CATALOG_V6_HYDRA_TABLE_PATH = ROOT / 'tables' / 'catalog_v6_hydra.csv'

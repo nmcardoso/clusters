@@ -113,6 +113,24 @@ class PhotoZRadialSearchStage(RadialSearchStage):
 
 
 
+class LegacyRadialSearchStage(RadialSearchStage):
+  def __init__(
+    self, 
+    save_folder: str | Path = configs.LEG_PHOTO_FOLDER, 
+    radius_key: str = 'cls_search_radius_deg', 
+    overwrite: bool = False,
+  ):
+    super().__init__(
+      df_name='df_legacy',
+      radius_key=radius_key, 
+      save_folder=save_folder, 
+      kind='photo', 
+      overwrite=overwrite, 
+      skycoord_name='legacy_skycoord',
+    )
+
+
+
 
 class FastCrossmatchStage(PipelineStage):
   def __init__(
