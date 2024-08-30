@@ -675,9 +675,9 @@ class ContourPlotStage(PlotStage):
       rasterized=True,
     )
     
-    ra_col, dec_col = guess_coords_columns(dfs)
-    triang = tri.Triangulation((dfs[ra_col] - cls_ra) / cls_r200_deg, (dfs[dec_col] - cls_dec) / cls_r200_deg)
-    interpolator = tri.LinearTriInterpolator(triang, dfs.z.values)
+    ra_col, dec_col = guess_coords_columns(dfm)
+    triang = tri.Triangulation((dfm[ra_col] - cls_ra) / cls_r200_deg, (dfm[dec_col] - cls_dec) / cls_r200_deg)
+    interpolator = tri.LinearTriInterpolator(triang, dfm.z.values)
     xi = np.linspace(-5, 5, 1000)
     yi = np.linspace(-5, 5, 1000)
     Xi, Yi = np.meshgrid(xi, yi)
@@ -691,14 +691,14 @@ class ContourPlotStage(PlotStage):
       nchunk=0,
       corner_mask=False,
     )
-    cntr1 = ax.contourf(
-      xi, yi, zi, 
-      levels=5, 
-      cmap='Blues', 
-      alpha=0.3, 
-      nchunk=0, 
-      corner_mask=False,
-    )
+    # cntr1 = ax.contourf(
+    #   xi, yi, zi, 
+    #   levels=5, 
+    #   cmap='Blues', 
+    #   alpha=0.3, 
+    #   nchunk=0, 
+    #   corner_mask=False,
+    # )
     # ax.figure.colorbar(cntr1, ax=ax)
     
     ax.invert_xaxis()
