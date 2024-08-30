@@ -638,28 +638,30 @@ class ContourPlotStage(PlotStage):
     ax.add_patch(circle)
     xm = (dfm.ra - cls_ra) / cls_r200_deg
     ym = (dfm.dec - cls_dec) / cls_r200_deg
-    xm = xm[(xm < 5) & (ym < 5)]
-    ym = ym[(xm < 5) & (ym < 5)]
+    mask = xm**2 + ym**2 < 5**2
+    xm = xm[mask]
+    ym = ym[mask]
     ax.scatter(
       xm, 
       ym, 
       c=z,
       cmap='Blues', 
-      s=5,
+      s=6,
       label=f'Members ({len(dfm)})',
       rasterized=True,
       zorder=99,
     )
     xi = (dfi.ra - cls_ra) / cls_r200_deg
     yi = (dfi.dec - cls_dec) / cls_r200_deg
-    xi = xi[(xi < 5) & (yi < 5)]
-    yi = yi[(xi < 5) & (yi < 5)]
+    mask = xi**2 + yi**2 < 5**2
+    xi = xi[mask]
+    yi = yi[mask]
     ax.scatter(
       xi, 
       yi, 
       marker='v',
       c='tab:gray', 
-      s=4,
+      s=6,
       label=f'Interlopers ({len(dfi)})',
       rasterized=True,
     )
@@ -672,22 +674,30 @@ class ContourPlotStage(PlotStage):
       rasterized=True,
     )
     
-    ra_col, dec_col = guess_coords_columns(dfm)
-    triang = tri.Triangulation((dfm[ra_col] - cls_ra) / cls_r200_deg, (dfm[dec_col] - cls_dec) / cls_r200_deg)
-    interpolator = tri.LinearTriInterpolator(triang, dfm.z.values)
+    ra_col, dec_col = guess_coords_columns(dfs)
+    triang = tri.Triangulation((dfs[ra_col] - cls_ra) / cls_r200_deg, (dfs[dec_col] - cls_dec) / cls_r200_deg)
+    interpolator = tri.LinearTriInterpolator(triang, dfs.z.values)
     xi = np.linspace(-5, 5, 1000)
     yi = np.linspace(-5, 5, 1000)
     Xi, Yi = np.meshgrid(xi, yi)
     zi = interpolator(Xi, Yi)
     ax.contour(
       xi, yi, zi, 
-      levels=6, 
+      levels=10, 
       linewidths=0.5, 
       colors='k',
       alpha=0.5,
       nchunk=0,
+      corner_mask=False,
     )
-    cntr1 = ax.contourf(xi, yi, zi, levels=6, cmap='Blues', alpha=0.3, nchunk=0, corner_mask=False,)
+    cntr1 = ax.contourf(
+      xi, yi, zi, 
+      levels=10, 
+      cmap='Blues', 
+      alpha=0.3, 
+      nchunk=0, 
+      corner_mask=False,
+    )
     # ax.figure.colorbar(cntr1, ax=ax)
     
     ax.invert_xaxis()
