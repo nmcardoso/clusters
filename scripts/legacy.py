@@ -40,6 +40,9 @@ def legacy_pipeline_v6(overwrite: bool = False, compile_all: bool = False):
   df_clusters = load_members_index_v6()
   df_legacy, legacy_skycoord = load_legacy()
   
+  PipelineStorage().write('df_legacy', df_legacy)
+  PipelineStorage().write('legacy_skycoord', legacy_skycoord)
+  
   stages = [
     LoadClusterInfoStage(df_clusters),
     LegacyRadialSearchStage(overwrite=overwrite),
@@ -51,7 +54,7 @@ def legacy_pipeline_v6(overwrite: bool = False, compile_all: bool = False):
       LoadPhotozRadialStage(),
       PhotozSpeczLegacyMatchStage(overwrite=overwrite),
     ]
-    
+  
   pipe = Pipeline(*stages)
   pipe.map_run('cls_id', df_clusters.clsid.values, workers=1)
 
