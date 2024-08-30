@@ -849,6 +849,35 @@ class SpecDiffPlotStage(PlotStage):
     ax.set_title('$z_{{photo}} - z_{{spec}}$ x odds')
     ax.grid('on', color='k', linestyle='--', alpha=.25)
     
+  def spec_diff_distance_plot(
+    self, 
+    df_members: pd.DataFrame, 
+    df_interlopers: pd.DataFrame,
+    df_all_radial: pd.DataFrame,
+    df_photoz_radial: pd.DataFrame | None,
+    ax: plt.Axes,
+  ):
+    if df_members is not None and df_interlopers is not None:
+      members_match = fast_crossmatch(df_members, df_photoz_radial)
+      members_match = members_match[~members_match.z.isna() & ~members_match.zml.isna()]
+      if len(members_match) == 0: return
+      ax.scatter(members_match.radius_Mpc, members_match.zml - members_match.z, c='tab:red', s=5, alpha=0.85, label='Members', rasterized=True)
+      
+      interlopers_match = fast_crossmatch(df_interlopers, df_photoz_radial)
+      interlopers_match = interlopers_match[~interlopers_match.z.isna() & ~interlopers_match.zml.isna()]
+      if len(interlopers_match) == 0: return
+      ax.scatter(interlopers_match.radius_Mpc, interlopers_match.zml - interlopers_match.z, c='tab:blue', s=5, alpha=0.85, label='Interlopers', rasterized=True)
+    elif df_photoz_radial is not None:
+      df = df_photoz_radial[~df_photoz_radial.z.isna() & ~df_photoz_radial.zml.isna()]
+      if len(df) == 0: return
+      ax.scatter(df.radius_Mpc, df.zml - df.z, c='tab:blue', s=5, alpha=0.85, label='Objects', rasterized=True)
+    ax.legend()
+    ax.tick_params(direction='in')
+    ax.set_xlabel('Radius [Mpc]')
+    ax.set_ylabel('$z_{{photo}} - z_{{spec}}$ ')
+    ax.set_title('$z_{{photo}} - z_{{spec}}$ x radius')
+    ax.grid('on', color='k', linestyle='--', alpha=.25)
+    
   def histogram_members_plot(
     self, 
     df_members: pd.DataFrame, 
@@ -929,6 +958,20 @@ class SpecDiffPlotStage(PlotStage):
         fig = plt.figure(figsize=(7.5, 7.5), dpi=150)
         ax = fig.add_subplot()
         self.spec_diff_mag_plot(
+          df_members=df_members,
+          df_interlopers=df_interlopers,
+          df_all_radial=df_all_radial,
+          df_photoz_radial=df_photoz_radial,
+          ax=ax,
+        )
+        plt.savefig(out, bbox_inches='tight', pad_inches=0.1)
+        plt.close(fig)
+        
+      out = configs.WEBSITE_PATH / f'clusters_v{self.version}' / cls_name / f'redshift_diff_distance.{self.fmt}'
+      if not out.exists() or self.overwrite:
+        fig = plt.figure(figsize=(7.5, 7.5), dpi=150)
+        ax = fig.add_subplot()
+        self.spec_diff_distance_plot(
           df_members=df_members,
           df_interlopers=df_interlopers,
           df_all_radial=df_all_radial,
