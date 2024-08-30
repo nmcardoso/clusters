@@ -286,6 +286,9 @@ class ClusterPlotStage(PlotStage):
           transform=ax.get_transform('icrs'),
           label=f'Legacy objects'
         )
+        ax.set_title(f'Legacy Survey Coverage - Objects: {len(df)}')
+    else:
+      ax.set_title(f'Legacy Survey Coverage - Objects: 0')
     self.add_cluster_center(cls_ra, cls_dec, ax)
     self.add_all_circles(
       cls_ra=cls_ra, 
@@ -298,7 +301,6 @@ class ClusterPlotStage(PlotStage):
       search_radius_Mpc=cls_search_radius_Mpc,
       ax=ax
     )
-    ax.set_title(f'Legacy Survey Coverage - Objects: {len(df)}')
     ax.invert_xaxis()
     ax.legend(loc='upper left')
     ax.set_aspect('equal')
