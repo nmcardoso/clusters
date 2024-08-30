@@ -766,8 +766,10 @@ class SpecDiffPlotStage(PlotStage):
     df_members: pd.DataFrame, 
     df_interlopers: pd.DataFrame,
     df_all_radial: pd.DataFrame,
+    df_photoz_radial: pd.DataFrame | None,
     ax: plt.Axes,
   ):
+    df_all_radial = df_photoz_radial
     if df_members is not None and df_interlopers is not None:
       members_match = fast_crossmatch(df_members, df_all_radial)
       members_match = members_match[~members_match.z.isna() & ~members_match.zml.isna()]
@@ -887,6 +889,7 @@ class SpecDiffPlotStage(PlotStage):
         df_members=df_members,
         df_interlopers=df_interlopers,
         df_all_radial=df_all_radial,
+        df_photoz_radial=df_photoz_radial,
         ax=ax,
       )
       plt.savefig(out, bbox_inches='tight', pad_inches=0.1)
