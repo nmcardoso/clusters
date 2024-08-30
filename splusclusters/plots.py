@@ -227,8 +227,8 @@ class ClusterPlotStage(PlotStage):
     z_photo_range: Tuple[float, float],
     ax: plt.Axes,
   ):
-    ra_col, dec_col = guess_coords_columns(df_photoz_radial)
-    if len(df_photoz_radial) > 0:
+    if df_photoz_radial is not None and len(df_photoz_radial) > 0:
+      ra_col, dec_col = guess_coords_columns(df_photoz_radial)
       ax.scatter(
         df_photoz_radial[ra_col].values, 
         df_photoz_radial[dec_col].values,
