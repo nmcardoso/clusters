@@ -272,19 +272,20 @@ class ClusterPlotStage(PlotStage):
     z_photo_range: Tuple[float, float],
     ax: plt.Axes,
   ):
-    ra_col, dec_col = guess_coords_columns(df_legacy_radial)
-    df = df_legacy_radial[df_legacy_radial.type != 'PSF']
-    if len(df) > 0:
-      ax.scatter(
-        df[ra_col].values, 
-        df[dec_col].values,
-        c='tab:blue', 
-        s=2, 
-        alpha=0.02 if len(df) > 200_000 else 0.15,
-        rasterized=True, 
-        transform=ax.get_transform('icrs'),
-        label=f'Legacy objects'
-      )
+    if df_legacy_radial is not None:
+      ra_col, dec_col = guess_coords_columns(df_legacy_radial)
+      df = df_legacy_radial[df_legacy_radial.type != 'PSF']
+      if len(df) > 0:
+        ax.scatter(
+          df[ra_col].values, 
+          df[dec_col].values,
+          c='tab:blue', 
+          s=2, 
+          alpha=0.02 if len(df) > 200_000 else 0.15,
+          rasterized=True, 
+          transform=ax.get_transform('icrs'),
+          label=f'Legacy objects'
+        )
     self.add_cluster_center(cls_ra, cls_dec, ax)
     self.add_all_circles(
       cls_ra=cls_ra, 
