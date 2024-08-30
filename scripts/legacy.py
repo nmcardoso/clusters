@@ -27,7 +27,7 @@ def legacy_pipeline_v5(overwrite: bool = False):
   df_legacy, legacy_skycoord = load_legacy()
   
   pipe = Pipeline(
-    LoadClusterInfoStage(df_clusters),
+    LoadClusterInfoStage(df_clusters, version=5),
     LegacyRadialSearchStage(overwrite=overwrite),
   )
   PipelineStorage().write('df_legacy', df_legacy)
@@ -36,26 +36,17 @@ def legacy_pipeline_v5(overwrite: bool = False):
   pipe.map_run('cls_id', df_clusters.clsid.values, workers=1)
 
 
-def legacy_pipeline_v6(overwrite: bool = False, compile_all: bool = False):
+def legacy_pipeline_v6(overwrite: bool = False):
   df_clusters = load_members_index_v6()
   df_legacy, legacy_skycoord = load_legacy()
   
   PipelineStorage().write('df_legacy', df_legacy)
   PipelineStorage().write('legacy_skycoord', legacy_skycoord)
   
-  stages = [
-    LoadClusterInfoStage(df_clusters),
+  pipe = Pipeline(
+    LoadClusterInfoStage(df_clusters, version=6),
     LegacyRadialSearchStage(overwrite=overwrite),
-  ]
-  if compile_all:
-    stages += [
-      LoadLegacyRadialStage(),
-      LoadSpeczRadialStage(),
-      LoadPhotozRadialStage(),
-      PhotozSpeczLegacyMatchStage(overwrite=overwrite),
-    ]
-  
-  pipe = Pipeline(*stages)
+  )
   pipe.map_run('cls_id', df_clusters.clsid.values, workers=1)
 
 
@@ -65,10 +56,9 @@ if __name__ == "__main__":
   parser.add_argument('--v5', action='store_true')
   parser.add_argument('--v6', action='store_true')
   parser.add_argument('--overwrite', action='store_true')
-  parser.add_argument('--all', action='store_true')
   args = parser.parse_args()
   
   if args.v5:
     legacy_pipeline_v5(overwrite=args.overwrite)
   if args.v6:
-    legacy_pipeline_v6(overwrite=args.overwrite, compile_all=args.all)
+    legacy_pipeline_v6(overwrite=args.overwrite)
