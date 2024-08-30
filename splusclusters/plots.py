@@ -232,7 +232,7 @@ class ClusterPlotStage(PlotStage):
         df_photoz_radial[dec_col].values,
         c='tab:blue', 
         s=2, 
-        alpha=0.02 if len(df_photoz_radial) > 200_000 else 0.2,
+        alpha=0.01 if len(df_photoz_radial) > 1_000_000 else 0.2,
         rasterized=True, 
         transform=ax.get_transform('icrs'),
         label=f'iDR5 objects'
@@ -281,12 +281,12 @@ class ClusterPlotStage(PlotStage):
           df[dec_col].values,
           c='tab:blue', 
           s=2, 
-          alpha=0.02 if len(df) > 200_000 else 0.15,
+          alpha=0.01 if len(df) > 1_000_000 else 0.2,
           rasterized=True, 
           transform=ax.get_transform('icrs'),
           label=f'Legacy objects'
         )
-        ax.set_title(f'Legacy Survey Coverage - Objects: {len(df)}')
+        ax.set_title(f'Legacy Survey Coverage - Objects: {len(df)} (type $\\neq$ PSF)')
     else:
       ax.set_title(f'Legacy Survey Coverage - Objects: 0')
     self.add_cluster_center(cls_ra, cls_dec, ax)
