@@ -684,7 +684,7 @@ class ContourPlotStage(PlotStage):
     zi = gaussian_filter(interpolator(Xi, Yi), 2.5)
     ax.contour(
       xi, yi, zi, 
-      levels=8, 
+      levels=5, 
       linewidths=0.5, 
       colors='k',
       alpha=0.5,
@@ -693,7 +693,7 @@ class ContourPlotStage(PlotStage):
     )
     cntr1 = ax.contourf(
       xi, yi, zi, 
-      levels=8, 
+      levels=5, 
       cmap='Blues', 
       alpha=0.3, 
       nchunk=0, 
