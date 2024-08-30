@@ -677,8 +677,7 @@ class ContourPlotStage(PlotStage):
       rasterized=True,
     )
     
-    ra_col, dec_col = guess_coords_columns(dfm)
-    sns.kdeplot(x=xm, y=ym, levels=5, ax=ax)
+    sns.kdeplot(x=xm, y=ym, levels=6, ax=ax)
     # triang = tri.Triangulation((dfm[ra_col] - cls_ra) / cls_r200_deg, (dfm[dec_col] - cls_dec) / cls_r200_deg)
     # interpolator = tri.LinearTriInterpolator(triang, dfm.z.values)
     # xi = np.linspace(-5, 5, 1000)
@@ -716,7 +715,7 @@ class ContourPlotStage(PlotStage):
     ax.legend(loc='lower left')
     ax.set_xlabel('$\\Delta$RA/R200')
     ax.set_ylabel('$\\Delta$DEC/R200')
-    ax.set_title('Spectroscopic Redshift')
+    ax.set_title('KDE Plot (spectroscopic members)')
   
   def run(
     self, 
