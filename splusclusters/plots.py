@@ -683,7 +683,7 @@ class ContourPlotStage(PlotStage):
     Xi, Yi = np.meshgrid(xi, yi)
     zi = gaussian_filter(interpolator(Xi, Yi), 1.5)
     ax.contour(
-      zi, 
+      xi, yi, zi, 
       levels=8, 
       linewidths=0.5, 
       colors='k',
@@ -692,7 +692,7 @@ class ContourPlotStage(PlotStage):
       corner_mask=False,
     )
     cntr1 = ax.contourf(
-      zi, 
+      xi, yi, zi, 
       levels=8, 
       cmap='Blues', 
       alpha=0.3, 
