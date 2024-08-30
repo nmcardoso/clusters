@@ -636,9 +636,13 @@ class ContourPlotStage(PlotStage):
       label='5$\\times$R500',
     )
     ax.add_patch(circle)
+    xm = (dfm.ra - cls_ra) / cls_r200_deg
+    ym = (dfm.dec - cls_dec) / cls_r200_deg
+    xm = xm[(xm < 5) & (ym < 5)]
+    ym = ym[(xm < 5) & (ym < 5)]
     ax.scatter(
-      (dfm.ra - cls_ra) / cls_r200_deg, 
-      (dfm.dec - cls_dec) / cls_r200_deg, 
+      xm, 
+      ym, 
       c=z,
       cmap='Blues', 
       s=5,
@@ -646,9 +650,13 @@ class ContourPlotStage(PlotStage):
       rasterized=True,
       zorder=99,
     )
+    xi = (dfi.ra - cls_ra) / cls_r200_deg
+    yi = (dfi.dec - cls_dec) / cls_r200_deg
+    xi = xi[(xi < 5) & (yi < 5)]
+    yi = yi[(xi < 5) & (yi < 5)]
     ax.scatter(
-      (dfi.ra - cls_ra) / cls_r200_deg, 
-      (dfi.dec - cls_dec) / cls_r200_deg, 
+      xi, 
+      yi, 
       marker='v',
       c='tab:gray', 
       s=4,
@@ -664,8 +672,8 @@ class ContourPlotStage(PlotStage):
       rasterized=True,
     )
     
-    triang = tri.Triangulation((dfs.RA - cls_ra) / cls_r200_deg, (dfs.DEC - cls_dec) / cls_r200_deg)
-    interpolator = tri.LinearTriInterpolator(triang, dfs.z.values)
+    triang = tri.Triangulation((dfm.RA - cls_ra) / cls_r200_deg, (dfm.DEC - cls_dec) / cls_r200_deg)
+    interpolator = tri.LinearTriInterpolator(triang, dfm.z.values)
     xi = np.linspace(-5, 5, 1000)
     yi = np.linspace(-5, 5, 1000)
     Xi, Yi = np.meshgrid(xi, yi)
@@ -678,7 +686,7 @@ class ContourPlotStage(PlotStage):
       alpha=0.5,
       nchunk=0,
     )
-    cntr1 = ax.contourf(xi, yi, zi, levels=6, cmap='Blues', alpha=0.3, nchunk=0)
+    cntr1 = ax.contourf(xi, yi, zi, levels=6, cmap='Blues', alpha=0.3, nchunk=0, corner_mask=False,)
     # ax.figure.colorbar(cntr1, ax=ax)
     
     ax.invert_xaxis()
