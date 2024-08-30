@@ -672,7 +672,8 @@ class ContourPlotStage(PlotStage):
       rasterized=True,
     )
     
-    triang = tri.Triangulation((dfm.RA - cls_ra) / cls_r200_deg, (dfm.DEC - cls_dec) / cls_r200_deg)
+    ra_col, dec_col = guess_coords_columns(dfm)
+    triang = tri.Triangulation((dfm[ra_col] - cls_ra) / cls_r200_deg, (dfm[dec_col] - cls_dec) / cls_r200_deg)
     interpolator = tri.LinearTriInterpolator(triang, dfm.z.values)
     xi = np.linspace(-5, 5, 1000)
     yi = np.linspace(-5, 5, 1000)
