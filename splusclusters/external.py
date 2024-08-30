@@ -120,6 +120,8 @@ class DownloadXRayStage(PipelineStage):
       if r.ok:
         eps_path.write_bytes(r.content)
     if eps_path.exists() and (not raster_path.exists() or self.overwrite):
+      # cbpfdown repos/clusters/outputs_v6/xray_plots/*.eps .
+      # for i in *.eps; do convert -density 300 "$i" -trim -rotate 90 "${i%.*}.png"; done
       subprocess.run([
         'convert', '-density', '300', str(eps_path.absolute()), 
         '-trim', '-rotate', '90', str(raster_path.absolute())
