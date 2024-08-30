@@ -5,6 +5,7 @@ import matplotlib.pyplot as plt
 import matplotlib.tri as tri
 import numpy as np
 import pandas as pd
+import seaborn as sns
 from astromodule.pipeline import Pipeline, PipelineStage, PipelineStorage
 from astromodule.table import (concat_tables, crossmatch, fast_crossmatch,
                                guess_coords_columns, radial_search, selfmatch)
@@ -676,35 +677,36 @@ class ContourPlotStage(PlotStage):
     )
     
     ra_col, dec_col = guess_coords_columns(dfm)
-    triang = tri.Triangulation((dfm[ra_col] - cls_ra) / cls_r200_deg, (dfm[dec_col] - cls_dec) / cls_r200_deg)
-    interpolator = tri.LinearTriInterpolator(triang, dfm.z.values)
-    xi = np.linspace(-5, 5, 1000)
-    yi = np.linspace(-5, 5, 1000)
-    Xi, Yi = np.meshgrid(xi, yi)
-    zi = gaussian_filter(interpolator(Xi, Yi), 2.5)
-    ax.contour(
-      xi, yi, zi, 
-      levels=3, 
-      linewidths=0.5, 
-      colors='k',
-      alpha=0.5,
-      nchunk=0,
-      corner_mask=False,
-    )
-    cmap = plt.cm.get_cmap("Blues")
-    cmap.set_under('white')
-    cmap.set_over('blue', alpha=0.6)
-    cntr1 = ax.contourf(
-      xi, yi, zi, 
-      levels=3, 
-      cmap=cmap, 
-      alpha=0.3, 
-      nchunk=0, 
-      corner_mask=False,
-      vmin=dfm.z.min(),
-      vmax=dfm.z.max()
-    )
-    ax.figure.colorbar(cntr1, ax=ax)
+    sns.kdeplot(data=dfm, x=ra_col, y=dec_col, hue=z, levels=5, ax=ax)
+    # triang = tri.Triangulation((dfm[ra_col] - cls_ra) / cls_r200_deg, (dfm[dec_col] - cls_dec) / cls_r200_deg)
+    # interpolator = tri.LinearTriInterpolator(triang, dfm.z.values)
+    # xi = np.linspace(-5, 5, 1000)
+    # yi = np.linspace(-5, 5, 1000)
+    # Xi, Yi = np.meshgrid(xi, yi)
+    # zi = gaussian_filter(interpolator(Xi, Yi), 2.5)
+    # ax.contour(
+    #   xi, yi, zi, 
+    #   levels=3, 
+    #   linewidths=0.5, 
+    #   colors='k',
+    #   alpha=0.5,
+    #   nchunk=0,
+    #   corner_mask=False,
+    # )
+    # cmap = plt.cm.get_cmap("Blues")
+    # cmap.set_under('white')
+    # cmap.set_over('blue', alpha=0.6)
+    # cntr1 = ax.contourf(
+    #   xi, yi, zi, 
+    #   levels=3, 
+    #   cmap=cmap, 
+    #   alpha=0.3, 
+    #   nchunk=0, 
+    #   corner_mask=False,
+    #   vmin=dfm.z.min(),
+    #   vmax=dfm.z.max()
+    # )
+    # ax.figure.colorbar(cntr1, ax=ax)
     
     ax.invert_xaxis()
     ax.set_aspect('equal', adjustable='datalim', anchor='C')
