@@ -640,10 +640,10 @@ class ContourPlotStage(PlotStage):
     ax.add_patch(circle)
     xm = (dfm.ra - cls_ra) / cls_r200_deg
     ym = (dfm.dec - cls_dec) / cls_r200_deg
-    zm = z[mask]
     mask = xm**2 + ym**2 < 5**2
     xm = xm[mask]
     ym = ym[mask]
+    zm = z[mask]
     ax.scatter(
       xm, 
       ym, 
