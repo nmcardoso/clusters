@@ -897,7 +897,7 @@ class SpecDiffPlotStage(PlotStage):
     if not out.exists() or self.overwrite:
       fig = plt.figure(figsize=(7.5, 7.5), dpi=150)
       ax = fig.add_subplot()
-      self.diagonal_plot(
+      self.spec_diff_mag_plot(
         df_members=df_members,
         df_interlopers=df_interlopers,
         df_all_radial=df_all_radial,
