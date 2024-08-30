@@ -909,48 +909,48 @@ class SpecDiffPlotStage(PlotStage):
     df_all_radial: pd.DataFrame,
     df_photoz_radial: pd.DataFrame | None,
   ):
-    if len(df_all_radial) == 0: return
-    out = configs.WEBSITE_PATH / f'clusters_v{self.version}' / cls_name / f'redshift_diagonal.{self.fmt}'
-    if not out.exists() or self.overwrite:
-      fig = plt.figure(figsize=(7.5, 7.5), dpi=150)
-      ax = fig.add_subplot()
-      self.diagonal_plot(
-        df_members=df_members,
-        df_interlopers=df_interlopers,
-        df_all_radial=df_all_radial,
-        df_photoz_radial=df_photoz_radial,
-        ax=ax,
-      )
-      plt.savefig(out, bbox_inches='tight', pad_inches=0.1)
-      plt.close(fig)
-    
-    out = configs.WEBSITE_PATH / f'clusters_v{self.version}' / cls_name / f'redshift_diff_mag.{self.fmt}'
-    if not out.exists() or self.overwrite:
-      fig = plt.figure(figsize=(7.5, 7.5), dpi=150)
-      ax = fig.add_subplot()
-      self.spec_diff_mag_plot(
-        df_members=df_members,
-        df_interlopers=df_interlopers,
-        df_all_radial=df_all_radial,
-        df_photoz_radial=df_photoz_radial,
-        ax=ax,
-      )
-      plt.savefig(out, bbox_inches='tight', pad_inches=0.1)
-      plt.close(fig)
-    
-    out = configs.WEBSITE_PATH / f'clusters_v{self.version}' / cls_name / f'redshift_diff_odds.{self.fmt}'
-    if not out.exists() or self.overwrite:
-      fig = plt.figure(figsize=(7.5, 7.5), dpi=150)
-      ax = fig.add_subplot()
-      self.spec_diff_odds_plot(
-        df_members=df_members,
-        df_interlopers=df_interlopers,
-        df_all_radial=df_all_radial,
-        df_photoz_radial=df_photoz_radial,
-        ax=ax,
-      )
-      plt.savefig(out, bbox_inches='tight', pad_inches=0.1)
-      plt.close(fig)
+    if len(df_photoz_radial) > 0:
+      out = configs.WEBSITE_PATH / f'clusters_v{self.version}' / cls_name / f'redshift_diagonal.{self.fmt}'
+      if not out.exists() or self.overwrite:
+        fig = plt.figure(figsize=(7.5, 7.5), dpi=150)
+        ax = fig.add_subplot()
+        self.diagonal_plot(
+          df_members=df_members,
+          df_interlopers=df_interlopers,
+          df_all_radial=df_all_radial,
+          df_photoz_radial=df_photoz_radial,
+          ax=ax,
+        )
+        plt.savefig(out, bbox_inches='tight', pad_inches=0.1)
+        plt.close(fig)
+      
+      out = configs.WEBSITE_PATH / f'clusters_v{self.version}' / cls_name / f'redshift_diff_mag.{self.fmt}'
+      if not out.exists() or self.overwrite:
+        fig = plt.figure(figsize=(7.5, 7.5), dpi=150)
+        ax = fig.add_subplot()
+        self.spec_diff_mag_plot(
+          df_members=df_members,
+          df_interlopers=df_interlopers,
+          df_all_radial=df_all_radial,
+          df_photoz_radial=df_photoz_radial,
+          ax=ax,
+        )
+        plt.savefig(out, bbox_inches='tight', pad_inches=0.1)
+        plt.close(fig)
+      
+      out = configs.WEBSITE_PATH / f'clusters_v{self.version}' / cls_name / f'redshift_diff_odds.{self.fmt}'
+      if not out.exists() or self.overwrite:
+        fig = plt.figure(figsize=(7.5, 7.5), dpi=150)
+        ax = fig.add_subplot()
+        self.spec_diff_odds_plot(
+          df_members=df_members,
+          df_interlopers=df_interlopers,
+          df_all_radial=df_all_radial,
+          df_photoz_radial=df_photoz_radial,
+          ax=ax,
+        )
+        plt.savefig(out, bbox_inches='tight', pad_inches=0.1)
+        plt.close(fig)
     
     if df_members is not None and len(df_members) > 0:
       out = configs.WEBSITE_PATH / f'clusters_v{self.version}' / cls_name / f'redshift_histogram_members.{self.fmt}'
