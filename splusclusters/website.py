@@ -212,7 +212,7 @@ class WebsitePagesStage(PipelineStage):
       
       <div class="container-xxl">
         <center><h2>{cls_name}</h2></center>
-        <div class="row">
+        <div class="row mt-2">
           <div class="col-4">
             <table class="table table-striped table-hover">
               <thead>
@@ -268,8 +268,8 @@ class WebsitePagesStage(PipelineStage):
             <b>Attachments:</b> {' &nbsp;&bullet;&nbsp; '.join(attachments_html)}
             <br /><br />
             <b>Cosmology:</b>
-            H<sub>0</sub> = 70 [km Mpc<sup>-1</sup> s<sup>-1</sup>] &nbsp;&nbsp;
-            &Omega;<sub>m</sub> = 0.3 &nbsp;&nbsp;
+            H<sub>0</sub> = 70 [km Mpc<sup>-1</sup> s<sup>-1</sup>] &nbsp;&nbsp;&nbsp;
+            &Omega;<sub>m</sub> = 0.3 &nbsp;&nbsp;&nbsp;
             &Omega;<sub>&Lambda;</sub> = 0.7
           </div>
         </div>
