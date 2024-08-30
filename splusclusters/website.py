@@ -212,7 +212,7 @@ class WebsitePagesStage(PipelineStage):
       
       <div class="container-xxl">
         <center><h2>{cls_name}</h2></center>
-        <div class="row mt-2">
+        <div class="row mt-4">
           <div class="col-4">
             <table class="table table-striped table-hover">
               <thead>
