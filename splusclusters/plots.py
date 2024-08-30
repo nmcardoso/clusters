@@ -272,7 +272,7 @@ class ClusterPlotStage(PlotStage):
     z_photo_range: Tuple[float, float],
     ax: plt.Axes,
   ):
-    if df_legacy_radial is not None and df_legacy_radial.columns is not None:
+    if df_legacy_radial is not None and len(df_legacy_radial) > 0:
       ra_col, dec_col = guess_coords_columns(df_legacy_radial)
       df = df_legacy_radial[df_legacy_radial.type != 'PSF']
       if len(df) > 0:
