@@ -144,8 +144,8 @@ class ClusterPlotStage(PlotStage):
     cls_search_radius_deg: float,
     cls_search_radius_Mpc: float,
     df_specz_radial: pd.DataFrame,
-    df_members: pd.DataFrame,
-    df_interlopers: pd.DataFrame,
+    df_members: pd.DataFrame | None,
+    df_interlopers: pd.DataFrame | None,
     z_spec_range: Tuple[float, float],
     ax: plt.Axes,
   ):
