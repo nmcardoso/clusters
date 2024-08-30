@@ -644,7 +644,7 @@ class ContourPlotStage(PlotStage):
     ax.scatter(
       xm, 
       ym, 
-      c=z,
+      c=z[mask],
       cmap='Blues', 
       s=6,
       label=f'Members ({len(dfm)})',
