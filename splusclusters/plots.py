@@ -257,6 +257,54 @@ class ClusterPlotStage(PlotStage):
     ax.tick_params(direction='in')
     ax.set_xlabel('RA')
     ax.set_ylabel('DEC')
+    
+  def plot_legacy_coverage(
+    self,
+    cls_ra: float, 
+    cls_dec: float, 
+    cls_r200_deg: float, 
+    cls_r500_deg: float, 
+    cls_r200_Mpc: float, 
+    cls_r500_Mpc: float, 
+    cls_search_radius_deg: float,
+    cls_search_radius_Mpc: float,
+    df_legacy_radial: pd.DataFrame,
+    z_photo_range: Tuple[float, float],
+    ax: plt.Axes,
+  ):
+    ra_col, dec_col = guess_coords_columns(df_legacy_radial)
+    df = df_legacy_radial[df_legacy_radial.type != 'PSF']
+    if len(df) > 0:
+      ax.scatter(
+        df[ra_col].values, 
+        df[dec_col].values,
+        c='tab:blue', 
+        s=2, 
+        alpha=0.02 if len(df) > 200_000 else 0.15,
+        rasterized=True, 
+        transform=ax.get_transform('icrs'),
+        label=f'Legacy objects'
+      )
+    self.add_cluster_center(cls_ra, cls_dec, ax)
+    self.add_all_circles(
+      cls_ra=cls_ra, 
+      cls_dec=cls_dec, 
+      r200_deg=cls_r200_deg, 
+      r200_Mpc=cls_r200_Mpc, 
+      r500_deg=cls_r500_deg, 
+      r500_Mpc=cls_r500_Mpc, 
+      search_radius_deg=cls_search_radius_deg,
+      search_radius_Mpc=cls_search_radius_Mpc,
+      ax=ax
+    )
+    ax.set_title(f'Legacy Survey Coverage - Objects: {len(df)}')
+    ax.invert_xaxis()
+    ax.legend(loc='upper left')
+    ax.set_aspect('equal')
+    ax.grid('on', color='k', linestyle='--', alpha=.25)
+    ax.tick_params(direction='in')
+    ax.set_xlabel('RA')
+    ax.set_ylabel('DEC')
   
   def plot_photoz_specz(
     self,
@@ -354,6 +402,7 @@ class ClusterPlotStage(PlotStage):
     df_all_radial: pd.DataFrame,
     df_members: pd.DataFrame,
     df_interlopers: pd.DataFrame,
+    df_legacy_radial: pd.DataFrame,
   ):
     wcs_spec =  {
       # 'CDELT1': -1.0,
@@ -419,6 +468,27 @@ class ClusterPlotStage(PlotStage):
           cls_search_radius_deg=cls_search_radius_deg,
           cls_search_radius_Mpc=cls_search_radius_Mpc,
           df_photoz_radial=df_photoz_radial,
+          z_photo_range=z_photo_range,
+          ax=ax,
+        )
+        plt.savefig(out, bbox_inches='tight', pad_inches=0.1)
+        plt.close(fig)
+        
+      out = configs.WEBSITE_PATH / f'clusters_v{self.version}' / cls_name / f'legacy_coverage.{self.fmt}'
+      if self.overwrite or not out.exists():
+        out.parent.mkdir(parents=True, exist_ok=True)
+        fig = plt.figure(figsize=(7.5, 7.5), dpi=150)
+        ax = fig.add_subplot(projection=wcs)
+        self.plot_legacy_coverage(
+          cls_ra=cls_ra, 
+          cls_dec=cls_dec,
+          cls_r200_deg=cls_r200_deg, 
+          cls_r500_deg=cls_r500_deg, 
+          cls_r200_Mpc=cls_r200_Mpc, 
+          cls_r500_Mpc=cls_r500_Mpc, 
+          cls_search_radius_deg=cls_search_radius_deg,
+          cls_search_radius_Mpc=cls_search_radius_Mpc,
+          df_legacy_radial=df_legacy_radial,
           z_photo_range=z_photo_range,
           ax=ax,
         )

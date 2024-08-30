@@ -185,7 +185,7 @@ class WebsitePagesStage(PipelineStage):
     ]
     attachments_html = [f'<a href="{a}">{a}</a>' for a in attachments]
     images = [
-      'specz', 'photoz', 'photoz_specz', 
+      'specz', 'photoz', 'legacy_coverage', 'photoz_specz', 
       'spec_velocity_position', 'spec_velocity_rel_position', 
       'spec_velocity', 'specz_distance', 'photoz_distance', 
       'mag_diff', 'mag_diff_hist', 'redshift_diagonal', 

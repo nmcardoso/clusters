@@ -10,6 +10,7 @@ from astromodule.pipeline import Pipeline
 from splusclusters.external import (CopyXrayStage, DownloadXRayStage,
                                     SplusMembersMatchStage)
 from splusclusters.loaders import (LoadAllRadialStage, LoadClusterInfoStage,
+                                   LoadLegacyRadialStage,
                                    LoadPhotozRadialStage, LoadSpeczRadialStage,
                                    load_clusters, load_members_index_v6)
 from splusclusters.plots import (ClusterPlotStage, ContourPlotStage,
@@ -29,6 +30,7 @@ def website_pipeline(overwrite: bool = False, version: int = 6, dev: bool = Fals
     LoadPhotozRadialStage(),
     LoadSpeczRadialStage(),
     LoadAllRadialStage(),
+    LoadLegacyRadialStage(),
     ClusterPlotStage(overwrite=overwrite, fmt='jpg', separated=True, version=version),
     VelocityPlotStage(overwrite=overwrite, fmt='jpg', separated=True, version=version),
     MagDiffPlotStage(overwrite=overwrite, fmt='jpg', separated=True, version=version),
