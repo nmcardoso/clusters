@@ -190,7 +190,7 @@ class WebsitePagesStage(PipelineStage):
       'spec_velocity', 'specz_distance', 'photoz_distance', 
       'mag_diff', 'mag_diff_hist', 'redshift_diagonal', 
       'redshift_histogram_members', 'redshift_histogram_interlopers', 
-      'redshift_histogram_all', 'xray',
+      'redshift_histogram_all', 'specz_contours', 'xray',
     ]
     img_paths = []
     for i in images:
