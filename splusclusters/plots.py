@@ -684,22 +684,27 @@ class ContourPlotStage(PlotStage):
     zi = gaussian_filter(interpolator(Xi, Yi), 2.5)
     ax.contour(
       xi, yi, zi, 
-      levels=5, 
+      levels=3, 
       linewidths=0.5, 
       colors='k',
       alpha=0.5,
       nchunk=0,
       corner_mask=False,
     )
-    # cntr1 = ax.contourf(
-    #   xi, yi, zi, 
-    #   levels=5, 
-    #   cmap='Blues', 
-    #   alpha=0.3, 
-    #   nchunk=0, 
-    #   corner_mask=False,
-    # )
-    # ax.figure.colorbar(cntr1, ax=ax)
+    cmap = plt.cm.get_cmap("Blues")
+    cmap.set_under('white')
+    cmap.set_over('blue', alpha=0.6)
+    cntr1 = ax.contourf(
+      xi, yi, zi, 
+      levels=3, 
+      cmap=cmap, 
+      alpha=0.3, 
+      nchunk=0, 
+      corner_mask=False,
+      vmin=dfm.z.min(),
+      vmax=dfm.z.max()
+    )
+    ax.figure.colorbar(cntr1, ax=ax)
     
     ax.invert_xaxis()
     ax.set_aspect('equal', adjustable='datalim', anchor='C')
