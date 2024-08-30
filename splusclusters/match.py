@@ -296,7 +296,7 @@ class PhotozSpeczLegacyMatchStage(PipelineStage):
     print(f'Second crossmatch finished. Duration: {t.end()}')
     print('Objects with legacy:', len(df[~df.type.isna()]))
     print('Objects without legacy:', len(df[df.type.isna()]))
-    print('Galaxies:', len(df[df.type != 'PSF']), ', Stars:', len(df[df.type == 'PSF']))
+    print('Galaxies:', len(df[df.type != 'PSF']), ', Stars:', len(df[df.type == 'PSF']), ', Unknown:', len(df[df.type.isna() | (df.type == '')]))
     print('Total of objects after second match:', len(df))
     print(df)
     
