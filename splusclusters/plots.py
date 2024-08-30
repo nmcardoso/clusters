@@ -705,7 +705,7 @@ class ContourPlotStage(PlotStage):
     ax.set_aspect('equal', adjustable='datalim', anchor='C')
     ax.grid('on', color='k', linestyle='--', alpha=.25)
     ax.tick_params(direction='in')
-    ax.legend()
+    ax.legend(loc='lower left')
     ax.set_xlabel('$\\Delta$RA/R200')
     ax.set_ylabel('$\\Delta$DEC/R200')
     ax.set_title('Spectroscopic Redshift')
