@@ -268,9 +268,9 @@ class WebsitePagesStage(PipelineStage):
             <b>Attachments:</b> {' &nbsp;&bullet;&nbsp; '.join(attachments_html)}
             <br /><br />
             <b>Cosmology:</b>
-            H<sub>0</sub>: 70 km Mpc<sup>-1</sup> s<sup>-1</sup> &nbsp;&nbsp;
-            &Omega;<sub>m</sub>: 0.3 &nbsp;&nbsp;
-            &Omega;<sub>&Lambda;</sub>: 0.7
+            H<sub>0</sub> = 70 [km Mpc<sup>-1</sup> s<sup>-1</sup>] &nbsp;&nbsp;
+            &Omega;<sub>m</sub> = 0.3 &nbsp;&nbsp;
+            &Omega;<sub>&Lambda;</sub> = 0.7
           </div>
         </div>
         <br /><br />
