@@ -207,10 +207,13 @@ class DownloadSplusPhotozStage(PipelineStage):
     
     radius = self.get_data(self.radius_key)
     conn = splusdata.Core(username=os.environ['SPLUS_USER'], password=os.environ['SPLUS_PASS'])
+    print(conn.headers)
     
     # iDR5 dual catalog
     idr5_links  = splusdata.get_hipscats("idr5/dual", headers=conn.headers)[0]
+    print(idr5_links)
     idr5_margin = lsdb.read_hipscat(idr5_links[1], storage_options=dict(headers=conn.headers))
+    print(idr5_margin)
     dual = lsdb.read_hipscat(
       idr5_links[0],
       margin_cache=idr5_margin,
@@ -218,6 +221,7 @@ class DownloadSplusPhotozStage(PipelineStage):
       columns = ['RA', 'DEC', 'r_auto', 'r_PStotal'],
       filters=[('r_auto', '<=', 22)]
     )
+    print(dual)
 
     # iDR5 photo-z
     idr5_pz = splusdata.get_hipscats('idr5/photoz', headers=conn.headers)[0]
