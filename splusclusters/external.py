@@ -15,6 +15,7 @@ from astromodule.legacy import LegacyService
 from astromodule.pipeline import Pipeline, PipelineStage, PipelineStorage
 from astromodule.splus import SplusService
 from astropy.units import Quantity
+from dask.distributed import Client
 from pylegs.archive import RadialMatcher
 
 from splusclusters.configs import configs
@@ -204,59 +205,99 @@ class DownloadSplusPhotozStage(PipelineStage):
     if not self.overwrite and out_path.exists():
       return
     
-    # conn = splusdata.Core(os.environ['SPLUS_USER'], os.environ['SPLUS_PASS'])
-    # idr5_links = splusdata.get_hipscats('idr5/photo-z', headers=conn.headers)[0]
-    # idr5_margin = lsdb.read_hipscat(idr5_links[1], storage_options=dict(headers=conn.headers))
-
-    # dual = lsdb.read_hipscat(
-    #   idr5_links[0],
-    #   margin_cache=idr5_margin,
-    #   storage_options=dict(headers=conn.headers),
-    #   columns = ["ID", "RA", "DEC"]
-    # )
-    
-    # dual.cone_search(
-    #   0.1,  # ra
-    #   0.1,  # dec
-    #   1 * 3600 # radius in arcsecs
-    # )
-    
-    sql = """
-      SELECT photoz.RA AS ra, photoz.DEC AS dec, photoz.r_auto, photoz.zml, 
-      photoz.odds
-      FROM idr5_vacs.idr5_photoz AS photoz
-      WHERE 1 = CONTAINS( 
-        POINT('ICRS', photoz.RA, photoz.DEC), 
-        CIRCLE('ICRS', {ra:.10f}, {dec:.10f}, {radius:.10f}) 
-      ) AND photoz.r_auto BETWEEN {r_min:.5f} AND {r_max:.5f} 
-      AND photoz.zml BETWEEN {z_min:.6f} AND {z_max:.6f}
-      AND photoz.DEC BETWEEN {dec_min:.12f} AND {dec_max:.12f}
-    """
-    
     radius = self.get_data(self.radius_key)
-    delta = Quantity('10 arcmin').to(u.deg).value
-    queries = [
-      sql.format(
-        ra=cls_ra,
-        dec=cls_dec,
-        radius=radius,
-        r_min=configs.MAG_RANGE[0],
-        r_max=configs.MAG_RANGE[1],
-        z_min=z_photo_range[0],
-        z_max=z_photo_range[1],
-        dec_min=_dec,
-        dec_max=_dec+delta,
-      )
-      for _dec in np.arange(cls_dec-radius-0.05, cls_dec+radius+0.05, delta)
-    ]
-    service = SplusService(username=os.environ['SPLUS_USER'], password=os.environ['SPLUS_PASS'])
-    service.batch_query(
-      sql=queries,
-      save_path=out_path,
-      join=True,
-      workers=self.workers,
-      scope='private'
+    client = Client(n_workers=10, memory_limit='8GB')
+    conn = splusdata.Core()
+    
+    # iDR5 dual catalog
+    idr5_links  = splusdata.get_hipscats("idr5/dual", headers=conn.headers)[0]
+    idr5_margin = lsdb.read_hipscat(idr5_links[1], storage_options=dict(headers=conn.headers))
+    dual = lsdb.read_hipscat(
+      idr5_links[0],
+      margin_cache=idr5_margin,
+      storage_options=dict(headers=conn.headers),
+      columns = ['RA', 'DEC', 'r_auto', 'r_PStotal'],
+      filters=[('r_auto', '<=', 22)]
     )
+
+    # iDR5 photo-z
+    idr5_pz = splusdata.get_hipscats('idr5/photoz', headers=conn.headers)[0]
+    idr5_pz_margin = lsdb.read_hipscat(idr5_pz[1], storage_options=dict(headers=conn.headers))
+    pz = lsdb.read_hipscat(
+      idr5_pz[0],
+      margin_cache=idr5_pz_margin,
+      storage_options=dict(headers=conn.headers),
+      columns=['RA', 'DEC', 'zml', 'odds'],
+      filters=[('zml', '>', z_photo_range[0]), ('zml', '<', z_photo_range[1])]
+    )
+
+    # iDR5 SQG
+    idr5_sqg = splusdata.get_hipscats("idr5/sqg", headers=conn.headers)[0]
+    idr5_sqg_margin = lsdb.read_hipscat(idr5_sqg[1], storage_options=dict(headers=conn.headers))
+    sqg = lsdb.read_hipscat(
+      idr5_sqg[0],
+      margin_cache=idr5_sqg_margin,
+      storage_options=dict(headers=conn.headers),
+      columns=['RA', 'DEC', 'PROB_GAL'],
+      filters=[('PROB_GAL', '>=', 0.5)]
+    )
+
+    # iDR5 overlap flags
+    idr5_overlap = splusdata.get_hipscats("idr5/overlap_flags", headers=conn.headers)[0]
+    idr5_overlap_margin = lsdb.read_hipscat(idr5_overlap[1], storage_options=dict(headers=conn.headers))
+    overlap = lsdb.read_hipscat(
+      idr5_overlap[0],
+      margin_cache=idr5_overlap_margin,
+      storage_options=dict(headers=conn.headers),
+      columns=['RA', 'DEC', 'in_overlap_region'],
+      filters=[('in_overlap_region', '=', 0)]
+    )
+    
+    dual_sqg = sqg.crossmatch(
+      dual, 
+      radius_arcsec=1,
+      suffixes=('_sqg', '_dual')
+    )
+
+    dual_sqg_pz = dual_sqg.crossmatch(
+      pz, 
+      radius_arcsec=1,
+      suffixes=('_sqg', '_pz')
+    )
+
+    dual_sqg_pz_overlap = dual_sqg_pz.crossmatch(
+      overlap, 
+      radius_arcsec=1,
+      suffixes=('_pz', '_overlap')
+    )
+    
+    result = dual_sqg_pz_overlap.cone_search(
+      cls_ra,
+      cls_dec,
+      radius * 3600 # radius in arcsecs
+    ).compute()
+
+    result = result.rename(columns={
+      'RA_sqg_sqg_pz': 'RA',
+      'DEC_sqg_sqg_pz': 'DEC',
+      'r_auto_dual_sqg_pz': 'r_auto',
+      'r_PStotal_dual_sqg_pz': 'r_PStotal',
+      'PROB_GAL_sqg_sqg_pz': 'PROB_GAL',
+      'zml_pz_pz': 'zml',
+      'odds_pz_pz': 'odds',
+      'in_overlap_region_overlap': 'in_overlap_region',
+      '_dist_arcsec': 'lsdb_separation'
+    })
+
+    result = result.drop(columns=[
+      'RA_dual_sqg_pz', 'DEC_dual_sqg_pz', '_dist_arcsec_sqg_pz',
+      'RA_pz_pz', 'DEC_pz_pz', '_dist_arcsec_pz',
+      'RA_overlap', 'DEC_overlap',
+      'lsdb_separation'
+    ])
+    
+    print('Columns:', *result.columns)
+    write_table(result, out_path)
     
 class FixZRange(PipelineStage):
   def run(self, cls_name: str, z_photo_range: Tuple[float, float]):
