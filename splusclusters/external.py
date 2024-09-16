@@ -206,8 +206,7 @@ class DownloadSplusPhotozStage(PipelineStage):
       return
     
     radius = self.get_data(self.radius_key)
-    client = Client(n_workers=10, memory_limit='8GB')
-    conn = splusdata.Core()
+    conn = splusdata.Core(username=os.environ['SPLUS_USER'], password=os.environ['SPLUS_PASS'])
     
     # iDR5 dual catalog
     idr5_links  = splusdata.get_hipscats("idr5/dual", headers=conn.headers)[0]
