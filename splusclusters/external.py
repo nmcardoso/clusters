@@ -1,4 +1,5 @@
 import os
+import re
 import subprocess
 from shutil import copy
 from typing import Tuple
@@ -218,7 +219,30 @@ class DownloadSplusPhotozStage(PipelineStage):
       idr5_links[0],
       margin_cache=idr5_margin,
       storage_options=dict(headers=conn.headers),
-      columns = ['RA', 'DEC', 'r_auto', 'r_PStotal'],
+      columns = [
+        'RA', 'DEC', 'A', 'B', 'THETA', 'ELLIPTICITY', 'ELONGATION',
+        'PETRO_RADIUS', 'FLUX_RADIUS_50', 'FLUX_RADIUS_90', 
+        'MU_MAX_g', 'MU_MAX_r', 'BACKGROUND_g', 'BACKGROUND_r',
+        's2n_g_auto', 's2n_r_auto',
+        # auto mags
+        'J0378_auto', 'J0395_auto', 'J0410_auto', 'J0430_auto', 'J0515_auto',
+        'J0660_auto', 'J0861_auto', 'g_auto', 'i_auto', 'r_auto', 'u_auto', 
+        'z_auto',
+        # PStotal mags
+        'J0378_PStotal', 'J0395_PStotal', 'J0410_PStotal', 'J0430_PStotal', 
+        'J0515_PStotal', 'J0660_PStotal', 'J0861_PStotal', 'g_PStotal', 
+        'i_PStotal', 'r_PStotal', 'u_PStotal', 'z_PStotal',
+        # auto error
+        'e_J0378_auto', 'e_J0395_auto', 'e_J0410_auto', 'e_J0430_auto', 
+        'e_J0515_auto', 'e_J0660_auto', 'e_J0861_auto', 'e_g_auto', 'e_i_auto', 
+        'e_r_auto', 'e_u_auto', 'e_z_auto',
+        # PStotal error
+        'e_J0378_PStotal', 'e_J0395_PStotal', 'e_J0410_PStotal', 'e_J0430_PStotal', 
+        'e_J0515_PStotal', 'e_J0660_PStotal', 'e_J0861_PStotal', 'e_g_PStotal', 
+        'e_i_PStotal', 'e_r_PStotal', 'e_u_PStotal', 'e_z_PStotal',
+        # R mags
+        'r_iso', 'r_petro', 'r_aper_3', 'r_aper_6',
+      ],
       filters=[('r_auto', '<=', 22)]
     )
     print(f' [OK] Duration: {t.duration_str}')
@@ -232,7 +256,11 @@ class DownloadSplusPhotozStage(PipelineStage):
       idr5_pz[0],
       margin_cache=idr5_pz_margin,
       storage_options=dict(headers=conn.headers),
-      columns=['RA', 'DEC', 'zml', 'odds'],
+      columns=[
+        'RA', 'DEC', 'zml', 'odds', 'pdf_weights_0', 'pdf_weights_1', 
+        'pdf_weights_2', 'pdf_means_0', 'pdf_means_1', 'pdf_means_2', 
+        'pdf_stds_0', 'pdf_stds_1', 'pdf_stds_2',
+      ],
       filters=[('zml', '>', z_photo_range[0]), ('zml', '<', z_photo_range[1])]
     )
     print(f' [OK] Duration: {t.duration_str}')
@@ -247,7 +275,7 @@ class DownloadSplusPhotozStage(PipelineStage):
       margin_cache=idr5_sqg_margin,
       storage_options=dict(headers=conn.headers),
       columns=['RA', 'DEC', 'PROB_GAL'],
-      filters=[('PROB_GAL', '>=', 0.5)]
+      # filters=[('PROB_GAL', '>=', 0.5)]
     )
     print(f' [OK] Duration: {t.duration_str}')
 
@@ -266,7 +294,7 @@ class DownloadSplusPhotozStage(PipelineStage):
     print(f' [OK] Duration: {t.duration_str}')
     
     t = Timer()
-    print('\nCrossmatch: Dual <-> SQG.', end='')
+    print('\nCrossmatch: SQG <-> Dual.', end='')
     dual_sqg = sqg.crossmatch(
       dual, 
       radius_arcsec=1,
@@ -275,7 +303,7 @@ class DownloadSplusPhotozStage(PipelineStage):
     print(f' [OK] Duration: {t.duration_str}')
 
     t = Timer()
-    print('Crossmatch: Dual, SQG <-> Photo-z.', end='')
+    print('Crossmatch: SQG, Dual <-> Photo-z.', end='')
     dual_sqg_pz = dual_sqg.crossmatch(
       pz, 
       radius_arcsec=1,
@@ -284,7 +312,7 @@ class DownloadSplusPhotozStage(PipelineStage):
     print(f' [OK] Duration: {t.duration_str}')
 
     t = Timer()
-    print('Crossmatch: Dual, SQG, Photo-z <-> Overlap.', end='')
+    print('Crossmatch: SQG, Dual, Photo-z <-> Overlap.', end='')
     dual_sqg_pz_overlap = dual_sqg_pz.crossmatch(
       overlap, 
       radius_arcsec=1,
@@ -300,28 +328,35 @@ class DownloadSplusPhotozStage(PipelineStage):
       radius * 3600 # radius in arcsecs
     ).compute()
     print(f' [OK] Duration: {t.duration_str}')
-
-    result = result.rename(columns={
-      'RA_sqg_sqg_pz': 'RA',
-      'DEC_sqg_sqg_pz': 'DEC',
-      'r_auto_dual_sqg_pz': 'r_auto',
-      'r_PStotal_dual_sqg_pz': 'r_PStotal',
-      'PROB_GAL_sqg_sqg_pz': 'PROB_GAL',
-      'zml_pz_pz': 'zml',
-      'odds_pz_pz': 'odds',
-      'in_overlap_region_overlap': 'in_overlap_region',
-      '_dist_arcsec': 'lsdb_separation'
-    })
-
-    result = result.drop(columns=[
+    
+    result = result[~result.in_overlap_region]
+    
+    result: pd.DataFrame = result.drop(columns=[
       'RA_dual_sqg_pz', 'DEC_dual_sqg_pz', '_dist_arcsec_sqg_pz',
       'RA_pz_pz', 'DEC_pz_pz', '_dist_arcsec_pz',
-      'RA_overlap', 'DEC_overlap',
-      'lsdb_separation'
+      'RA_overlap', 'DEC_overlap', '_dist_arcsec'
     ])
     
-    print('\nFinal table columns:', *result.columns)
-    print('Table rows:', len(result))
+    def mapper(col: str):
+      c = col.replace('_sqg', '').replace('_dual', '').replace('_pz', '')
+      return re.sub('_overlap$', '', c)
+    
+    result.rename(columns=mapper)
+
+    # result = result.rename(columns={
+    #   'RA_sqg_sqg_pz': 'RA',
+    #   'DEC_sqg_sqg_pz': 'DEC',
+    #   'r_auto_dual_sqg_pz': 'r_auto',
+    #   'r_PStotal_dual_sqg_pz': 'r_PStotal',
+    #   'PROB_GAL_sqg_sqg_pz': 'PROB_GAL',
+    #   'zml_pz_pz': 'zml',
+    #   'odds_pz_pz': 'odds',
+    #   'in_overlap_region_overlap': 'in_overlap_region',
+    #   '_dist_arcsec': 'lsdb_separation'
+    # })
+    
+    print('Final table columns:', *result.columns)
+    print('\nTable rows:', len(result))
     print(result)
     write_table(result, out_path)
     
