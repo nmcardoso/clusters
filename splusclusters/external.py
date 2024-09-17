@@ -329,8 +329,6 @@ class DownloadSplusPhotozStage(PipelineStage):
     ).compute()
     print(f' [OK] Duration: {t.duration_str}')
     
-    result = result[~result.in_overlap_region]
-    
     result: pd.DataFrame = result.drop(columns=[
       'RA_dual_sqg_pz', 'DEC_dual_sqg_pz', '_dist_arcsec_sqg_pz',
       'RA_pz_pz', 'DEC_pz_pz', '_dist_arcsec_pz',
@@ -338,10 +336,12 @@ class DownloadSplusPhotozStage(PipelineStage):
     ])
     
     def mapper(col: str):
-      c = col.replace('_sqg', '').replace('_dual', '').replace('_pz', '')
-      return re.sub('_overlap$', '', c)
+      return col.replace('_sqg', '').replace('_dual', '').replace('_pz', '')\
+                .replace('in_overlap_region_overlap', 'in_overlap_region')
     
     result.rename(columns=mapper)
+    
+    result = result[~result['in_overlap_region']]
 
     # result = result.rename(columns={
     #   'RA_sqg_sqg_pz': 'RA',
