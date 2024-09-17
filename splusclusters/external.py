@@ -255,7 +255,7 @@ class DownloadSplusPhotozStage(PipelineStage):
       margin_cache=idr5_overlap_margin,
       storage_options=dict(headers=conn.headers),
       columns=['RA', 'DEC', 'in_overlap_region'],
-      filters=[('in_overlap_region', '=', 0)]
+      # filters=[('in_overlap_region', '=', 0)]
     )
     
     dual_sqg = sqg.crossmatch(
