@@ -342,7 +342,7 @@ class DownloadSplusPhotozStage(PipelineStage):
     def mapper(col: str):
       return col.replace('_sqg', '').replace('_dual', '').replace('_pz', '')\
                 .replace('in_overlap_region_overlap', 'in_overlap_region')
-    result.rename(columns=mapper)
+    result = result.rename(columns=mapper)
     
     # filter overlap objects
     if 'in_overlap_region' in result.columns:
