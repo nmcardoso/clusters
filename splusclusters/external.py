@@ -321,12 +321,14 @@ class DownloadSplusPhotozStage(PipelineStage):
     print(f' [OK] Duration: {t.duration_str}')
     
     t = Timer()
-    print(f'\nPerforming conesearch within {radius:.2f} deg.', end='')
     result = dual_sqg_pz_overlap.cone_search(
       cls_ra,
       cls_dec,
       radius * 3600 # radius in arcsecs
-    ).compute()
+    )
+    print('Table columns:', *result.columns)
+    print(f'\nPerforming conesearch within {radius:.2f} deg.', end='')
+    result = result.compute()
     print(f' [OK] Duration: {t.duration_str}')
     
     # drop repeated columns
