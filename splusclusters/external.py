@@ -249,7 +249,7 @@ class DownloadSplusPhotozStage(PipelineStage):
 
     # iDR5 photo-z
     t = Timer()
-    print('Downloading PHOTO-Z HIPS.', end='')
+    print('Downloading Photo-z HIPS.', end='')
     idr5_pz = splusdata.get_hipscats('idr5/photoz', headers=conn.headers)[0]
     idr5_pz_margin = lsdb.read_hipscat(idr5_pz[1], storage_options=dict(headers=conn.headers))
     pz = lsdb.read_hipscat(
