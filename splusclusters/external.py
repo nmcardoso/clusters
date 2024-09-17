@@ -329,18 +329,20 @@ class DownloadSplusPhotozStage(PipelineStage):
     ).compute()
     print(f' [OK] Duration: {t.duration_str}')
     
-    result: pd.DataFrame = result.drop(columns=[
+    # drop repeated columns
+    result = result.drop(columns=[
       'RA_dual_sqg_pz', 'DEC_dual_sqg_pz', '_dist_arcsec_sqg_pz',
       'RA_pz_pz', 'DEC_pz_pz', '_dist_arcsec_pz',
       'RA_overlap', 'DEC_overlap', '_dist_arcsec'
     ])
     
+    # remove suffix
     def mapper(col: str):
       return col.replace('_sqg', '').replace('_dual', '').replace('_pz', '')\
                 .replace('in_overlap_region_overlap', 'in_overlap_region')
-    
     result.rename(columns=mapper)
     
+    # filter overlap objects
     result = result[~result['in_overlap_region']]
 
     # result = result.rename(columns={
