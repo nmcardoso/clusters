@@ -17,6 +17,7 @@ from astromodule.splus import SplusService
 from astropy.units import Quantity
 from dask.distributed import Client
 from pylegs.archive import RadialMatcher
+from pylegs.utils import Timer
 
 from splusclusters.configs import configs
 
@@ -209,7 +210,9 @@ class DownloadSplusPhotozStage(PipelineStage):
     conn = splusdata.Core(username=os.environ['SPLUS_USER'], password=os.environ['SPLUS_PASS'])
     
     # iDR5 dual catalog
-    idr5_links  = splusdata.get_hipscats("idr5/dual", headers=conn.headers)[0]
+    t = Timer()
+    print('Downloading Dual HIPS.', end='')
+    idr5_links  = splusdata.get_hipscats('idr5/dual', headers=conn.headers)[0]
     idr5_margin = lsdb.read_hipscat(idr5_links[1], storage_options=dict(headers=conn.headers))
     dual = lsdb.read_hipscat(
       idr5_links[0],
@@ -218,12 +221,13 @@ class DownloadSplusPhotozStage(PipelineStage):
       columns = ['RA', 'DEC', 'r_auto', 'r_PStotal'],
       filters=[('r_auto', '<=', 22)]
     )
+    print(f' [OK] Duration: {t.duration_str}')
 
     # iDR5 photo-z
+    t = Timer()
+    print('Downloading PHOTO-Z HIPS.', end='')
     idr5_pz = splusdata.get_hipscats('idr5/photoz', headers=conn.headers)[0]
     idr5_pz_margin = lsdb.read_hipscat(idr5_pz[1], storage_options=dict(headers=conn.headers))
-    print('\nPZ Margin')
-    print(idr5_pz_margin)
     pz = lsdb.read_hipscat(
       idr5_pz[0],
       margin_cache=idr5_pz_margin,
@@ -231,12 +235,13 @@ class DownloadSplusPhotozStage(PipelineStage):
       columns=['RA', 'DEC', 'zml', 'odds'],
       filters=[('zml', '>', z_photo_range[0]), ('zml', '<', z_photo_range[1])]
     )
+    print(f' [OK] Duration: {t.duration_str}')
 
     # iDR5 SQG
-    idr5_sqg = splusdata.get_hipscats("idr5/sqg", headers=conn.headers)[0]
+    t = Timer()
+    print('Downloading SQG HIPS.', end='')
+    idr5_sqg = splusdata.get_hipscats('idr5/sqg', headers=conn.headers)[0]
     idr5_sqg_margin = lsdb.read_hipscat(idr5_sqg[1], storage_options=dict(headers=conn.headers))
-    print('\nSQG Margin')
-    print(idr5_sqg_margin)
     sqg = lsdb.read_hipscat(
       idr5_sqg[0],
       margin_cache=idr5_sqg_margin,
@@ -244,43 +249,57 @@ class DownloadSplusPhotozStage(PipelineStage):
       columns=['RA', 'DEC', 'PROB_GAL'],
       filters=[('PROB_GAL', '>=', 0.5)]
     )
+    print(f' [OK] Duration: {t.duration_str}')
 
     # iDR5 overlap flags
-    idr5_overlap = splusdata.get_hipscats("idr5/overlap_flags", headers=conn.headers)[0]
+    t = Timer()
+    print('Downloading Overlap HIPS.', end='')
+    idr5_overlap = splusdata.get_hipscats('idr5/overlap_flags', headers=conn.headers)[0]
     idr5_overlap_margin = lsdb.read_hipscat(idr5_overlap[1], storage_options=dict(headers=conn.headers))
-    print('\nOverlap Margin')
-    print(idr5_overlap_margin)
     overlap = lsdb.read_hipscat(
       idr5_overlap[0],
       margin_cache=idr5_overlap_margin,
       storage_options=dict(headers=conn.headers),
       columns=['RA', 'DEC', 'in_overlap_region'],
-      # filters=[('in_overlap_region', '=', 0)]
+      filters=[('in_overlap_region', '==', 0)]
     )
+    print(f' [OK] Duration: {t.duration_str}')
     
+    t = Timer()
+    print('Crossmatch: Dual <-> SQG.', end='')
     dual_sqg = sqg.crossmatch(
       dual, 
       radius_arcsec=1,
       suffixes=('_sqg', '_dual')
     )
+    print(f' [OK] Duration: {t.duration_str}')
 
+    t = Timer()
+    print('Crossmatch: Dual, SQG <-> Photo-z.', end='')
     dual_sqg_pz = dual_sqg.crossmatch(
       pz, 
       radius_arcsec=1,
       suffixes=('_sqg', '_pz')
     )
+    print(f' [OK] Duration: {t.duration_str}')
 
+    t = Timer()
+    print('Crossmatch: Dual, SQG, Photo-z <-> Overlap.', end='')
     dual_sqg_pz_overlap = dual_sqg_pz.crossmatch(
       overlap, 
       radius_arcsec=1,
       suffixes=('_pz', '_overlap')
     )
+    print(f' [OK] Duration: {t.duration_str}')
     
+    t = Timer()
+    print(f'Performing conesearch within {radius:.2f} deg.', end='')
     result = dual_sqg_pz_overlap.cone_search(
       cls_ra,
       cls_dec,
       radius * 3600 # radius in arcsecs
     ).compute()
+    print(f' [OK] Duration: {t.duration_str}')
 
     result = result.rename(columns={
       'RA_sqg_sqg_pz': 'RA',
@@ -301,7 +320,7 @@ class DownloadSplusPhotozStage(PipelineStage):
       'lsdb_separation'
     ])
     
-    print('Columns:', *result.columns)
+    print('Final table columns:', *result.columns)
     write_table(result, out_path)
     
 class FixZRange(PipelineStage):
