@@ -266,7 +266,7 @@ class DownloadSplusPhotozStage(PipelineStage):
     print(f' [OK] Duration: {t.duration_str}')
     
     t = Timer()
-    print('Crossmatch: Dual <-> SQG.', end='')
+    print('\nCrossmatch: Dual <-> SQG.', end='')
     dual_sqg = sqg.crossmatch(
       dual, 
       radius_arcsec=1,
@@ -293,7 +293,7 @@ class DownloadSplusPhotozStage(PipelineStage):
     print(f' [OK] Duration: {t.duration_str}')
     
     t = Timer()
-    print(f'Performing conesearch within {radius:.2f} deg.', end='')
+    print(f'\nPerforming conesearch within {radius:.2f} deg.', end='')
     result = dual_sqg_pz_overlap.cone_search(
       cls_ra,
       cls_dec,
@@ -320,7 +320,9 @@ class DownloadSplusPhotozStage(PipelineStage):
       'lsdb_separation'
     ])
     
-    print('Final table columns:', *result.columns)
+    print('\nFinal table columns:', *result.columns)
+    print('Table rows:', len(result))
+    print(result)
     write_table(result, out_path)
     
 class FixZRange(PipelineStage):
