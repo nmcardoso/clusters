@@ -3,9 +3,10 @@ import sys
 from pathlib import Path
 
 sys.path.insert(0, str(Path(__file__).parent.parent.absolute()))
-
+import warnings
 from argparse import ArgumentParser
 
+warnings.filterwarnings('ignore', category=DeprecationWarning)
 from astromodule.io import merge_pdf
 from astromodule.pipeline import Pipeline, PipelineStorage
 
