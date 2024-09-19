@@ -1,6 +1,15 @@
 from datetime import datetime, timedelta
 from multiprocessing import Lock
 
+from dask import config as dask_config
+from dask.distributed import Client
+
+
+def config_dask():
+  client = Client(n_workers=12, memory_limit='64GB')
+  dask_config.set({'distributed.scheduler.worker-ttl': None})
+  return client
+
 
 class Timming:
   def __init__(self, start: bool = True):

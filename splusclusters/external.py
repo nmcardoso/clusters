@@ -16,11 +16,11 @@ from astromodule.legacy import LegacyService
 from astromodule.pipeline import Pipeline, PipelineStage, PipelineStorage
 from astromodule.splus import SplusService
 from astropy.units import Quantity
-from dask.distributed import Client
 from pylegs.archive import RadialMatcher
 from pylegs.utils import Timer
 
 from splusclusters.configs import configs
+from splusclusters.utils import config_dask
 
 
 class DownloadLegacyCatalogStage(PipelineStage):
@@ -208,7 +208,8 @@ class DownloadSplusPhotozStage(PipelineStage):
       return
     
     radius = self.get_data(self.radius_key)
-    client = Client(n_workers=12, memory_limit='64GB')
+    
+    config_dask()
     conn = splusdata.Core(username=os.environ['SPLUS_USER'], password=os.environ['SPLUS_PASS'])
     
     # iDR5 dual catalog
