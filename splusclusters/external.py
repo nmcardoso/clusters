@@ -207,9 +207,16 @@ class DownloadSplusPhotozStage(PipelineStage):
     if not self.overwrite and out_path.exists():
       return
     
+    if out_path.exists():
+      df = read_table(out_path)
+      if 'ELLIPTICITY' in df.columns:
+        return
+      else:
+        del df
+    
     radius = self.get_data(self.radius_key)
     
-    config_dask()
+    # config_dask()
     conn = splusdata.Core(username=os.environ['SPLUS_USER'], password=os.environ['SPLUS_PASS'])
     
     # iDR5 dual catalog

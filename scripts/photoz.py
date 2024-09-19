@@ -19,6 +19,7 @@ from splusclusters.match import (PhotoZRadialSearchStage,
                                  PhotozSpeczLegacyMatchStage,
                                  SpecZRadialSearchStage)
 from splusclusters.plots import ClusterPlotStage
+from splusclusters.utils import config_dask
 
 
 def photoz_pipeline_v5(overwrite: bool = False, z_photo_delta: float | None = None):
@@ -50,6 +51,7 @@ def photoz_pipeline_v6(overwrite: bool = False, z_photo_delta: float | None = No
     DownloadSplusPhotozStage(overwrite=overwrite),
   )
   
+  config_dask()
   pipe.map_run('cls_id', df_clusters.clsid.values, workers=1)
   
   
