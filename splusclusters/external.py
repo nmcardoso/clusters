@@ -210,6 +210,7 @@ class DownloadSplusPhotozStage(PipelineStage):
     if out_path.exists():
       df = read_table(out_path)
       if 'ELLIPTICITY' in df.columns:
+        print('>> "ELLIPTICITY" columns found: skiping download')
         return
       else:
         del df
