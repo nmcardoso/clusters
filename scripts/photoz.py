@@ -6,8 +6,7 @@ sys.path.insert(0, str(Path(__file__).parent.parent.absolute()))
 import warnings
 from argparse import ArgumentParser
 
-warnings.filterwarnings('ignore', category=DeprecationWarning)
-from astromodule.io import merge_pdf
+warnings.filterwarnings('ignore')
 from astromodule.pipeline import Pipeline, PipelineStorage
 
 from splusclusters.configs import configs
