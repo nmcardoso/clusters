@@ -307,7 +307,7 @@ class PhotozSpeczLegacyMatchStage(PipelineStage):
     df = df[df.type != 'PSF']
     
     if 'flag_member' in df.columns:
-      df.loc[~df.flag_member.isin([0, 1]), 'flag_member'] = 1
+      df.loc[~df.flag_member.isin([0, 1]), 'flag_member'] = -1
 
     df = df.rename(columns={'ra_photo': 'ra', 'dec_photo': 'dec'})
     # photoz_cols = ['ra_photo', 'dec_photo', 'zml', 'odds']
