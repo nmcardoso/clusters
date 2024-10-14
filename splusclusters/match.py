@@ -297,7 +297,7 @@ class PhotozSpeczLegacyMatchStage(PipelineStage):
     print('Objects with legacy morpho:', len(df[~df.type.isna()]))
     print('Objects without legacy morpho:', len(df[df.type.isna() | (df.type == '')]))
     print(
-      'Galaxies:', len(df[df.type != 'PSF']), 
+      'Galaxies:', len(df[(df.type != 'PSF') & (df.type != '')]), 
       ', Stars:', len(df[df.type == 'PSF']), 
       ', Unknown:', len(df[df.type.isna() | (df.type == '')])
     )
