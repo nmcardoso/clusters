@@ -294,7 +294,7 @@ class PhotozSpeczLegacyMatchStage(PipelineStage):
       df['mag_r'] = np.nan
     
     print(f'Second crossmatch finished. Duration: {t.end()}')
-    print('Objects with legacy morpho:', len(df[~df.type.isna()]))
+    print('Objects with legacy morpho:', len(df[~df.type.isna() | (df.type != '')]))
     print('Objects without legacy morpho:', len(df[df.type.isna() | (df.type == '')]))
     print(
       'Galaxies:', len(df[(df.type != 'PSF') & (df.type != '')]), 
@@ -305,6 +305,8 @@ class PhotozSpeczLegacyMatchStage(PipelineStage):
     print(df)
     
     df = df[df.type != 'PSF']
+    
+    print('Total of objects after PSF removal:', len(df))
     
     if 'flag_member' in df.columns:
       df.loc[~df.flag_member.isin([0, 1]), 'flag_member'] = -1
