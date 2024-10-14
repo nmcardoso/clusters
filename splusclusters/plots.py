@@ -283,7 +283,7 @@ class ClusterPlotStage(PlotStage):
           df[dec_col].values,
           c='tab:blue', 
           s=2, 
-          alpha=0.001 if len(df) > 1_000_000 else 0.1,
+          alpha=0.05 if len(df) > 1_000_000 else 0.1,
           rasterized=True, 
           transform=ax.get_transform('icrs'),
           label=f'Legacy objects'
