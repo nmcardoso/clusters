@@ -276,7 +276,7 @@ class ClusterPlotStage(PlotStage):
   ):
     if df_legacy_radial is not None and len(df_legacy_radial) > 0:
       ra_col, dec_col = guess_coords_columns(df_legacy_radial)
-      df = df_legacy_radial[df_legacy_radial.type != 'PSF']
+      df = df_legacy_radial#[df_legacy_radial.type != 'PSF']
       if len(df) > 0:
         ax.scatter(
           df[ra_col].values, 
