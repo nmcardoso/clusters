@@ -39,6 +39,7 @@ def legacy_pipeline_v5(overwrite: bool = False):
 def legacy_pipeline_v6(overwrite: bool = False):
   df_clusters = load_members_index_v6()
   df_legacy, legacy_skycoord = load_legacy()
+  df_clusters = df_clusters[df_clusters.name == 'MKW4']
   
   PipelineStorage().write('df_legacy', df_legacy)
   PipelineStorage().write('legacy_skycoord', legacy_skycoord)
