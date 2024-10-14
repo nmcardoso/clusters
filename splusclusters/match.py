@@ -301,12 +301,12 @@ class PhotozSpeczLegacyMatchStage(PipelineStage):
       ', Stars:', len(df[df.type == 'PSF']), 
       ', Unknown:', len(df[df.type.isna() | (df.type == '')])
     )
-    print('Total of objects after second match:', len(df))
+    print('Number of objects after second match:', len(df))
     print(df)
     
     df = df[df.type != 'PSF']
     
-    print('Total of objects after PSF removal:', len(df))
+    print('Number of objects after PSF removal:', len(df))
     
     if 'flag_member' in df.columns:
       df.loc[~df.flag_member.isin([0, 1]), 'flag_member'] = -1
@@ -321,6 +321,13 @@ class PhotozSpeczLegacyMatchStage(PipelineStage):
     # legacy_cols = ['mag_r', 'type']
     # cols = photoz_cols + specz_cols + legacy_cols
     # df = df[cols]
+
+    df = df[~df.original_class_spec.isin(['GClstr', 'GGroup', 'GPair', 'GTrpl', 'PofG'])]
+    print('Number of objects after original_class_spec filter:', len(df))
+
+    df = df[(df['f_z'] != 'KEEP(    )') & (df['e_z'] != 3.33E-4)]
+    print('Number of objects after flag z filter:', len(df))
+
 
     if 'xmatch_sep' in df.columns:
       del df['xmatch_sep']
