@@ -288,7 +288,7 @@ class ClusterPlotStage(PlotStage):
           transform=ax.get_transform('icrs'),
           label=f'Legacy objects'
         )
-        ax.set_title(f'Legacy Survey Coverage - Objects: {len(df)} (type $\\neq$ PSF)')
+        ax.set_title(f'Legacy Survey Coverage - Objects: {len(df)}')
     else:
       ax.set_title(f'Legacy Survey Coverage - Objects: 0')
     self.add_cluster_center(cls_ra, cls_dec, ax)
