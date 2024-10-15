@@ -438,12 +438,11 @@ class PhotozSpeczLegacyMatchStage(PipelineStage):
         
         else:
           if len(sample[~sample.mag_r.isna()]) > 0:
-            mag_mask = sample.mag_r != sample.mag_r.min()
+            z_mask = sample.mag_r != sample.mag_r.min()
           else:
-            mag_mask = np.zeros(shape=(len(sample),), dtype=np.bool)
+            z_mask = np.zeros(shape=(len(sample),), dtype=np.bool)
 
-        mask = mag_mask & z_mask
-        df.loc[sample[mask].index, 'remove_neighbours'] = 1
+        df.loc[sample[z_mask].index, 'remove_neighbours'] = 1
     df['remove_neighbours'] = df['remove_neighbours'].astype('int32')
     
     df['remove_radius'] = 0
