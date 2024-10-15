@@ -436,8 +436,7 @@ class PhotozSpeczLegacyMatchStage(PipelineStage):
           sdss_mask = ~sample.source.str.lower().str.contains('_sdss')
         else:
           sdss_mask = identity
-          
-          
+
         mask = mag_mask & z_mask & z_err_mask & sdss_mask
         df.loc[sample[mask].index, 'remove_neighbours'] = 1
     df['remove_neighbours'] = df['remove_neighbours'].astype('int32')
