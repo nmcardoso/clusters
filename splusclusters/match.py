@@ -334,6 +334,7 @@ class PhotozSpeczLegacyMatchStage(PipelineStage):
       ((df['f_z'] == 'KEEP(    )') & (df['e_z'] == 3.33E-4))
     )
     df.loc[mask, 'remove_z'] = 1
+    df['remove_z'] = df['remove_z'].astype(int)
 
 
     if 'xmatch_sep' in df.columns:

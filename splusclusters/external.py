@@ -391,6 +391,7 @@ class DownloadSplusPhotozStage(PipelineStage):
           result.r_auto.between(*r_auto)
         )
         result.loc[mask, 'remove_star'] = 1
+    result['remove_star'] = result['remove_star'].astype(int)
     
     print('Final table columns:', *result.columns)
     print('\nTable rows:', len(result))
