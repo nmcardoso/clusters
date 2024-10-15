@@ -439,6 +439,11 @@ class PhotozSpeczLegacyMatchStage(PipelineStage):
         df.loc[sample[mask].index, 'remove_neighbours'] = 1
     df['remove_neighbours'] = df['remove_neighbours'].astype('int32')
     
+    df['remove_radius'] = 0
+    df.loc[df['PRETRO_RADIUS'] == 0, 'remove_radius'] = 1
+    df.loc[(df['A'] < 1.5e-4) | (df['B'] < 1.5e-4), 'remove_radius'] = 1
+    df['remove_radius'] = df['remove_radius'].astype('int32')
+    
     if 'GroupSize' in df.columns:
       del df['GroupSize']
     
@@ -446,10 +451,11 @@ class PhotozSpeczLegacyMatchStage(PipelineStage):
     
     write_table(df, out_flags_path)
     
-    df = df[(df.remove_star != 1) & (df.remove_z != 1) & (df.remove_neighbours != 1)]
+    df = df[(df.remove_star != 1) & (df.remove_z != 1) & (df.remove_neighbours != 1) & (df.remove_radius != 1)]
     del df['remove_star']
     del df['remove_z']
     del df['remove_neighbours']
+    del df['remove_radius']
     if 'GroupID' in df.columns:
       del df['GroupID']
       
