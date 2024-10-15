@@ -334,10 +334,12 @@ class PhotozSpeczLegacyMatchStage(PipelineStage):
       'original_class_spec', 'source'
     ]
     for col in cols:
-      df[f'{col}_final'].replace(r'^\s*$', np.nan, regex=True)
-      df[f'{col}_final'].fillna(df[f'{col}_spec_all'])
-      df.rename(columns={f'{col}_final': col}, inplace=True)
-      del df[f'{col}_spec_all']
+      if f'{col}_final' in df.columns:
+        df[f'{col}_final'].replace(r'^\s*$', np.nan, regex=True)
+        df[f'{col}_final'].fillna(df[f'{col}_spec_all'])
+        df.rename(columns={f'{col}_final': col}, inplace=True)
+      if f'{col}_spec_all' in df.columns:
+        del df[f'{col}_spec_all']
     df['f_z'] = df['f_z'].astype('str')
     df['original_class_spec'] = df['original_class_spec'].astype('str')
     del df[spec_all_ra]
