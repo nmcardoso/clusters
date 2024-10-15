@@ -413,5 +413,7 @@ class PhotozSpeczLegacyMatchStage(PipelineStage):
     del df['remove_star']
     del df['remove_z']
     del df['remove_neighbours']
+    if 'GroupID' in df.columns:
+      del df['GroupID']
       
     write_table(df, out_path)
