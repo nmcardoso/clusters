@@ -384,8 +384,8 @@ class PhotozSpeczLegacyMatchStage(PipelineStage):
       del df['xmatch_sep_1']
     if 'xmatch_sep_2' in df.columns:
       del df['xmatch_sep_2']
-    if 'xmatch_sep_3' in df.columns:
-      del df['xmatch_sep_3']
+    if 'xmatch_sep_final' in df.columns:
+      del df['xmatch_sep_final']
     
     
     df = selfmatch(
@@ -393,12 +393,12 @@ class PhotozSpeczLegacyMatchStage(PipelineStage):
       10*u.arcsec, 
       'identify'
     )
-    print(*df.columns)
-    print(*df['GroupId'].unique())
+    
+    print(*df['GroupID'].unique())
     
     df['remove_neighbours'] = 0
-    for group in range(df['GroupId'].max()):
-      sample = df[df['GroupId'] == group]
+    for group in range(df['GroupID'].max()):
+      sample = df[df['GroupID'] == group]
       if len(sample[~sample.z.isna()]) == 0 or len(sample[~sample.z.isna()]) > 1:
         continue
       df.loc[sample[sample.z.isna()].index, 'remove_neighbours'] = 1
@@ -406,5 +406,7 @@ class PhotozSpeczLegacyMatchStage(PipelineStage):
     
     if 'GroupSize' in df.columns:
       del df['GroupSize']
+    
+    print('Final columns:', *df.columns)
       
     write_table(df, out_path)
