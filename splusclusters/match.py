@@ -331,7 +331,7 @@ class PhotozSpeczLegacyMatchStage(PipelineStage):
     df['remove_z'] = 0
     mask = (
       df.original_class_spec.isin(['GClstr', 'GGroup', 'GPair', 'GTrpl', 'PofG']) |
-      ((df['f_z'] != 'KEEP(    )') & (df['e_z'] != 3.33E-4))
+      ((df['f_z'] == 'KEEP(    )') & (df['e_z'] == 3.33E-4))
     )
     df.loc[mask, 'remove_z'] = 1
 
