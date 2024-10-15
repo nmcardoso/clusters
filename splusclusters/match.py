@@ -311,9 +311,9 @@ class PhotozSpeczLegacyMatchStage(PipelineStage):
     
     print('Number of objects after PSF removal:', len(df))
     
-    n_redshift = len(df[~df.z.isna()])
       
     t = Timming()
+    n_redshift = len(df[~df.z.isna()])
     print('\nCrossmatch 3: final LEFT OUTER JOIN spec-z')
     df_spec_all = self.get_data('df_spec')
     df_spec_all['f_z'] = df_spec_all['f_z'].astype('str')
