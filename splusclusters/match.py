@@ -422,8 +422,8 @@ class PhotozSpeczLegacyMatchStage(PipelineStage):
           mag_mask = sample.mag_r != sample.mag_r.min()
         
         if len(sample[~sample.z.isna()]) > 1:
-          if len(sample[sample.source.str.lower().str.contains('sdss')]) > 0:
-            z_mask = ~sample.source.str.lower().str.contains('sdss')
+          if len(sample[sample.source.str.lower().str.contains('_sdss')]) > 0:
+            z_mask = ~sample.source.str.lower().str.contains('_sdss')
           else:
             z_mask = sample.z.isna()
         else:
