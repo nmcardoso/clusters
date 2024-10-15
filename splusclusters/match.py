@@ -417,6 +417,7 @@ class PhotozSpeczLegacyMatchStage(PipelineStage):
       for group in gids:
         sample = df[(df['GroupID'] == group) & (df['remove_z'] != 1)]
         identity = np.ones(shape=(len(sample),), dtype=np.bool)
+        
         if len(sample[~sample.mag_r.isna()]) > 0:
           mag_mask = sample.mag_r != sample.mag_r.min()
         else:
@@ -424,20 +425,18 @@ class PhotozSpeczLegacyMatchStage(PipelineStage):
           
         if len(sample[~sample.z.isna()]) == 1:
           z_mask = ~sample.z.isna()
+        elif len(sample[~sample.z.isna()]) > 1:
+          if len(sample[~sample.e_z.isna()]) > 1 and len(sample.e_z.unique()) > 1:
+            z_mask = sample.e_z != sample.e_z.min()
+          else:
+            if len(sample[sample.source.str.lower().str.contains('_sdss')]) > 0:
+              z_mask = ~sample.source.str.lower().str.contains('_sdss')
+            else:
+              z_mask = identity
         else:
           z_mask = identity
-      
-        if len(sample[~sample.e_z.isna()]) > 0 and len(sample.e_z.unique()) > 1:
-          z_err_mask = sample.e_z != sample.e_z.min()
-        else:
-          z_err_mask = identity
-          
-        if len(sample[sample.source.str.lower().str.contains('_sdss')]) > 0:
-          sdss_mask = ~sample.source.str.lower().str.contains('_sdss')
-        else:
-          sdss_mask = identity
 
-        mask = mag_mask & z_mask & z_err_mask & sdss_mask
+        mask = mag_mask & z_mask
         df.loc[sample[mask].index, 'remove_neighbours'] = 1
     df['remove_neighbours'] = df['remove_neighbours'].astype('int32')
     
