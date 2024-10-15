@@ -345,7 +345,7 @@ class PhotozSpeczLegacyMatchStage(PipelineStage):
     del df[spec_all_ra]
     del df[spec_all_dec]
     print(f'Crossmatch 3 finished. Duration: {t.end()}')
-    print('Inserted redshifts:', n_redshift - len(df[~df.z.isna()]))
+    print('Inserted redshifts:', len(df[~df.z.isna()]) - n_redshift)
     print('Number of objects:', len(df))
     
     
@@ -375,7 +375,7 @@ class PhotozSpeczLegacyMatchStage(PipelineStage):
       ((df['f_z'] == 'KEEP(    )') & (df['e_z'] == 3.33E-4))
     )
     df.loc[mask, 'remove_z'] = 1
-    df['remove_z'] = df['remove_z'].astype(int)
+    df['remove_z'] = df['remove_z'].astype('int32')
 
 
     if 'xmatch_sep' in df.columns:
