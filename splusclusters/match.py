@@ -389,7 +389,7 @@ class PhotozSpeczLegacyMatchStage(PipelineStage):
     
     
     df = selfmatch(
-      df[(df.remove_z == 0) & (df.remove_star == 0)], 
+      df[(df.remove_z != 1) & (df.remove_star != 1)], 
       10*u.arcsec, 
       'identify'
     )
