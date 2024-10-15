@@ -176,6 +176,7 @@ class PhotozSpeczLegacyMatchStage(PipelineStage):
     df_ret: pd.DataFrame | None,
   ):
     out_path = configs.PHOTOZ_SPECZ_LEG_FOLDER / f'{cls_name}.parquet'
+    out_flags_path = configs.PHOTOZ_SPECZ_LEG_FOLDER / f'{cls_name}+flags.parquet'
     if out_path.exists() and not self.overwrite:
       return
     
@@ -388,12 +389,7 @@ class PhotozSpeczLegacyMatchStage(PipelineStage):
       del df['xmatch_sep_final']
     
     
-    df = selfmatch(
-      df[(df.remove_z != 1) & (df.remove_star != 1)], 
-      10*u.arcsec, 
-      'identify'
-    )
-    
+    df = selfmatch(df, 10*u.arcsec, 'identify')
     
     df['remove_neighbours'] = 0
     if 'GroupID' in df.columns:
@@ -410,5 +406,12 @@ class PhotozSpeczLegacyMatchStage(PipelineStage):
         del df['GroupSize']
     
     print('\nFinal columns:', *df.columns)
+    
+    write_table(df, out_flags_path)
+    
+    df = df[(df.remove_stars != 1) & (df.remove_z != 1) & (df.remove_neighbours != 1)]
+    del df['remove_stars']
+    del df['remove_z']
+    del df['remove_neighbours']
       
     write_table(df, out_path)
