@@ -409,8 +409,8 @@ class PhotozSpeczLegacyMatchStage(PipelineStage):
     
     write_table(df, out_flags_path)
     
-    df = df[(df.remove_stars != 1) & (df.remove_z != 1) & (df.remove_neighbours != 1)]
-    del df['remove_stars']
+    df = df[(df.remove_star != 1) & (df.remove_z != 1) & (df.remove_neighbours != 1)]
+    del df['remove_star']
     del df['remove_z']
     del df['remove_neighbours']
       
