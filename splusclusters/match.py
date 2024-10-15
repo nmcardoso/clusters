@@ -322,11 +322,18 @@ class PhotozSpeczLegacyMatchStage(PipelineStage):
     # cols = photoz_cols + specz_cols + legacy_cols
     # df = df[cols]
 
-    df = df[~df.original_class_spec.isin(['GClstr', 'GGroup', 'GPair', 'GTrpl', 'PofG'])]
-    print('Number of objects after original_class_spec filter:', len(df))
+    # df = df[~df.original_class_spec.isin(['GClstr', 'GGroup', 'GPair', 'GTrpl', 'PofG'])]
+    # print('Number of objects after original_class_spec filter:', len(df))
 
-    df = df[(df['f_z'] != 'KEEP(    )') & (df['e_z'] != 3.33E-4)]
-    print('Number of objects after flag z filter:', len(df))
+    # df = df[(df['f_z'] != 'KEEP(    )') & (df['e_z'] != 3.33E-4)]
+    # print('Number of objects after flag z filter:', len(df))
+    
+    df['remove_z'] = 0
+    mask = (
+      df.original_class_spec.isin(['GClstr', 'GGroup', 'GPair', 'GTrpl', 'PofG']) |
+      ((df['f_z'] != 'KEEP(    )') & (df['e_z'] != 3.33E-4))
+    )
+    df.loc[mask, 'remove_z'] = 1
 
 
     if 'xmatch_sep' in df.columns:
