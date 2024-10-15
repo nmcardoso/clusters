@@ -323,17 +323,16 @@ class PhotozSpeczLegacyMatchStage(PipelineStage):
       df_spec_all,
       ra1='ra_photo',
       dec1='dec_photo',
-      suffix1='final',
+      suffix1='_final',
       ra2=spec_all_ra,
       dec2=spec_all_dec,
-      suffix2='spec_all',
+      suffix2='_spec_all',
       join='all1',
     )
     cols = [
       'z', 'e_z', 'f_z', 'class_spec',
       'original_class_spec', 'source'
     ]
-    print(*df.columns)
     for col in cols:
       df[f'{col}_final'].replace(r'^\s*$', np.nan, regex=True)
       df[f'{col}_final'].fillna(df[f'{col}_spec_all'])
