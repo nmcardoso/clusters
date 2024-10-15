@@ -394,18 +394,20 @@ class PhotozSpeczLegacyMatchStage(PipelineStage):
       'identify'
     )
     
-    print(*df['GroupID'].unique())
     
     df['remove_neighbours'] = 0
-    for group in range(df['GroupID'].max()):
-      sample = df[df['GroupID'] == group]
-      if len(sample[~sample.z.isna()]) == 0 or len(sample[~sample.z.isna()]) > 1:
-        continue
-      df.loc[sample[sample.z.isna()].index, 'remove_neighbours'] = 1
-    df['remove_neighbours'] = df['remove_neighbours'].astype('int32')
-    
-    if 'GroupSize' in df.columns:
-      del df['GroupSize']
+    if 'GroupID' in df.columns:
+      gids = df['GroupID'].unique()
+      gids = gids[gids > 0]
+      for group in gids:
+        sample = df[df['GroupID'] == group]
+        if len(sample[~sample.z.isna()]) == 0 or len(sample[~sample.z.isna()]) > 1:
+          continue
+        df.loc[sample[sample.z.isna()].index, 'remove_neighbours'] = 1
+      df['remove_neighbours'] = df['remove_neighbours'].astype('int32')
+      
+      if 'GroupSize' in df.columns:
+        del df['GroupSize']
     
     print('Final columns:', *df.columns)
       
