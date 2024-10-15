@@ -393,7 +393,7 @@ class PhotozSpeczLegacyMatchStage(PipelineStage):
       10*u.arcsec, 
       'identify'
     )
-    
+    print(*df.columns)
     print(*df['GroupId'].unique())
     
     df['remove_neighbours'] = 0
