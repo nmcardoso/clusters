@@ -427,7 +427,7 @@ class PhotozSpeczLegacyMatchStage(PipelineStage):
         else:
           z_mask = identity
       
-        if len(sample[~sample.e_z.isna()]) > 0:
+        if len(sample[~sample.e_z.isna()]) > 0 and len(sample.e_z.unique()) > 1:
           z_err_mask = sample.e_z != sample.e_z.min()
         else:
           z_err_mask = identity
