@@ -251,9 +251,12 @@ class DownloadSplusPhotozStage(PipelineStage):
         'e_J0515_PStotal', 'e_J0660_PStotal', 'e_J0861_PStotal', 'e_g_PStotal', 
         'e_i_PStotal', 'e_r_PStotal', 'e_u_PStotal', 'e_z_PStotal',
         # R mags
-        'r_iso', 'r_petro', 'r_aper_3', 'r_aper_6',
+        'r_iso', 'r_petro', 'r_aper_3', 'r_aper_6', 'Field'
       ],
-      filters=[('r_auto', '<=', 22)]
+      filters=[
+        ('r_auto', '<=', 22) &
+        ('r_auto' '>=', 9)
+      ]
     )
     print(f' [OK] Duration: {t.duration_str}')
 
@@ -284,7 +287,7 @@ class DownloadSplusPhotozStage(PipelineStage):
       idr5_sqg[0],
       margin_cache=idr5_sqg_margin,
       storage_options=dict(headers=conn.headers),
-      columns=['RA', 'DEC', 'PROB_GAL'],
+      columns=['RA', 'DEC', 'PROB_GAL_GAIA'],
       # filters=[('PROB_GAL', '>=', 0.5)]
     )
     print(f' [OK] Duration: {t.duration_str}')
@@ -371,6 +374,24 @@ class DownloadSplusPhotozStage(PipelineStage):
     #   'in_overlap_region_overlap': 'in_overlap_region',
     #   '_dist_arcsec': 'lsdb_separation'
     # })
+    
+    prob_thresh = {
+      'stripe82': [0.98, 0.98, 0.92, 0.52, 0.32, 0.16],
+      'splus-s': [0.80, 0.50, 0.90, 0.70, 0.64, 0.42],
+      'splus-n': [0.90, 0.64, 0.92, 0.72, 0.58, 0.30],
+      'hydra': [0.90, 0.64, 0.92, 0.72, 0.58, 0.30],
+    }
+    r_range = [(0, 16), (16, 17), (17, 18), (18, 19), (19, 20), (20, 99)]
+    
+    result['remove_star'] = 0
+    for tile, probs in prob_thresh.items():
+      for r_auto, prob in zip(r_range, probs):
+        mask = (
+          result.Field.str.lower().str.startswith(tile) & 
+          (result.PROB_GAL_GAIA < prob) &
+          result.r_auto.between(*r_auto)
+        )
+        result.loc[mask, 'remove_star'] = 1
     
     print('Final table columns:', *result.columns)
     print('\nTable rows:', len(result))
