@@ -370,6 +370,25 @@ class PhotozSpeczLegacyMatchStage(PipelineStage):
     # df = df[(df['f_z'] != 'KEEP(    )') & (df['e_z'] != 3.33E-4)]
     # print('Number of objects after flag z filter:', len(df))
     
+    prob_thresh = {
+      'stripe82': [0.98, 0.98, 0.92, 0.52, 0.32, 0.16],
+      'splus-s': [0.80, 0.50, 0.90, 0.70, 0.64, 0.42],
+      'splus-n': [0.90, 0.64, 0.92, 0.72, 0.58, 0.30],
+      'hydra': [0.90, 0.64, 0.92, 0.72, 0.58, 0.30],
+    }
+    r_range = [(0, 16), (16, 17), (17, 18), (18, 19), (19, 20), (20, 99)]
+    
+    df['remove_star'] = 0
+    for tile, probs in prob_thresh.items():
+      for r_auto, prob in zip(r_range, probs):
+        mask = (
+          df.Field.str.lower().str.startswith(tile) & 
+          df.r_auto.between(*r_auto) &
+          (df.PROB_GAL_GAIA < prob)
+        )
+        df.loc[mask, 'remove_star'] = 1
+    df['remove_star'] = df['remove_star'].astype('int32')
+    
     df['remove_z'] = 0
     mask = (
       df.original_class_spec.isin(['GClstr', 'GGroup', 'GPair', 'GTrpl', 'PofG']) |

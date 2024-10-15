@@ -374,25 +374,6 @@ class DownloadSplusPhotozStage(PipelineStage):
     #   '_dist_arcsec': 'lsdb_separation'
     # })
     
-    prob_thresh = {
-      'stripe82': [0.98, 0.98, 0.92, 0.52, 0.32, 0.16],
-      'splus-s': [0.80, 0.50, 0.90, 0.70, 0.64, 0.42],
-      'splus-n': [0.90, 0.64, 0.92, 0.72, 0.58, 0.30],
-      'hydra': [0.90, 0.64, 0.92, 0.72, 0.58, 0.30],
-    }
-    r_range = [(0, 16), (16, 17), (17, 18), (18, 19), (19, 20), (20, 99)]
-    
-    result['remove_star'] = 0
-    for tile, probs in prob_thresh.items():
-      for r_auto, prob in zip(r_range, probs):
-        mask = (
-          result.Field.str.lower().str.startswith(tile) & 
-          (result.PROB_GAL_GAIA < prob) &
-          result.r_auto.between(*r_auto)
-        )
-        result.loc[mask, 'remove_star'] = 1
-    result['remove_star'] = result['remove_star'].astype('int32')
-    
     print('Final table columns:', *result.columns)
     print('\nTable rows:', len(result))
     print(result)
