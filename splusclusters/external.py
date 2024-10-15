@@ -360,7 +360,7 @@ class DownloadSplusPhotozStage(PipelineStage):
     
     # filter overlap objects
     if 'in_overlap_region' in result.columns:
-      result = result[result['in_overlap_region'] == 0].compute()
+      result = result[result['in_overlap_region'] == 0]
 
     # result = result.rename(columns={
     #   'RA_sqg_sqg_pz': 'RA',
