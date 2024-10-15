@@ -425,17 +425,16 @@ class PhotozSpeczLegacyMatchStage(PipelineStage):
             z_mask = ~sample.z.isna()
             
         elif len(sample[~sample.z.isna()]) > 1:
-          if len(sample[~sample.e_z.isna()]) > 1 and sample.e_z.nunique() > 1:
-            if len(sample[~sample.mag_r.isna()]) > 0:
-              z_mask = (sample.e_z != sample.e_z.min()) & (sample.mag_r != sample.mag_r.min())
-            else:
-              z_mask = (sample.e_z != sample.e_z.min())
+          if len(sample[~sample.mag_r.isna()]) > 0:
+            z_mask = (sample.mag_r != sample.mag_r.min())
           else:
             if len(sample[sample.source.str.lower().str.contains('_sdss')]) > 0:
-              if len(sample[~sample.mag_r.isna()]) > 0:
-                z_mask = ~sample.source.str.lower().str.contains('_sdss') & (sample.mag_r != sample.mag_r.min())
+              z_mask = ~sample.source.str.lower().str.contains('_sdss')
+            else:
+              if len(~sample.e_z.isna()) > 0:
+                z_mask = (sample.e_z != sample.e_z.min())
               else:
-                z_mask = ~sample.source.str.lower().str.contains('_sdss')
+                z_mask = np.zeros(shape=(len(group),), dtype=np.bool)
         
         else:
           if len(sample[~sample.mag_r.isna()]) > 0:
