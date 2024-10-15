@@ -231,6 +231,8 @@ class PhotozSpeczLegacyMatchStage(PipelineStage):
       dec2=spec_all_dec,
       join='all1',
     )
+    df_photo['f_z'] = df_photo['f_z'].astype('str')
+    df_photo['original_class_spec'] = df_photo['original_class_spec'].astype('str')
     del df_photo[spec_all_ra]
     del df_photo[spec_all_dec]
     del df_photo['xmatch_sep']
