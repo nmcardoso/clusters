@@ -203,10 +203,36 @@ class PhotozSpeczLegacyMatchStage(PipelineStage):
     print('Photo-z objects:', len(df_photo))
     print('Spec-z objects:', len(df_spec))
     print('Legacy objects:', len(df_legacy))
-    print('Starting first crossmatch: photo-z UNION spec-z')
+    
+    t = Timming()
+    print('Crossmatch 1: photo-z LEFT OUTER JOIN spec-z')
+    df_spec_all = self.get_data('df_spec')
+    df_spec_all = df_spec_all['f_z'].astype('str')
+    df_spec_all['original_class_spec'] = df_spec_all['original_class_spec'].astype('str')
+    spec_all_ra, spec_all_dec = guess_coords_columns(df_spec_all)
+    print('photo:', *df_photo.columns)
+    print('spec:', *df_spec_all.columns)
+    df_photo = fast_crossmatch(
+      df_photo, 
+      df_spec_all, 
+      left_ra='ra_photo', 
+      left_dec='dec_photo', 
+      right_ra=spec_all_ra,
+      right_dec=spec_all_dec,
+      join='left', 
+      include_sep=False
+    )
+    del df_photo[spec_all_ra]
+    del df_photo[spec_all_dec]
+    print(f'Crossmatch 1 finished. Duration: {t.end()}')
+    print('Objects with redshift:', len(~df_photo.z.isna()))
+    print('Objects without redshift:', len(df_photo.z.isna()))
+    print('Total number of objects:', len(df_photo))
+    
     
     t = Timming()
     if df_ret is not None and len(df_ret) > 0 and len(df_photo) > 0:
+      print('Crossmatch 2: photo-z UNION spec-z')
       df_spec_union = crossmatch(
         table1=df_r,
         table2=df_spec,
@@ -266,12 +292,12 @@ class PhotozSpeczLegacyMatchStage(PipelineStage):
       del df['ra_spec']
       del df['dec_spec']
     
-    print(f'First crossmatch finished. Duration: {t.end()}')
+    print(f'Crossmatch 2 finished. Duration: {t.end()}')
     print('Objects with photo-z only:', len(df[~df.zml.isna() & df.z.isna()]))
     print('Objects with spec-z only:', len(df[df.zml.isna() & ~df.z.isna()]))
     print('Objects with photo-z and spec-z:', len(df[~df.zml.isna() & ~df.z.isna()]))
     print('Total of objects after first match:', len(df))
-    print('starting second crossmatch: match-1 LEFT OUTER JOIN legacy')
+    print('Crossmatch 3: match-1 LEFT OUTER JOIN legacy')
     
     t = Timming()
     if len(df_legacy) > 0:

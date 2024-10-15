@@ -12,7 +12,7 @@ from splusclusters.configs import configs
 from splusclusters.loaders import (LoadClusterInfoStage, LoadLegacyRadialStage,
                                    LoadPhotozRadialStage, LoadSpeczRadialStage,
                                    load_clusters, load_members_index_v6,
-                                   load_photoz)
+                                   load_photoz, load_spec)
 from splusclusters.match import (PhotoZRadialSearchStage,
                                  PhotozSpeczLegacyMatchStage,
                                  SpecZRadialSearchStage)
@@ -29,6 +29,7 @@ def match_all_pipeline(overwrite: bool = False, version: int = 6, z_photo_delta:
   # df_clusters = load_clusters()
   df_clusters = load_members_index_v6()
   df_clusters = df_clusters[df_clusters.name.isin(['MKW4'])]
+  df_spec, specz_skycoord = load_spec()
   
   pipe = Pipeline(
     LoadClusterInfoStage(df_clusters, version=version),
@@ -37,6 +38,9 @@ def match_all_pipeline(overwrite: bool = False, version: int = 6, z_photo_delta:
     LoadLegacyRadialStage(),
     PhotozSpeczLegacyMatchStage(overwrite=overwrite),
   )
+  
+  PipelineStorage().write('df_spec', df_spec)
+  PipelineStorage().write('specz_skycoord', specz_skycoord)
   
   pipe.map_run('cls_id', df_clusters.clsid.values, workers=1)
   
