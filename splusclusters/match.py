@@ -440,8 +440,8 @@ class PhotozSpeczLegacyMatchStage(PipelineStage):
     df['remove_neighbours'] = df['remove_neighbours'].astype('int32')
     
     df['remove_radius'] = 0
-    df.loc[df['PETRO_RADIUS'] == 0, 'remove_radius'] = 1
-    df.loc[(df['A'] < 1.5e-4) | (df['B'] < 1.5e-4), 'remove_radius'] = 1
+    df.loc[(df.PETRO_RADIUS == 0) & df.mag_r.isna() & df.z.isna(), 'remove_radius'] = 1
+    df.loc[((df.A < 1.5e-4) | (df.B < 1.5e-4)) & df.mag_r.isna() & df.z.isna(), 'remove_radius'] = 1
     df['remove_radius'] = df['remove_radius'].astype('int32')
     
     if 'GroupSize' in df.columns:
