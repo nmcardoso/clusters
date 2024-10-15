@@ -422,7 +422,7 @@ class PhotozSpeczLegacyMatchStage(PipelineStage):
         else:
           mag_mask = identity
           
-        if len(sample[~sample.z.isna()]) > 0:
+        if len(sample[~sample.z.isna()]) == 1:
           z_mask = ~sample.z.isna()
         else:
           z_mask = identity
