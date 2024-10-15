@@ -254,8 +254,7 @@ class DownloadSplusPhotozStage(PipelineStage):
         'r_iso', 'r_petro', 'r_aper_3', 'r_aper_6', 'Field'
       ],
       filters=[
-        ('r_auto', '<=', 22),
-        ('r_auto' '>=', 9)
+        ('r_auto', '<=', 22)
       ]
     )
     print(f' [OK] Duration: {t.duration_str}')
