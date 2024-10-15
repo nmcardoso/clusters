@@ -212,21 +212,31 @@ class PhotozSpeczLegacyMatchStage(PipelineStage):
     df_spec_all['f_z'] = df_spec_all['f_z'].astype('str')
     df_spec_all['original_class_spec'] = df_spec_all['original_class_spec'].astype('str')
     spec_all_ra, spec_all_dec = guess_coords_columns(df_spec_all)
-    df_photo = fast_crossmatch(
-      df_photo, 
-      df_spec_all, 
-      left_ra='ra_photo', 
-      left_dec='dec_photo', 
-      right_ra=spec_all_ra,
-      right_dec=spec_all_dec,
-      join='left', 
-      include_sep=False
+    # df_photo = fast_crossmatch(
+    #   df_photo, 
+    #   df_spec_all, 
+    #   left_ra='ra_photo', 
+    #   left_dec='dec_photo', 
+    #   right_ra=spec_all_ra,
+    #   right_dec=spec_all_dec,
+    #   join='left', 
+    #   include_sep=False
+    # )
+    df_photo = crossmatch(
+      df_photo,
+      df_spec_all,
+      ra1='ra_photo',
+      dec1='dec_photo',
+      ra2=spec_all_ra,
+      dec2=spec_all_dec,
+      join='all1',
     )
     del df_photo[spec_all_ra]
     del df_photo[spec_all_dec]
+    del df_photo['xmatch_sep']
     print(f'Crossmatch 1 finished. Duration: {t.end()}')
-    print('Objects with redshift:', len(~df_photo.z.isna()))
-    print('Objects without redshift:', len(df_photo.z.isna()))
+    print('Objects with redshift:', len(df_photo[~df_photo.z.isna()]))
+    print('Objects without redshift:', len(df_photo[df_photo.z.isna()]))
     print('Total number of objects:', len(df_photo))
     
     
