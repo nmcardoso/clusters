@@ -425,7 +425,7 @@ class PhotozSpeczLegacyMatchStage(PipelineStage):
           if len(sample[sample.source.str.lower().str.contains('_sdss')]) > 0:
             z_mask = ~sample.source.str.lower().str.contains('_sdss')
           else:
-            z_mask = sample.z.isna()
+            z_mask = np.ones(shape=(len(sample),), dtype=np.bool)
         else:
           z_mask = sample.z.isna()
       
