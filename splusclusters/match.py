@@ -429,10 +429,12 @@ class PhotozSpeczLegacyMatchStage(PipelineStage):
         else:
           z_mask = sample.z.isna()
       
-        if len(sample[~sample.e_z.isna()]) > 0:
+        if len(sample[~sample.e_z.isna()]) == 1 or (
+          len(sample[~sample.e_z.isna()]) > 1 and len(sample.e_z.unique()) > 1
+        ):
           z_err_mask = sample.e_z != sample.e_z.min()
         else:
-          z_err_mask = sample.e_z.isna()
+          z_err_mask = np.ones(shape=(len(sample),), dtype=np.bool)
           
           
         mask = mag_mask & z_mask & z_err_mask
