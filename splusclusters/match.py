@@ -415,6 +415,7 @@ class PhotozSpeczLegacyMatchStage(PipelineStage):
       gids = df['GroupID'].unique()
       gids = gids[gids > 0]
       for group in gids:
+        print(group)
         sample = df[(df['GroupID'] == group) & (df['remove_z'] != 1)]
           
         if len(sample[~sample.z.isna()]) == 1:
