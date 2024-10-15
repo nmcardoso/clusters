@@ -336,8 +336,7 @@ class PhotozSpeczLegacyMatchStage(PipelineStage):
     for col in cols:
       if f'{col}_final' in df.columns:
         df[f'{col}_final'].replace(r'^\s*$', np.nan, regex=True, inplace=True)
-        print(f'{col}_final', len(df[df[f'{col}_final'].isna()]), ',', len(df[df[f'{col}_final'] == '']))
-        df[f'{col}_final'].fillna(df[f'{col}_spec_all'])
+        df[f'{col}_final'].fillna(df[f'{col}_spec_all'], inplace=True)
         df.rename(columns={f'{col}_final': col}, inplace=True)
       if f'{col}_spec_all' in df.columns:
         del df[f'{col}_spec_all']
