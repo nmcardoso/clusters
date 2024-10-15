@@ -440,7 +440,7 @@ class PhotozSpeczLegacyMatchStage(PipelineStage):
           if len(sample[~sample.mag_r.isna()]) > 0:
             z_mask = sample.mag_r != sample.mag_r.min()
           else:
-            z_mask = np.zeros(shape=(len(sample),), dtype=np.bool)
+            z_mask = np.ones(shape=(len(sample),), dtype=np.bool)
 
         df.loc[sample[z_mask].index, 'remove_neighbours'] = 1
     df['remove_neighbours'] = df['remove_neighbours'].astype('int32')
