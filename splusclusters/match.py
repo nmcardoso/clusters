@@ -207,11 +207,11 @@ class PhotozSpeczLegacyMatchStage(PipelineStage):
     t = Timming()
     print('Crossmatch 1: photo-z LEFT OUTER JOIN spec-z')
     df_spec_all = self.get_data('df_spec')
+    print('photo:', *df_photo.columns)
+    print('spec:', *df_spec_all.columns)
     df_spec_all = df_spec_all['f_z'].astype('str')
     df_spec_all['original_class_spec'] = df_spec_all['original_class_spec'].astype('str')
     spec_all_ra, spec_all_dec = guess_coords_columns(df_spec_all)
-    print('photo:', *df_photo.columns)
-    print('spec:', *df_spec_all.columns)
     df_photo = fast_crossmatch(
       df_photo, 
       df_spec_all, 
