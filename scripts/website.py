@@ -26,7 +26,7 @@ def website_pipeline(overwrite: Sequence[str] | None = None, version: int = 6, d
   else:
     df_clusters = load_members_index_v6()
     
-  df_clusters = df_clusters[df_clusters.name == 'MKW4']
+  # df_clusters = df_clusters[df_clusters.name == 'MKW4']
   
   if overwrite is None:
     overwrite = []
