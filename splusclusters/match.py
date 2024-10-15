@@ -313,7 +313,7 @@ class PhotozSpeczLegacyMatchStage(PipelineStage):
     n_redshift = len(df[~df.z.isna()])
       
     t = Timming()
-    print('Crossmatch 3: final LEFT OUTER JOIN spec-z')
+    print('\nCrossmatch 3: final LEFT OUTER JOIN spec-z')
     df_spec_all = self.get_data('df_spec')
     df_spec_all['f_z'] = df_spec_all['f_z'].astype('str')
     df_spec_all['original_class_spec'] = df_spec_all['original_class_spec'].astype('str')
@@ -335,7 +335,8 @@ class PhotozSpeczLegacyMatchStage(PipelineStage):
     ]
     for col in cols:
       if f'{col}_final' in df.columns:
-        df[f'{col}_final'].replace(r'^\s*$', np.nan, regex=True)
+        df[f'{col}_final'].replace(r'^\s*$', np.nan, regex=True, inplace=True)
+        print(f'{col}_final', df[df[f'{col}_final'].isna()], ',', df[df[f'{col}_final'] == ''])
         df[f'{col}_final'].fillna(df[f'{col}_spec_all'])
         df.rename(columns={f'{col}_final': col}, inplace=True)
       if f'{col}_spec_all' in df.columns:
@@ -346,6 +347,7 @@ class PhotozSpeczLegacyMatchStage(PipelineStage):
     del df[spec_all_dec]
     print(f'Crossmatch 3 finished. Duration: {t.end()}')
     print('Inserted redshifts:', n_redshift - len(df[~df.z.isna()]))
+    print('Number of objects:', len(df))
     
     
     if 'flag_member' in df.columns:
