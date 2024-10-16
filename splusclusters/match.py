@@ -418,22 +418,24 @@ class PhotozSpeczLegacyMatchStage(PipelineStage):
         sample = df[(df['GroupID'] == group) & (df['remove_z'] != 1)]
           
         if len(sample[~sample.z.isna()]) == 1:
+          if str(group) == '817':
+            print('==1')
           if len(sample[~sample.mag_r.isna()]) > 0:
             z_mask = sample.z.isna() | (sample.mag_r != sample.mag_r.min())
           else:
             z_mask = sample.z.isna()
             
         elif len(sample[~sample.z.isna()]) > 1:
-          if group == 817:
+          if str(group) == '817':
             print("len(sample[sample.source.str.lower().str.contains('_sdss')])", len(sample[sample.source.str.lower().str.contains('_sdss')]))
           if len(sample[sample.source.str.lower().str.contains('_sdss')]) > 0:
             z_mask = ~sample.source.str.lower().str.contains('_sdss')
           else:
-            if group == 817:
+            if str(group) == '817':
               print('len(sample[~sample.mag_r.isna()])', len(sample[~sample.mag_r.isna()]))
             if len(sample[~sample.mag_r.isna()]) > 0:
               z_mask = sample.mag_r.isna() | (sample.mag_r != sample.mag_r.min())
-              if group == 817:
+              if str(group) == '817':
                 print('index:', sample.index)
                 print('sample.mag_r != sample.mag_r.min()', sample.mag_r != sample.mag_r.min())
                 print('sample.mag_r.isna()', sample.mag_r.isna())
@@ -444,6 +446,8 @@ class PhotozSpeczLegacyMatchStage(PipelineStage):
                 z_mask = np.zeros(shape=(len(group),), dtype=np.bool)
         
         else:
+          if str(group) == '817':
+            print('==0')
           if len(sample[~sample.mag_r.isna()]) > 0:
             z_mask = sample.mag_r != sample.mag_r.min()
           else:
