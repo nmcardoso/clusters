@@ -424,9 +424,13 @@ class PhotozSpeczLegacyMatchStage(PipelineStage):
             z_mask = sample.z.isna()
             
         elif len(sample[~sample.z.isna()]) > 1:
+          if group == 817:
+            print("len(sample[sample.source.str.lower().str.contains('_sdss')])", len(sample[sample.source.str.lower().str.contains('_sdss')]))
           if len(sample[sample.source.str.lower().str.contains('_sdss')]) > 0:
             z_mask = ~sample.source.str.lower().str.contains('_sdss')
           else:
+            if group == 817:
+              print('len(sample[~sample.mag_r.isna()])', len(sample[~sample.mag_r.isna()]))
             if len(sample[~sample.mag_r.isna()]) > 0:
               z_mask = sample.mag_r.isna() | (sample.mag_r != sample.mag_r.min())
               if group == 817:
@@ -450,6 +454,7 @@ class PhotozSpeczLegacyMatchStage(PipelineStage):
     
     df['remove_radius'] = 0
     df.loc[(df.PETRO_RADIUS == 0) & df.mag_r.isna() & df.z.isna(), 'remove_radius'] = 1
+    df.loc[(df.PETRO_RADIUS == df.PETRO_RADIUS.max()) & df.mag_r.isna() & df.z.isna(), 'remove_radius'] = 1
     df.loc[((df.A < 1.5e-4) | (df.B < 1.5e-4)) & df.mag_r.isna() & df.z.isna(), 'remove_radius'] = 1
     df['remove_radius'] = df['remove_radius'].astype('int32')
     
