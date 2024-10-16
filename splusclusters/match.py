@@ -418,31 +418,31 @@ class PhotozSpeczLegacyMatchStage(PipelineStage):
         sample = df[(df['GroupID'] == group) & (df['remove_z'] != 1)]
           
         if len(sample[~sample.z.isna()]) == 1:
-          if str(group) == '817':
-            print(sample)
           if len(sample[~sample.mag_r.isna()]) > 0:
             z_mask = sample.z.isna() | (sample.mag_r != sample.mag_r.min())
-            print('\nindex:', sample.index)
-            print('sample.z.isna()', sample.z.isna())
-            print('sample.mag_r != sample.mag_r.min()', sample.mag_r != sample.mag_r.min())
-            print('z_mask', z_mask)
           else:
             z_mask = sample.z.isna()
             
         elif len(sample[~sample.z.isna()]) > 1:
-          if str(group) == '817':
-            print("len(sample[sample.source.str.lower().str.contains('_sdss')])", len(sample[sample.source.str.lower().str.contains('_sdss')]))
-          if len(sample[sample.source.str.lower().str.contains('_sdss')]) > 0:
-            z_mask = ~sample.source.str.lower().str.contains('_sdss')
+          if len(sample[sample.source.str.upper().str.contains('_SDSSDR18_')]) == 1:
+            z_mask = ~sample.source.str.upper().str.contains('_SDSSDR18_')
+          elif len(sample[sample.source.str.upper().str.contains('_SDSSDR18_')]) > 1:
+            if len(sample[~sample.mag_r.isna()]) > 0:
+              z_mask = (
+                ~sample.source.str.upper().str.contains('_SDSSDR18_') & 
+                (sample.mag_r.isna() | (sample.mag_r != sample.mag_r.min()))
+              )
+            else:
+              if len(~sample.e_z.isna()) > 0:
+                z_mask = (
+                  ~sample.source.str.upper().str.contains('_SDSSDR18_') & 
+                  (sample.e_z != sample.e_z.min())
+                )
+              else:
+                z_mask = np.zeros(shape=(len(group),), dtype=np.bool)
           else:
-            if str(group) == '817':
-              print('len(sample[~sample.mag_r.isna()])', len(sample[~sample.mag_r.isna()]))
             if len(sample[~sample.mag_r.isna()]) > 0:
               z_mask = sample.mag_r.isna() | (sample.mag_r != sample.mag_r.min())
-              if str(group) == '817':
-                print('index:', sample.index)
-                print('sample.mag_r != sample.mag_r.min()', sample.mag_r != sample.mag_r.min())
-                print('sample.mag_r.isna()', sample.mag_r.isna())
             else:
               if len(~sample.e_z.isna()) > 0:
                 z_mask = (sample.e_z != sample.e_z.min())
@@ -450,8 +450,6 @@ class PhotozSpeczLegacyMatchStage(PipelineStage):
                 z_mask = np.zeros(shape=(len(group),), dtype=np.bool)
         
         else:
-          if str(group) == '817':
-            print('==0')
           if len(sample[~sample.mag_r.isna()]) > 0:
             z_mask = sample.mag_r != sample.mag_r.min()
           else:
