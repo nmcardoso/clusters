@@ -414,48 +414,48 @@ class PhotozSpeczLegacyMatchStage(PipelineStage):
     if 'GroupID' in df.columns:
       gids = df['GroupID'].unique()
       gids = gids[gids > 0]
-      for group in gids:
-        sample = df[(df['GroupID'] == group) & (df['remove_z'] != 1)]
+      for group_id in gids:
+        group_df = df[(df['GroupID'] == group_id) & (df['remove_z'] != 1)]
           
-        if len(sample[~sample.z.isna()]) == 1:
-          if len(sample[~sample.mag_r.isna()]) > 0:
-            z_mask = sample.z.isna() | (sample.mag_r != sample.mag_r.min())
+        if len(group_df[~group_df.z.isna()]) == 1:
+          if len(group_df[~group_df.mag_r.isna()]) > 0:
+            z_mask = group_df.z.isna() | (group_df.mag_r != group_df.mag_r.min())
           else:
-            z_mask = sample.z.isna()
+            z_mask = group_df.z.isna()
             
-        elif len(sample[~sample.z.isna()]) > 1:
-          if len(sample[sample.source.str.upper().str.contains('_SDSSDR18_')]) == 1:
-            z_mask = ~sample.source.str.upper().str.contains('_SDSSDR18_')
-          elif len(sample[sample.source.str.upper().str.contains('_SDSSDR18_')]) > 1:
-            if len(sample[~sample.mag_r.isna()]) > 0:
+        elif len(group_df[~group_df.z.isna()]) > 1:
+          if len(group_df[group_df.source.str.upper().str.contains('_SDSSDR18_')]) == 1:
+            z_mask = ~group_df.source.str.upper().str.contains('_SDSSDR18_')
+          elif len(group_df[group_df.source.str.upper().str.contains('_SDSSDR18_')]) > 1:
+            if len(group_df[~group_df.mag_r.isna()]) > 0:
               z_mask = (
-                ~sample.source.str.upper().str.contains('_SDSSDR18_') & 
-                (sample.mag_r.isna() | (sample.mag_r != sample.mag_r.min()))
+                ~group_df.source.str.upper().str.contains('_SDSSDR18_') & 
+                (group_df.mag_r.isna() | (group_df.mag_r != group_df.mag_r.min()))
               )
             else:
-              if len(~sample.e_z.isna()) > 0:
+              if len(~group_df.e_z.isna()) > 0:
                 z_mask = (
-                  ~sample.source.str.upper().str.contains('_SDSSDR18_') & 
-                  (sample.e_z != sample.e_z.min())
+                  ~group_df.source.str.upper().str.contains('_SDSSDR18_') & 
+                  (group_df.e_z != group_df.e_z.min())
                 )
               else:
-                z_mask = np.zeros(shape=(len(sample),), dtype=np.bool)
+                z_mask = np.zeros(shape=(len(group_df),), dtype=np.bool)
           else:
-            if len(sample[~sample.mag_r.isna()]) > 0:
-              z_mask = sample.mag_r.isna() | (sample.mag_r != sample.mag_r.min())
+            if len(group_df[~group_df.mag_r.isna()]) > 0:
+              z_mask = group_df.mag_r.isna() | (group_df.mag_r != group_df.mag_r.min())
             else:
-              if len(~sample.e_z.isna()) > 0:
-                z_mask = (sample.e_z != sample.e_z.min())
+              if len(~group_df.e_z.isna()) > 0:
+                z_mask = (group_df.e_z != group_df.e_z.min())
               else:
-                z_mask = np.zeros(shape=(len(sample),), dtype=np.bool)
+                z_mask = np.zeros(shape=(len(group_df),), dtype=np.bool)
         
         else:
-          if len(sample[~sample.mag_r.isna()]) > 0:
-            z_mask = sample.mag_r != sample.mag_r.min()
+          if len(group_df[~group_df.mag_r.isna()]) > 0:
+            z_mask = group_df.mag_r != group_df.mag_r.min()
           else:
-            z_mask = np.ones(shape=(len(sample),), dtype=np.bool)
+            z_mask = np.ones(shape=(len(group_df),), dtype=np.bool)
 
-        df.loc[sample[z_mask].index, 'remove_neighbours'] = 1
+        df.loc[group_df[z_mask].index, 'remove_neighbours'] = 1
     df['remove_neighbours'] = df['remove_neighbours'].astype('int32')
     
     df['remove_radius'] = 0
