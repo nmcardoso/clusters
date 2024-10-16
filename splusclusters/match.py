@@ -370,34 +370,6 @@ class PhotozSpeczLegacyMatchStage(PipelineStage):
     # df = df[(df['f_z'] != 'KEEP(    )') & (df['e_z'] != 3.33E-4)]
     # print('Number of objects after flag z filter:', len(df))
     
-    prob_thresh = {
-      'stripe82': [0.98, 0.98, 0.92, 0.52, 0.32, 0.16],
-      'splus-s': [0.80, 0.50, 0.90, 0.70, 0.64, 0.42],
-      'splus-n': [0.90, 0.64, 0.92, 0.72, 0.58, 0.30],
-      'hydra': [0.90, 0.64, 0.92, 0.72, 0.58, 0.30],
-    }
-    r_range = [(0, 16), (16, 17), (17, 18), (18, 19), (19, 20), (20, 99)]
-    
-    df['remove_star'] = 0
-    for tile, probs in prob_thresh.items():
-      for r_auto, prob in zip(r_range, probs):
-        mask = (
-          df.Field.str.lower().str.startswith(tile) & 
-          df.r_auto.between(*r_auto) &
-          (df.PROB_GAL_GAIA < prob)
-        )
-        df.loc[mask, 'remove_star'] = 1
-    df['remove_star'] = df['remove_star'].astype('int32')
-    
-    df['remove_z'] = 0
-    mask = (
-      df.original_class_spec.isin(['GClstr', 'GGroup', 'GPair', 'GTrpl', 'PofG']) |
-      ((df['f_z'] == 'KEEP(    )') & (df['e_z'] == 3.33E-4))
-    )
-    df.loc[mask, 'remove_z'] = 1
-    df['remove_z'] = df['remove_z'].astype('int32')
-
-
     if 'xmatch_sep' in df.columns:
       del df['xmatch_sep']
     if 'xmatch_sep_1' in df.columns:
@@ -407,63 +379,102 @@ class PhotozSpeczLegacyMatchStage(PipelineStage):
     if 'xmatch_sep_final' in df.columns:
       del df['xmatch_sep_final']
     
+    # Flag: remove_z
+    df['remove_z'] = 0
+    mask = (
+      df.original_class_spec.isin(['GClstr', 'GGroup', 'GPair', 'GTrpl', 'PofG']) |
+      ((df['f_z'] == 'KEEP(    )') & (df['e_z'] == 3.33E-4))
+    )
+    df.loc[mask, 'remove_z'] = 1
+    df['remove_z'] = df['remove_z'].astype('int32')
     
-    df = selfmatch(df, 10*u.arcsec, 'identify')
     
+    # Flag: remove_star
+    df['remove_star'] = 0
+    if 'Field' in df.columns and 'r_auto' in df.columns:
+      prob_thresh = {
+        'stripe82': [0.98, 0.98, 0.92, 0.52, 0.32, 0.16],
+        'splus-s': [0.80, 0.50, 0.90, 0.70, 0.64, 0.42],
+        'splus-n': [0.90, 0.64, 0.92, 0.72, 0.58, 0.30],
+        'hydra': [0.90, 0.64, 0.92, 0.72, 0.58, 0.30],
+      }
+      r_range = [(0, 16), (16, 17), (17, 18), (18, 19), (19, 20), (20, 99)]
+      
+      for tile, probs in prob_thresh.items():
+        for r_auto, prob in zip(r_range, probs):
+          mask = (
+            df.Field.str.lower().str.startswith(tile) & 
+            df.r_auto.between(*r_auto) &
+            (df.PROB_GAL_GAIA < prob)
+          )
+          df.loc[mask, 'remove_star'] = 1
+    df['remove_star'] = df['remove_star'].astype('int32')
+    
+    
+    # Flag: remove_neighbours
     df['remove_neighbours'] = 0
-    if 'GroupID' in df.columns:
-      gids = df['GroupID'].unique()
-      gids = gids[gids > 0]
-      for group_id in gids:
-        group_df = df[(df['GroupID'] == group_id) & (df['remove_z'] != 1)]
-          
-        if len(group_df[~group_df.z.isna()]) == 1:
-          if len(group_df[~group_df.mag_r.isna()]) > 0:
-            z_mask = group_df.z.isna() | (group_df.mag_r != group_df.mag_r.min())
-          else:
-            z_mask = group_df.z.isna()
+    if 'mag_r' in df.columns and 'source' in df.columns and 'z' in df.columns:
+      df = selfmatch(df, 10*u.arcsec, 'identify')
+      
+      if 'GroupID' in df.columns:
+        gids = df['GroupID'].unique()
+        gids = gids[gids > 0]
+        for group_id in gids:
+          group_df = df[(df['GroupID'] == group_id) & (df['remove_z'] != 1)]
             
-        elif len(group_df[~group_df.z.isna()]) > 1:
-          if len(group_df[group_df.source.str.upper().str.contains('SDSSDR18_SDSS')]) == 1:
-            z_mask = ~group_df.source.str.upper().str.contains('SDSSDR18_SDSS')
-          elif len(group_df[group_df.source.str.upper().str.contains('SDSSDR18_SDSS')]) > 1:
+          if len(group_df[~group_df.z.isna()]) == 1:
             if len(group_df[~group_df.mag_r.isna()]) > 0:
-              z_mask = (
-                group_df.mag_r != group_df[group_df.source.str.upper().str.contains('SDSSDR18_SDSS')].mag_r.min()
-              )
+              z_mask = group_df.z.isna() | (group_df.mag_r != group_df.mag_r.min())
             else:
-              if len(~group_df.e_z.isna()) > 0:
+              z_mask = group_df.z.isna()
+              
+          elif len(group_df[~group_df.z.isna()]) > 1:
+            if len(group_df[group_df.source.str.upper().str.contains('SDSSDR18_SDSS')]) == 1:
+              z_mask = ~group_df.source.str.upper().str.contains('SDSSDR18_SDSS')
+            elif len(group_df[group_df.source.str.upper().str.contains('SDSSDR18_SDSS')]) > 1:
+              if len(group_df[~group_df.mag_r.isna()]) > 0:
                 z_mask = (
-                  group_df.e_z != group_df[group_df.source.str.upper().str.contains('SDSSDR18_SDSS')].e_z.min()
+                  group_df.mag_r != group_df[group_df.source.str.upper().str.contains('SDSSDR18_SDSS')].mag_r.min()
                 )
               else:
-                z_mask = np.zeros(shape=(len(group_df),), dtype=np.bool)
+                if len(~group_df.e_z.isna()) > 0:
+                  z_mask = (
+                    group_df.e_z != group_df[group_df.source.str.upper().str.contains('SDSSDR18_SDSS')].e_z.min()
+                  )
+                else:
+                  z_mask = np.zeros(shape=(len(group_df),), dtype=np.bool)
+            else:
+              if len(group_df[~group_df.mag_r.isna()]) > 0:
+                z_mask = group_df.mag_r.isna() | (group_df.mag_r != group_df.mag_r.min())
+              else:
+                if len(~group_df.e_z.isna()) > 0:
+                  z_mask = (group_df.e_z != group_df.e_z.min())
+                else:
+                  z_mask = np.zeros(shape=(len(group_df),), dtype=np.bool)
+          
           else:
             if len(group_df[~group_df.mag_r.isna()]) > 0:
-              z_mask = group_df.mag_r.isna() | (group_df.mag_r != group_df.mag_r.min())
+              z_mask = group_df.mag_r != group_df.mag_r.min()
             else:
-              if len(~group_df.e_z.isna()) > 0:
-                z_mask = (group_df.e_z != group_df.e_z.min())
-              else:
-                z_mask = np.zeros(shape=(len(group_df),), dtype=np.bool)
-        
-        else:
-          if len(group_df[~group_df.mag_r.isna()]) > 0:
-            z_mask = group_df.mag_r != group_df.mag_r.min()
-          else:
-            z_mask = np.ones(shape=(len(group_df),), dtype=np.bool)
+              z_mask = np.ones(shape=(len(group_df),), dtype=np.bool)
 
-        df.loc[group_df[z_mask].index, 'remove_neighbours'] = 1
+          df.loc[group_df[z_mask].index, 'remove_neighbours'] = 1
     df['remove_neighbours'] = df['remove_neighbours'].astype('int32')
     
+    
+    # Flag: remove_radius
     df['remove_radius'] = 0
-    df.loc[(df.PETRO_RADIUS == 0) & df.mag_r.isna() & df.z.isna(), 'remove_radius'] = 1
-    df.loc[(df.PETRO_RADIUS == df.PETRO_RADIUS.max()) & df.mag_r.isna() & df.z.isna(), 'remove_radius'] = 1
-    df.loc[((df.A < 1.5e-4) | (df.B < 1.5e-4)) & df.mag_r.isna() & df.z.isna(), 'remove_radius'] = 1
+    if 'PETRO_RADIUS' in df.columns and 'mag_r' in df.columns and 'A' in df.columns and 'B' in df.columns:
+      df.loc[(df.PETRO_RADIUS == 0) & df.mag_r.isna() & df.z.isna(), 'remove_radius'] = 1
+      df.loc[(df.PETRO_RADIUS == df.PETRO_RADIUS.max()) & df.mag_r.isna() & df.z.isna(), 'remove_radius'] = 1
+      df.loc[((df.A < 1.5e-4) | (df.B < 1.5e-4)) & df.mag_r.isna() & df.z.isna(), 'remove_radius'] = 1
     df['remove_radius'] = df['remove_radius'].astype('int32')
     
     if 'GroupSize' in df.columns:
       del df['GroupSize']
+    
+    
+    
     
     print('\nFinal columns:', *df.columns)
     
