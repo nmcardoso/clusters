@@ -769,8 +769,7 @@ class SpecDiffPlotStage(PlotStage):
     df_photoz_radial: pd.DataFrame | None,
     ax: plt.Axes,
   ):
-    df_all_radial = df_photoz_radial
-    if df_members is not None and df_interlopers is not None:
+    if df_members is not None and df_interlopers is not None and 'r_auto' in df_all_radial.columns and 'z' in df_all_radial.columns:
       members_match = fast_crossmatch(df_members, df_all_radial)
       members_match = members_match[~members_match.z.isna() & ~members_match.zml.isna()]
       if len(members_match) == 0: return
@@ -780,7 +779,7 @@ class SpecDiffPlotStage(PlotStage):
       interlopers_match = interlopers_match[~interlopers_match.z.isna() & ~interlopers_match.zml.isna()]
       if len(interlopers_match) == 0: return
       ax.scatter(interlopers_match.z, interlopers_match.zml - interlopers_match.z, c='tab:blue', s=5, alpha=0.85, label='Interlopers', rasterized=True)
-    elif df_all_radial is not None:
+    elif df_all_radial is not None and 'r_auto' in df_all_radial.columns and 'z' in df_all_radial.columns:
       df = df_all_radial[~df_all_radial.z.isna() & ~df_all_radial.zml.isna()]
       if len(df) == 0: return
       ax.scatter(df.z, df.zml - df.z, c='tab:blue', s=5, alpha=0.85, label='Objects', rasterized=True)
@@ -799,18 +798,18 @@ class SpecDiffPlotStage(PlotStage):
     df_photoz_radial: pd.DataFrame | None,
     ax: plt.Axes,
   ):
-    if df_members is not None and df_interlopers is not None:
-      members_match = fast_crossmatch(df_members, df_photoz_radial)
+    if df_members is not None and df_interlopers is not None and 'r_auto' in df_all_radial.columns and 'z' in df_all_radial.columns:
+      members_match = fast_crossmatch(df_members, df_all_radial)
       members_match = members_match[~members_match.z.isna() & ~members_match.zml.isna()]
       if len(members_match) == 0: return
       ax.scatter(members_match.r_auto, members_match.zml - members_match.z, c='tab:red', s=5, alpha=0.85, label='Members', rasterized=True)
       
-      interlopers_match = fast_crossmatch(df_interlopers, df_photoz_radial)
+      interlopers_match = fast_crossmatch(df_interlopers, df_all_radial)
       interlopers_match = interlopers_match[~interlopers_match.z.isna() & ~interlopers_match.zml.isna()]
       if len(interlopers_match) == 0: return
       ax.scatter(interlopers_match.r_auto, interlopers_match.zml - interlopers_match.z, c='tab:blue', s=5, alpha=0.85, label='Interlopers', rasterized=True)
-    elif df_photoz_radial is not None:
-      df = df_photoz_radial[~df_photoz_radial.z.isna() & ~df_photoz_radial.zml.isna()]
+    elif df_all_radial is not None and 'r_auto' in df_all_radial.columns and 'z' in df_all_radial.columns:
+      df = df_all_radial[~df_all_radial.z.isna() & ~df_all_radial.zml.isna()]
       if len(df) == 0: return
       ax.scatter(df.r_auto, df.zml - df.z, c='tab:blue', s=5, alpha=0.85, label='Objects', rasterized=True)
     ax.legend()
@@ -828,18 +827,18 @@ class SpecDiffPlotStage(PlotStage):
     df_photoz_radial: pd.DataFrame | None,
     ax: plt.Axes,
   ):
-    if df_members is not None and df_interlopers is not None:
-      members_match = fast_crossmatch(df_members, df_photoz_radial)
+    if df_members is not None and df_interlopers is not None and 'r_auto' in df_all_radial.columns and 'z' in df_all_radial.columns:
+      members_match = fast_crossmatch(df_members, df_all_radial)
       members_match = members_match[~members_match.z.isna() & ~members_match.zml.isna()]
       if len(members_match) == 0: return
       ax.scatter(members_match.odds, members_match.zml - members_match.z, c='tab:red', s=5, alpha=0.85, label='Members', rasterized=True)
       
-      interlopers_match = fast_crossmatch(df_interlopers, df_photoz_radial)
+      interlopers_match = fast_crossmatch(df_interlopers, df_all_radial)
       interlopers_match = interlopers_match[~interlopers_match.z.isna() & ~interlopers_match.zml.isna()]
       if len(interlopers_match) == 0: return
       ax.scatter(interlopers_match.odds, interlopers_match.zml - interlopers_match.z, c='tab:blue', s=5, alpha=0.85, label='Interlopers', rasterized=True)
-    elif df_photoz_radial is not None:
-      df = df_photoz_radial[~df_photoz_radial.z.isna() & ~df_photoz_radial.zml.isna()]
+    elif df_all_radial is not None and 'r_auto' in df_all_radial.columns and 'z' in df_all_radial.columns:
+      df = df_all_radial[~df_all_radial.z.isna() & ~df_all_radial.zml.isna()]
       if len(df) == 0: return
       ax.scatter(df.odds, df.zml - df.z, c='tab:blue', s=5, alpha=0.85, label='Objects', rasterized=True)
     ax.legend()
@@ -857,18 +856,18 @@ class SpecDiffPlotStage(PlotStage):
     df_photoz_radial: pd.DataFrame | None,
     ax: plt.Axes,
   ):
-    if df_members is not None and df_interlopers is not None:
-      members_match = fast_crossmatch(df_members, df_photoz_radial)
+    if df_members is not None and df_interlopers is not None and 'r_auto' in df_all_radial.columns and 'z' in df_all_radial.columns:
+      members_match = fast_crossmatch(df_members, df_all_radial)
       members_match = members_match[~members_match.z.isna() & ~members_match.zml.isna()]
       if len(members_match) == 0: return
       ax.scatter(members_match.radius_Mpc, members_match.zml - members_match.z, c='tab:red', s=5, alpha=0.85, label='Members', rasterized=True)
       
-      interlopers_match = fast_crossmatch(df_interlopers, df_photoz_radial)
+      interlopers_match = fast_crossmatch(df_interlopers, df_all_radial)
       interlopers_match = interlopers_match[~interlopers_match.z.isna() & ~interlopers_match.zml.isna()]
       if len(interlopers_match) == 0: return
       ax.scatter(interlopers_match.radius_Mpc, interlopers_match.zml - interlopers_match.z, c='tab:blue', s=5, alpha=0.85, label='Interlopers', rasterized=True)
-    elif df_photoz_radial is not None:
-      df = df_photoz_radial[~df_photoz_radial.z.isna() & ~df_photoz_radial.zml.isna()]
+    elif df_all_radial is not None and 'r_auto' in df_all_radial.columns and 'z' in df_all_radial.columns:
+      df = df_all_radial[~df_all_radial.z.isna() & ~df_all_radial.zml.isna()]
       if len(df) == 0: return
       ax.scatter(df.radius_Mpc, df.zml - df.z, c='tab:blue', s=5, alpha=0.85, label='Objects', rasterized=True)
     ax.legend()

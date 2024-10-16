@@ -391,7 +391,7 @@ class PhotozSpeczLegacyMatchStage(PipelineStage):
     
     # Flag: remove_star
     df['remove_star'] = 0
-    if 'Field' in df.columns and 'r_auto' in df.columns:
+    if 'Field' in df.columns and 'r_auto' in df.columns and 'PROB_GAL_GAIA' in df.columns:
       prob_thresh = {
         'stripe82': [0.98, 0.98, 0.92, 0.52, 0.32, 0.16],
         'splus-s': [0.80, 0.50, 0.90, 0.70, 0.64, 0.42],
