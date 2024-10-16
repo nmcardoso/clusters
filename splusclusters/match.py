@@ -424,18 +424,18 @@ class PhotozSpeczLegacyMatchStage(PipelineStage):
             z_mask = group_df.z.isna()
             
         elif len(group_df[~group_df.z.isna()]) > 1:
-          if len(group_df[group_df.source.str.upper().str.contains('_SDSSDR18_')]) == 1:
-            z_mask = ~group_df.source.str.upper().str.contains('_SDSSDR18_')
-          elif len(group_df[group_df.source.str.upper().str.contains('_SDSSDR18_')]) > 1:
+          if len(group_df[group_df.source.str.upper().str.contains('SDSSDR18_SDSS')]) == 1:
+            z_mask = ~group_df.source.str.upper().str.contains('SDSSDR18_SDSS')
+          elif len(group_df[group_df.source.str.upper().str.contains('SDSSDR18_SDSS')]) > 1:
             if len(group_df[~group_df.mag_r.isna()]) > 0:
               z_mask = (
-                ~group_df.source.str.upper().str.contains('_SDSSDR18_') & 
+                ~group_df.source.str.upper().str.contains('SDSSDR18_SDSS') & 
                 (group_df.mag_r.isna() | (group_df.mag_r != group_df.mag_r.min()))
               )
             else:
               if len(~group_df.e_z.isna()) > 0:
                 z_mask = (
-                  ~group_df.source.str.upper().str.contains('_SDSSDR18_') & 
+                  ~group_df.source.str.upper().str.contains('SDSSDR18_SDSS') & 
                   (group_df.e_z != group_df.e_z.min())
                 )
               else:
