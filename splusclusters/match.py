@@ -439,7 +439,7 @@ class PhotozSpeczLegacyMatchStage(PipelineStage):
                   (sample.e_z != sample.e_z.min())
                 )
               else:
-                z_mask = np.zeros(shape=(len(group),), dtype=np.bool)
+                z_mask = np.zeros(shape=(len(sample),), dtype=np.bool)
           else:
             if len(sample[~sample.mag_r.isna()]) > 0:
               z_mask = sample.mag_r.isna() | (sample.mag_r != sample.mag_r.min())
@@ -447,7 +447,7 @@ class PhotozSpeczLegacyMatchStage(PipelineStage):
               if len(~sample.e_z.isna()) > 0:
                 z_mask = (sample.e_z != sample.e_z.min())
               else:
-                z_mask = np.zeros(shape=(len(group),), dtype=np.bool)
+                z_mask = np.zeros(shape=(len(sample),), dtype=np.bool)
         
         else:
           if len(sample[~sample.mag_r.isna()]) > 0:
