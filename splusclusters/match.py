@@ -419,9 +419,13 @@ class PhotozSpeczLegacyMatchStage(PipelineStage):
           
         if len(sample[~sample.z.isna()]) == 1:
           if str(group) == '817':
-            print('==1')
+            print(sample)
           if len(sample[~sample.mag_r.isna()]) > 0:
             z_mask = sample.z.isna() | (sample.mag_r != sample.mag_r.min())
+            print('\nindex:', sample.index)
+            print('sample.z.isna()', sample.z.isna())
+            print('sample.mag_r != sample.mag_r.min()', sample.mag_r != sample.mag_r.min())
+            print('z_mask', z_mask)
           else:
             z_mask = sample.z.isna()
             
