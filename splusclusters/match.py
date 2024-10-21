@@ -11,6 +11,7 @@ from astropy import units as u
 from astropy.coordinates import SkyCoord
 
 from splusclusters.configs import configs
+from splusclusters.loaders import remove_bad_objects
 from splusclusters.utils import Timming
 
 
@@ -378,6 +379,15 @@ class PhotozSpeczLegacyMatchStage(PipelineStage):
       del df['xmatch_sep_2']
     if 'xmatch_sep_final' in df.columns:
       del df['xmatch_sep_final']
+      
+    
+    # Filter bad objects after visual inspection
+    print('Removing bad objects classified by visual inspection')
+    l = len(df)
+    df = remove_bad_objects(df)
+    print('Number of objects before filter:', l)
+    print('Number of objects after filter:', len(df)) 
+    
     
     # Flag: remove_z
     df['remove_z'] = 0
