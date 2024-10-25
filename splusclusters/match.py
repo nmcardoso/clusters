@@ -233,7 +233,7 @@ class PhotozSpeczLegacyMatchStage(PipelineStage):
       df['ra_final'] = df['ra_final'].fillna(df['ra_photo'])
       df['dec_final'] = df['dec_final'].fillna(df['dec_r'])
       df['dec_final'] = df['dec_final'].fillna(df['dec_photo'])
-      df = selfmatch(df, 1*u.arcsec, 'keep0', 'ra_final', 'dec_final')
+      df = selfmatch(df, 1*u.arcsec, 'keep0', 'ra_final', 'dec_final', fmt='csv')
       # del df['ra_r']
       # del df['ra_photo']
       # del df['dec_r']
