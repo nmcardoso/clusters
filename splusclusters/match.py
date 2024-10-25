@@ -198,7 +198,7 @@ class PhotozSpeczLegacyMatchStage(PipelineStage):
       df_legacy = df_legacy.rename(columns={ra: 'ra_legacy', dec: 'dec_legacy'})
     if len(df_r) > 0:
       ra, dec = guess_coords_columns(df_r)
-      df_r = df_r.rename(columns={ra: 'ra_r', dec: 'dec_r', 'z': 'z_r'})
+      df_r = df_r.rename(columns={ra: 'ra_r', dec: 'dec_r'})
     
     df_spec['f_z'] = df_spec['f_z'].astype('str')
     df_spec['original_class_spec'] = df_spec['original_class_spec'].astype('str')
