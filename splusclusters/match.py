@@ -262,8 +262,8 @@ class PhotozSpeczLegacyMatchStage(PipelineStage):
         ra2='ra_legacy',
         dec2='dec_legacy',
       )
-      df['ra_final'] = df['ra_final'].fillna(df['ra_legacy'])
-      df['dec_final'] = df['dec_final'].fillna(df['dec_legacy'])
+      # df['ra_final'] = df['ra_final'].fillna(df['ra_legacy'])
+      # df['dec_final'] = df['dec_final'].fillna(df['dec_legacy'])
       del df['ra_legacy']
       del df['dec_legacy']
     else:
