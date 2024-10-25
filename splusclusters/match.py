@@ -211,22 +211,22 @@ class PhotozSpeczLegacyMatchStage(PipelineStage):
     df = None
     t = Timming()
     if df_ret is not None and len(df_ret) > 0 and len(df_photo) > 0:
-      print('Crossmatch 1: spec-members UNION photo-z')
+      print('Crossmatch 1: photo-z UNION spec-members')
       print('spec-members columns:')
       print(*df_r.columns, sep=', ')
       print('photo-z columns:')
       print(*df_photo, sep=', ')
       df = crossmatch(
-        table1=df_r,
-        table2=df_photo,
+        table1=df_photo,
+        table2=df_r,
         join='1or2',
-        ra1='ra_r',
-        dec1='dec_r',
-        ra2='ra_photo',
-        dec2='dec_photo',
+        ra1='ra_photo',
+        dec1='dec_photo',
+        ra2='ra_r',
+        dec2='dec_r',
       )
-      df['ra_final'] = np.nan
-      df['dec_final'] = np.nan
+      df.insert(0, 'ra_final', np.nan)
+      df.insert(1, 'dec_final', np.nan)
       df['ra_final'] = df['ra_final'].fillna(df['ra_photo'])
       df['ra_final'] = df['ra_final'].fillna(df['ra_r'])
       df['dec_final'] = df['dec_final'].fillna(df['dec_photo'])
