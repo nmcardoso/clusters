@@ -232,10 +232,10 @@ class PhotozSpeczLegacyMatchStage(PipelineStage):
       df['ra_final'] = df['ra_final'].fillna(df['ra_photo'])
       df['dec_final'] = df['dec_final'].fillna(df['dec_r'])
       df['dec_final'] = df['dec_final'].fillna(df['dec_photo'])
-      del df['ra_r']
-      del df['ra_photo']
-      del df['dec_r']
-      del df['dec_photo']
+      # del df['ra_r']
+      # del df['ra_photo']
+      # del df['dec_r']
+      # del df['dec_photo']
     else:
       pass
     
@@ -264,8 +264,8 @@ class PhotozSpeczLegacyMatchStage(PipelineStage):
       )
       # df['ra_final'] = df['ra_final'].fillna(df['ra_legacy'])
       # df['dec_final'] = df['dec_final'].fillna(df['dec_legacy'])
-      del df['ra_legacy']
-      del df['dec_legacy']
+      # del df['ra_legacy']
+      # del df['dec_legacy']
     else:
       df['type'] = np.nan
       df['mag_r'] = np.nan
@@ -321,8 +321,8 @@ class PhotozSpeczLegacyMatchStage(PipelineStage):
           del df[f'{col}_spec_all']
       df['f_z'] = df['f_z'].astype('str')
       df['original_class_spec'] = df['original_class_spec'].astype('str')
-      del df[spec_all_ra]
-      del df[spec_all_dec]
+      # del df[spec_all_ra]
+      # del df[spec_all_dec]
     
     print('\ncolumns after match:')
     print(*df, sep=', ')
