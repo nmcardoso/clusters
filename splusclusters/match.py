@@ -225,12 +225,12 @@ class PhotozSpeczLegacyMatchStage(PipelineStage):
         ra2='ra_photo',
         dec2='dec_photo',
       )
-      df['ra'] = np.nan
-      df['dec'] = np.nan
-      df['ra'] = df['ra'].fillna(df['ra_r'])
-      df['ra'] = df['ra'].fillna(df['ra_photo'])
-      df['dec'] = df['dec'].fillna(df['dec_r'])
-      df['dec'] = df['dec'].fillna(df['dec_photo'])
+      df['ra_final'] = np.nan
+      df['dec_final'] = np.nan
+      df['ra_final'] = df['ra_final'].fillna(df['ra_photo'])
+      df['ra_final'] = df['ra_final'].fillna(df['ra_r'])
+      df['dec_final'] = df['dec_final'].fillna(df['dec_photo'])
+      df['dec_final'] = df['dec_final'].fillna(df['dec_r'])
       del df['ra_r']
       del df['ra_photo']
       del df['dec_r']
@@ -256,13 +256,13 @@ class PhotozSpeczLegacyMatchStage(PipelineStage):
         table1=df,
         table2=df_legacy,
         join='all1',
-        ra1='ra',
-        dec1='dec',
+        ra1='ra_final',
+        dec1='dec_final',
         ra2='ra_legacy',
         dec2='dec_legacy',
       )
-      df['ra'] = df['ra'].fillna(df['ra_legacy'])
-      df['dec'] = df['dec'].fillna(df['dec_legacy'])
+      df['ra_final'] = df['ra_final'].fillna(df['ra_legacy'])
+      df['dec_final'] = df['dec_final'].fillna(df['dec_legacy'])
       del df['ra_legacy']
       del df['dec_legacy']
     else:
@@ -290,6 +290,8 @@ class PhotozSpeczLegacyMatchStage(PipelineStage):
     print('\nCrossmatch 3: match LEFT OUTER JOIN spec-z-all')
     df_spec_all = self.get_data('df_spec')
     if df is not None and df_spec_all is not None:
+      print('spec all columns:')
+      print(*df_spec_all.columns, sep=', ')
       n_redshift = len(df[~df.z.isna()])
       df_spec_all['f_z'] = df_spec_all['f_z'].astype('str')
       df_spec_all['original_class_spec'] = df_spec_all['original_class_spec'].astype('str')
@@ -297,8 +299,8 @@ class PhotozSpeczLegacyMatchStage(PipelineStage):
       df = crossmatch(
         df,
         df_spec_all,
-        ra1='ra',
-        dec1='dec',
+        ra1='ra_final',
+        dec1='dec_final',
         suffix1='_final',
         ra2=spec_all_ra,
         dec2=spec_all_dec,
@@ -331,7 +333,7 @@ class PhotozSpeczLegacyMatchStage(PipelineStage):
     if 'flag_member' in df.columns:
       df.loc[~df.flag_member.isin([0, 1]), 'flag_member'] = -1
 
-    df = df.rename(columns={'ra_photo': 'ra', 'dec_photo': 'dec'})
+    df = df.rename(columns={'ra_final': 'ra', 'dec_final': 'dec'})
     # photoz_cols = ['ra_photo', 'dec_photo', 'zml', 'odds']
     # if 'r_auto' in df.columns:
     #   photoz_cols.append('r_auto')
