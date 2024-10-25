@@ -217,20 +217,20 @@ class PhotozSpeczLegacyMatchStage(PipelineStage):
       print('photo-z columns:')
       print(*df_photo, sep=', ')
       df = crossmatch(
-        table1=df_photo,
-        table2=df_r,
+        table1=df_r,
+        table2=df_photo,
         join='1or2',
-        ra1='ra_photo',
-        dec1='dec_photo',
-        ra2='ra_r',
-        dec2='dec_r',
+        ra1='ra_r',
+        dec1='dec_r',
+        ra2='ra_photo',
+        dec2='dec_photo',
       )
       df.insert(0, 'ra_final', np.nan)
       df.insert(1, 'dec_final', np.nan)
-      df['ra_final'] = df['ra_final'].fillna(df['ra_photo'])
       df['ra_final'] = df['ra_final'].fillna(df['ra_r'])
-      df['dec_final'] = df['dec_final'].fillna(df['dec_photo'])
+      df['ra_final'] = df['ra_final'].fillna(df['ra_photo'])
       df['dec_final'] = df['dec_final'].fillna(df['dec_r'])
+      df['dec_final'] = df['dec_final'].fillna(df['dec_photo'])
       del df['ra_r']
       del df['ra_photo']
       del df['dec_r']
