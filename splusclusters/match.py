@@ -364,7 +364,7 @@ class PhotozSpeczLegacyMatchStage(PipelineStage):
     # Filter bad objects after visual inspection
     print('\nRemoving bad objects classified by visual inspection')
     l = len(df)
-    df = remove_bad_objects(df)
+    # df = remove_bad_objects(df)
     print('Number of objects before filter:', l)
     print('Number of objects after filter:', len(df))
     
