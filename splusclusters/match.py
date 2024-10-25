@@ -296,7 +296,7 @@ class PhotozSpeczLegacyMatchStage(PipelineStage):
       n_redshift = len(df[~df.z.isna()])
       df_spec_all['f_z'] = df_spec_all['f_z'].astype('str')
       df_spec_all['original_class_spec'] = df_spec_all['original_class_spec'].astype('str')
-      spec_all_ra, spec_all_dec = guess_coords_columns(df_spec_all)
+      # spec_all_ra, spec_all_dec = guess_coords_columns(df_spec_all)
       df = crossmatch(
         df,
         df_spec_all,
