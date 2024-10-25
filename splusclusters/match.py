@@ -463,7 +463,8 @@ class PhotozSpeczLegacyMatchStage(PipelineStage):
       del df['GroupSize']
     
     
-    print('\nFinal columns:', *df.columns)
+    print('\nFinal columns:')
+    print(*df.columns, sep=', ')
     
     write_table(df, out_flags_path)
     
