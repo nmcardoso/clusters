@@ -216,15 +216,17 @@ class PhotozSpeczLegacyMatchStage(PipelineStage):
       print(*df_r.columns, sep=', ')
       print('photo-z columns:')
       print(*df_photo, sep=', ')
-      df = crossmatch(
-        table1=df_r,
-        table2=df_photo,
-        join='1or2',
-        ra1='ra_r',
-        dec1='dec_r',
-        ra2='ra_photo',
-        dec2='dec_photo',
-      )
+      df = concat_tables([df_r, df_photo])
+      df = selfmatch(df, 1*u.arcsec, 'keep0')
+      # df = crossmatch(
+      #   table1=df_r,
+      #   table2=df_photo,
+      #   join='1or2',
+      #   ra1='ra_r',
+      #   dec1='dec_r',
+      #   ra2='ra_photo',
+      #   dec2='dec_photo',
+      # )
       df = df[[*df_photo.columns, *df_r.columns]]
       df.insert(0, 'ra_final', np.nan)
       df.insert(1, 'dec_final', np.nan)
@@ -364,7 +366,7 @@ class PhotozSpeczLegacyMatchStage(PipelineStage):
     # Filter bad objects after visual inspection
     print('\nRemoving bad objects classified by visual inspection')
     l = len(df)
-    # df = remove_bad_objects(df)
+    df = remove_bad_objects(df)
     print('Number of objects before filter:', l)
     print('Number of objects after filter:', len(df))
     
