@@ -303,8 +303,8 @@ class PhotozSpeczLegacyMatchStage(PipelineStage):
         ra1='ra_final',
         dec1='dec_final',
         suffix1='_final',
-        ra2=spec_all_ra,
-        dec2=spec_all_dec,
+        ra2='ra_spec_all',
+        dec2='dec_spec_all',
         suffix2='_spec_all',
         join='all1',
       )
