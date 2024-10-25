@@ -225,6 +225,7 @@ class PhotozSpeczLegacyMatchStage(PipelineStage):
         ra2='ra_photo',
         dec2='dec_photo',
       )
+      df = df[[*df_photo.columns, *df_r.columns]]
       df.insert(0, 'ra_final', np.nan)
       df.insert(1, 'dec_final', np.nan)
       df['ra_final'] = df['ra_final'].fillna(df['ra_r'])
