@@ -319,6 +319,7 @@ class LoadClusterInfoStage(PipelineStage):
     
     base_path = configs.MEMBERS_V5_FOLDER if self.version == 5 else configs.MEMBERS_V6_FOLDER
     ret_path = base_path / f'cluster.gals.sel.shiftgap.iter.{str(cls_id).zfill(5)}'
+    print('ret_path:', str(ret_path))
     if ret_path.exists():
       col_names = [
         'ra', 'dec', 'z', 'z_err', 'v', 'v_err', 'radius_deg', 
