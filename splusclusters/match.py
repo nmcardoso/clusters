@@ -237,8 +237,10 @@ class PhotozSpeczLegacyMatchStage(PipelineStage):
       
       for col in df.columns:
         if df[col].dtype == 'int64' or df[col].dtype == 'int64[pyarrow]':
+          df[col].replace(r'^\s*$', np.nan, regex=True, inplace=True)
           df[col] = df[col].astype('int32')
         if df[col].dtype == 'float64' or df[col].dtype == 'float64[pyarrow]':
+          df[col].replace(r'^\s*$', np.nan, regex=True, inplace=True)
           df[col] = df[col].astype('float64')
           
       # del df['ra_r']
