@@ -238,7 +238,9 @@ class PhotozSpeczLegacyMatchStage(PipelineStage):
       for col in df.columns:
         if df[col].dtype == 'int64' or df[col].dtype == 'int64[pyarrow]':
           df[col] = df[col].astype('int32')
-      
+        if df[col].dtype == 'float64' or df[col].dtype == 'float64[pyarrow]':
+          df[col] = df[col].astype('float64')
+          
       # del df['ra_r']
       # del df['ra_photo']
       # del df['dec_r']
