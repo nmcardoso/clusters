@@ -236,7 +236,7 @@ class PhotozSpeczLegacyMatchStage(PipelineStage):
       # df = selfmatch(df, 1*u.arcsec, 'keep0', 'ra_final', 'dec_final', fmt='csv')
       
       for col in df.columns:
-        if df[col].dtype == 'int64' or 'int64[pyarrow]':
+        if df[col].dtype == 'int64' or df[col].dtype == 'int64[pyarrow]':
           df[col] = df[col].astype('int32')
       
       # del df['ra_r']
