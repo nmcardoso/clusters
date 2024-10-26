@@ -241,7 +241,7 @@ class PhotozSpeczLegacyMatchStage(PipelineStage):
       pass
     
     print('\ncolumns after match:')
-    print(*df, sep=', ')
+    print(*df.columns, sep=', ')
     print(f'\nCrossmatch 1 finished. Duration: {t.end()}')
     print('Objects with photo-z only:', len(df[~df.zml.isna() & df.z.isna()]))
     print('Objects with spec-z only:', len(df[df.zml.isna() & ~df.z.isna()]))
@@ -273,7 +273,7 @@ class PhotozSpeczLegacyMatchStage(PipelineStage):
       df['mag_r'] = np.nan
       
     print('\ncolumns after match:')
-    print(*df, sep=', ')
+    print(*df.columns, sep=', ')
     print(f'\nCrossmatch 2 finished. Duration: {t.end()}')
     print('Objects with legacy morpho:', len(df[~df.type.isna() | (df.type != '')]))
     print('Objects without legacy morpho:', len(df[df.type.isna() | (df.type == '')]))
@@ -330,7 +330,7 @@ class PhotozSpeczLegacyMatchStage(PipelineStage):
       # del df[spec_all_dec]
     
     print('\ncolumns after match:')
-    print(*df, sep=', ')
+    print(*df.columns, sep=', ')
     print(f'\nCrossmatch 3 finished. Duration: {t.end()}')
     print('Inserted redshifts:', len(df[~df.z.isna()]) - n_redshift)
     print('Number of objects:', len(df))
