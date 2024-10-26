@@ -217,15 +217,6 @@ class PhotozSpeczLegacyMatchStage(PipelineStage):
       print('photo-z columns:')
       print(*df_photo, sep=', ')
       df = concat_tables([df_r, df_photo])
-      # df = crossmatch(
-      #   table1=df_r,
-      #   table2=df_photo,
-      #   join='1or2',
-      #   ra1='ra_r',
-      #   dec1='dec_r',
-      #   ra2='ra_photo',
-      #   dec2='dec_photo',
-      # )
       df = df[[*df_photo.columns, *df_r.columns]]
       df.insert(0, 'ra_final', np.nan)
       df.insert(1, 'dec_final', np.nan)
@@ -233,7 +224,6 @@ class PhotozSpeczLegacyMatchStage(PipelineStage):
       df['ra_final'] = df['ra_final'].fillna(df['ra_photo'])
       df['dec_final'] = df['dec_final'].fillna(df['dec_r'])
       df['dec_final'] = df['dec_final'].fillna(df['dec_photo'])
-      # df = selfmatch(df, 1*u.arcsec, 'keep0', 'ra_final', 'dec_final', fmt='csv')
       
       for col in df.columns:
         if df[col].dtype == 'int64' or df[col].dtype == 'int64[pyarrow]':
@@ -243,10 +233,10 @@ class PhotozSpeczLegacyMatchStage(PipelineStage):
           df[col].replace(r'^\s*$', np.nan, regex=True, inplace=True)
           df[col] = df[col].astype('float64')
           
-      # del df['ra_r']
-      # del df['ra_photo']
-      # del df['dec_r']
-      # del df['dec_photo']
+      del df['ra_r']
+      del df['ra_photo']
+      del df['dec_r']
+      del df['dec_photo']
     else:
       pass
     
@@ -276,8 +266,8 @@ class PhotozSpeczLegacyMatchStage(PipelineStage):
       )
       # df['ra_final'] = df['ra_final'].fillna(df['ra_legacy'])
       # df['dec_final'] = df['dec_final'].fillna(df['dec_legacy'])
-      # del df['ra_legacy']
-      # del df['dec_legacy']
+      del df['ra_legacy']
+      del df['dec_legacy']
     else:
       df['type'] = np.nan
       df['mag_r'] = np.nan
@@ -334,6 +324,8 @@ class PhotozSpeczLegacyMatchStage(PipelineStage):
           del df[f'{col}_spec_all']
       df['f_z'] = df['f_z'].astype('str')
       df['original_class_spec'] = df['original_class_spec'].astype('str')
+      del df['ra_spec_all']
+      del df['dec_spec_all']
       # del df[spec_all_ra]
       # del df[spec_all_dec]
     
