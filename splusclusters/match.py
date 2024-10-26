@@ -234,6 +234,11 @@ class PhotozSpeczLegacyMatchStage(PipelineStage):
       df['dec_final'] = df['dec_final'].fillna(df['dec_r'])
       df['dec_final'] = df['dec_final'].fillna(df['dec_photo'])
       # df = selfmatch(df, 1*u.arcsec, 'keep0', 'ra_final', 'dec_final', fmt='csv')
+      
+      for col in df.columns:
+        if df[col].dtype == 'int64':
+          df[col] = df[col].astype('int32')
+      
       # del df['ra_r']
       # del df['ra_photo']
       # del df['dec_r']
