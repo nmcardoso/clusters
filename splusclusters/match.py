@@ -428,7 +428,7 @@ class PhotozSpeczLegacyMatchStage(PipelineStage):
           if len(group_df[group_df.flag_member.isin([0, 1])]) > 0:
             z_mask = group_df[~group_df.flag_member.isin([0, 1])]
           
-          if len(group_df[~group_df.z.isna()]) == 1:
+          elif len(group_df[~group_df.z.isna()]) == 1:
             if len(group_df[~group_df.mag_r.isna()]) > 0:
               z_mask = group_df.z.isna() | (group_df.mag_r != group_df.mag_r.min())
             else:
