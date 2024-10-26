@@ -273,7 +273,7 @@ class PhotozSpeczLegacyMatchStage(PipelineStage):
         dec1='dec_final',
         ra2='ra_legacy',
         dec2='dec_legacy',
-        # fmt='csv',
+        fmt='csv',
       )
       # df['ra_final'] = df['ra_final'].fillna(df['ra_legacy'])
       # df['dec_final'] = df['dec_final'].fillna(df['dec_legacy'])
@@ -320,6 +320,7 @@ class PhotozSpeczLegacyMatchStage(PipelineStage):
         dec2='dec_spec_all',
         suffix2='_spec_all',
         join='all1',
+        fmt='csv',
       )
       cols = [
         'z', 'e_z', 'f_z', 'class_spec',
