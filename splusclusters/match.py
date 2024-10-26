@@ -167,6 +167,34 @@ class StarsRemovalStage(PipelineStage):
 class PhotozSpeczLegacyMatchStage(PipelineStage):
   def __init__(self, overwrite: bool = False):
     self.overwrite = overwrite
+    self.photo_columns = [
+      'RA', 'DEC', 'A', 'B', 'THETA', 'ELLIPTICITY', 'ELONGATION',
+      'PETRO_RADIUS', 'FLUX_RADIUS_50', 'FLUX_RADIUS_90', 
+      'MU_MAX_g', 'MU_MAX_r', 'BACKGROUND_g', 'BACKGROUND_r',
+      's2n_g_auto', 's2n_r_auto',
+      # auto mags
+      'J0378_auto', 'J0395_auto', 'J0410_auto', 'J0430_auto', 'J0515_auto',
+      'J0660_auto', 'J0861_auto', 'g_auto', 'i_auto', 'r_auto', 'u_auto', 
+      'z_auto',
+      # PStotal mags
+      'J0378_PStotal', 'J0395_PStotal', 'J0410_PStotal', 'J0430_PStotal', 
+      'J0515_PStotal', 'J0660_PStotal', 'J0861_PStotal', 'g_PStotal', 
+      'i_PStotal', 'r_PStotal', 'u_PStotal', 'z_PStotal',
+      # auto error
+      'e_J0378_auto', 'e_J0395_auto', 'e_J0410_auto', 'e_J0430_auto', 
+      'e_J0515_auto', 'e_J0660_auto', 'e_J0861_auto', 'e_g_auto', 'e_i_auto', 
+      'e_r_auto', 'e_u_auto', 'e_z_auto',
+      # PStotal error
+      'e_J0378_PStotal', 'e_J0395_PStotal', 'e_J0410_PStotal', 'e_J0430_PStotal', 
+      'e_J0515_PStotal', 'e_J0660_PStotal', 'e_J0861_PStotal', 'e_g_PStotal', 
+      'e_i_PStotal', 'e_r_PStotal', 'e_u_PStotal', 'e_z_PStotal',
+      # R mags
+      'r_iso', 'r_petro', 'r_aper_3', 'r_aper_6', 'Field'
+    ]
+    self.returned_columns = [
+      'ra', 'dec', 'z', 'z_err', 'v', 'v_err', 'radius_deg', 
+      'radius_Mpc', 'v_offset', 'flag_member'
+    ]
     
   
   def run(
@@ -237,8 +265,14 @@ class PhotozSpeczLegacyMatchStage(PipelineStage):
       del df['ra_photo']
       del df['dec_r']
       del df['dec_photo']
-    else:
-      pass
+    elif df_ret is not None and len(df_ret) > 0:
+      df = df_ret
+      for c in self.photo_columns:
+        df[c] = np.nan
+    elif df_photo is not None and len(df_photo) > 0:
+      df = df_photo
+      for c in self.returned_columns:
+        df[c] = np.nan
     
     print('\ncolumns after match:')
     print(*df.columns, sep=', ')
