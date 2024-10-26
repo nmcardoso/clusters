@@ -236,7 +236,6 @@ class PhotozSpeczLegacyMatchStage(PipelineStage):
       # df = selfmatch(df, 1*u.arcsec, 'keep0', 'ra_final', 'dec_final', fmt='csv')
       
       for col in df.columns:
-        print(col, ':', df[col].dtype)
         if df[col].dtype == 'int64' or df[col].dtype == 'int64[pyarrow]':
           df[col].replace(r'^\s*$', np.nan, regex=True, inplace=True)
           df[col] = df[col].astype('int32')
@@ -425,7 +424,10 @@ class PhotozSpeczLegacyMatchStage(PipelineStage):
         gids = gids[gids > 0]
         for group_id in gids:
           group_df = df[(df['GroupID'] == group_id) & (df['remove_z'] != 1)]
-            
+          
+          if len(group_df[group_df.flag_member.isin([0, 1])]) > 0:
+            z_mask = group_df[~group_df.flag_member.isin([0, 1])]
+          
           if len(group_df[~group_df.z.isna()]) == 1:
             if len(group_df[~group_df.mag_r.isna()]) > 0:
               z_mask = group_df.z.isna() | (group_df.mag_r != group_df.mag_r.min())
