@@ -278,7 +278,11 @@ class PhotozSpeczLegacyMatchStage(PipelineStage):
       )
       
       df = concat_tables([df1, df2])
-      df = df[[*df2, *df1]]
+      df = df[[*df2.columns, *df1.columns]]
+      
+      print(df.coluns)
+      print(df)
+      print(df['ra_photo'])
       
       # df = concat_tables([df, df_photo])
       # df = df[[*df_photo.columns, *df_r.columns]]
