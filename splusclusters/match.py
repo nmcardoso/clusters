@@ -257,7 +257,9 @@ class PhotozSpeczLegacyMatchStage(PipelineStage):
         dec2='dec_photo',
         join='all1'
       )
-
+      del df1['ra_photo']
+      del df2['ra_photo']
+      
       df_spec_all = radial_search(
         center, 
         self.get_data('df_spec'), 
@@ -276,13 +278,11 @@ class PhotozSpeczLegacyMatchStage(PipelineStage):
         dec2='dec_spec_all',
         join='all1'
       )
+      del df2['ra_spec_all']
+      del df2['dec_spec_all']
       
       df = concat_tables([df1, df2])
       df = df[[*df2.columns, *df1.columns]]
-      
-      print(df.columns)
-      print(df)
-      print(df['ra_photo'])
       
       # df = concat_tables([df, df_photo])
       # df = df[[*df_photo.columns, *df_r.columns]]
@@ -403,8 +403,8 @@ class PhotozSpeczLegacyMatchStage(PipelineStage):
       
     df['f_z'] = df['f_z'].astype('str')
     df['original_class_spec'] = df['original_class_spec'].astype('str')
-    del df['ra_spec_all']
-    del df['dec_spec_all']
+    # del df['ra_spec_all']
+    # del df['dec_spec_all']
     
     print('\ncolumns after match:')
     print(*df.columns, sep=', ')
