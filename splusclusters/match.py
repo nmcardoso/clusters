@@ -200,6 +200,9 @@ class PhotozSpeczLegacyMatchStage(PipelineStage):
   def run(
     self, 
     cls_name: str, 
+    cls_ra: float,
+    cls_dec: float,
+    cls_search_radius_deg: float,
     df_specz_radial: pd.DataFrame,
     df_photoz_radial: pd.DataFrame, 
     df_legacy_radial: pd.DataFrame,
@@ -210,6 +213,7 @@ class PhotozSpeczLegacyMatchStage(PipelineStage):
     if out_path.exists() and not self.overwrite:
       return
     
+    center = SkyCoord(ra=cls_ra, dec=cls_dec, unit=u.deg)
     df_spec = df_specz_radial.copy()
     df_photo = df_photoz_radial.copy()
     df_legacy = df_legacy_radial.copy()
@@ -244,7 +248,7 @@ class PhotozSpeczLegacyMatchStage(PipelineStage):
       print(*df_r.columns, sep=', ')
       print('photo-z columns:')
       print(*df_photo, sep=', ')
-      df = crossmatch(
+      df1 = crossmatch(
         df_r, 
         df_photo,
         ra1='ra_r',
@@ -253,8 +257,25 @@ class PhotozSpeczLegacyMatchStage(PipelineStage):
         dec2='dec_photo',
         join='all1'
       )
-      df = concat_tables([df, df_photo])
-      df = df[[*df_photo.columns, *df_r.columns]]
+
+      df_spec_all = radial_search(center, self.get_data('df_spec'), cls_search_radius_deg, cached_catalog=self.get_data('specz_skycoord'))
+      df_spec_all['f_z'] = df_spec_all['f_z'].astype('str')
+      df_spec_all['original_class_spec'] = df_spec_all['original_class_spec'].astype('str')
+      df2 = crossmatch(
+        df_photo, 
+        df_spec_all,
+        ra1='ra_r',
+        dec1='dec_r',
+        ra2='ra_photo',
+        dec2='dec_photo',
+        join='all1'
+      )
+      
+      df = concat_tables([df1, df2])
+      df = df[[*df2, *df1]]
+      
+      # df = concat_tables([df, df_photo])
+      # df = df[[*df_photo.columns, *df_r.columns]]
       df.insert(0, 'ra_final', np.nan)
       df.insert(1, 'dec_final', np.nan)
       df['ra_final'] = df['ra_final'].fillna(df['ra_r'])
@@ -335,52 +356,64 @@ class PhotozSpeczLegacyMatchStage(PipelineStage):
     t = Timming()
     print('\nCrossmatch 3: match LEFT OUTER JOIN spec-z-all')
     df_spec_all = self.get_data('df_spec')
-    if df is not None and df_spec_all is not None:
-      print('spec all columns:')
-      print(*df_spec_all.columns, sep=', ')
-      n_redshift = len(df[~df.z.isna()])
-      df_spec_all['f_z'] = df_spec_all['f_z'].astype('str')
-      df_spec_all['original_class_spec'] = df_spec_all['original_class_spec'].astype('str')
-      # spec_all_ra, spec_all_dec = guess_coords_columns(df_spec_all)
-      df = crossmatch(
-        df,
-        df_spec_all,
-        ra1='ra_final',
-        dec1='dec_final',
-        suffix1='_final',
-        ra2='ra_spec_all',
-        dec2='dec_spec_all',
-        suffix2='_spec_all',
-        join='all1',
-        fmt='csv',
-      )
-      cols = [
-        'z', 'e_z', 'f_z', 'class_spec',
-        'original_class_spec', 'source'
-      ]
-      for col in cols:
-        if f'{col}_final' in df.columns:
-          df[f'{col}_final'].replace(r'^\s*$', np.nan, regex=True, inplace=True)
-          df[f'{col}_final'].fillna(df[f'{col}_spec_all'], inplace=True)
-          df.rename(columns={f'{col}_final': col}, inplace=True)
-        if f'{col}_spec_all' in df.columns:
-          del df[f'{col}_spec_all']
-      df['f_z'] = df['f_z'].astype('str')
-      df['original_class_spec'] = df['original_class_spec'].astype('str')
-      del df['ra_spec_all']
-      del df['dec_spec_all']
-      # del df[spec_all_ra]
-      # del df[spec_all_dec]
+    # if df is not None and df_spec_all is not None:
+    #   print('spec all columns:')
+    #   print(*df_spec_all.columns, sep=', ')
+      # n_redshift = len(df[~df.z.isna()])
+    #   df_spec_all['f_z'] = df_spec_all['f_z'].astype('str')
+    #   df_spec_all['original_class_spec'] = df_spec_all['original_class_spec'].astype('str')
+    #   # spec_all_ra, spec_all_dec = guess_coords_columns(df_spec_all)
+    #   df = crossmatch(
+    #     df,
+    #     df_spec_all,
+    #     ra1='ra_final',
+    #     dec1='dec_final',
+    #     suffix1='_final',
+    #     ra2='ra_spec_all',
+    #     dec2='dec_spec_all',
+    #     suffix2='_spec_all',
+    #     join='all1',
+    #     fmt='csv',
+    #   )
+    #   cols = [
+    #     'z', 'e_z', 'f_z', 'class_spec',
+    #     'original_class_spec', 'source'
+    #   ]
+    #   for col in cols:
+    #     if f'{col}_final' in df.columns:
+    #       df[f'{col}_final'].replace(r'^\s*$', np.nan, regex=True, inplace=True)
+    #       df[f'{col}_final'].fillna(df[f'{col}_spec_all'], inplace=True)
+    #       df.rename(columns={f'{col}_final': col}, inplace=True)
+    #     if f'{col}_spec_all' in df.columns:
+    #       del df[f'{col}_spec_all']
+    #   df['f_z'] = df['f_z'].astype('str')
+    #   df['original_class_spec'] = df['original_class_spec'].astype('str')
+    #   del df['ra_spec_all']
+    #   del df['dec_spec_all']
+      
+    df['f_z'] = df['f_z'].astype('str')
+    df['original_class_spec'] = df['original_class_spec'].astype('str')
+    del df['ra_spec_all']
+    del df['dec_spec_all']
     
     print('\ncolumns after match:')
     print(*df.columns, sep=', ')
     print(f'\nCrossmatch 3 finished. Duration: {t.end()}')
-    print('Inserted redshifts:', len(df[~df.z.isna()]) - n_redshift)
+    # print('Inserted redshifts:', len(df[~df.z.isna()]) - n_redshift)
     print('Number of objects:', len(df))
     
     
+    # fill flag_member
     if 'flag_member' in df.columns:
       df.loc[~df.flag_member.isin([0, 1]), 'flag_member'] = -1
+    
+    
+    # compute radius_deg for all objects
+    coords = SkyCoord(ra=df['ra_final'].values, dec=df['dec_final'].values, unit=u.deg)
+    df['radius_deg_computed'] = coords.separation(center).deg
+    df['radius_deg'].fillna(df['radius_deg_computed'], inplace=True)
+    del df['radius_deg_computed']
+
 
     df = df.rename(columns={'ra_final': 'ra', 'dec_final': 'dec'})
     # photoz_cols = ['ra_photo', 'dec_photo', 'zml', 'odds']
