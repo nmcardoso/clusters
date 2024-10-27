@@ -242,13 +242,13 @@ class PhotozSpeczLegacyMatchStage(PipelineStage):
     
     df = None
     t = Timming()
-    if df_ret is not None and len(df_ret) > 0 and len(df_photo) > 0:
+    if df_r is not None and len(df_r) > 0 and len(df_photo) > 0:
       print('Crossmatch 1: photo-z UNION spec-members')
       print('spec-members columns:')
       print(*df_r.columns, sep=', ')
       print('photo-z columns:')
       print(*df_photo, sep=', ')
-      df1 = crossmatch(
+      df = crossmatch(
         df_r, 
         df_photo,
         ra1='ra_r',
@@ -257,34 +257,9 @@ class PhotozSpeczLegacyMatchStage(PipelineStage):
         dec2='dec_photo',
         join='all1'
       )
-      del df1['ra_photo']
-      del df1['dec_photo']
       
-      df_spec_all = radial_search(
-        center, 
-        self.get_data('df_spec'), 
-        cls_search_radius_deg,
-        ra='ra_spec_all',
-        dec='dec_spec_all',
-      )
-      df_spec_all['f_z'] = df_spec_all['f_z'].astype('str')
-      df_spec_all['original_class_spec'] = df_spec_all['original_class_spec'].astype('str')
-      df2 = crossmatch(
-        df_photo, 
-        df_spec_all,
-        ra1='ra_photo',
-        dec1='dec_photo',
-        ra2='ra_spec_all',
-        dec2='dec_spec_all',
-        join='all1'
-      )
-      del df2['ra_spec_all']
-      del df2['dec_spec_all']
-      
-      df = concat_tables([df1, df2])
-      
-      # df = concat_tables([df, df_photo])
-      # df = df[[*df_photo.columns, *df_r.columns]]
+      df = concat_tables([df, df_photo])
+      df = df[[*df_photo.columns, *df_r.columns]]
       df.insert(0, 'ra_final', np.nan)
       df.insert(1, 'dec_final', np.nan)
       df['ra_final'] = df['ra_final'].fillna(df['ra_r'])
@@ -306,8 +281,8 @@ class PhotozSpeczLegacyMatchStage(PipelineStage):
       del df['ra_photo']
       del df['dec_r']
       del df['dec_photo']
-    elif df_ret is not None and len(df_ret) > 0:
-      df = df_ret
+    elif df_r is not None and len(df_r) > 0:
+      df = df_r
       for c in self.photo_columns:
         df[c] = np.nan
     elif df_photo is not None and len(df_photo) > 0:
@@ -366,51 +341,55 @@ class PhotozSpeczLegacyMatchStage(PipelineStage):
     
     t = Timming()
     print('\nCrossmatch 3: match LEFT OUTER JOIN spec-z-all')
-    df_spec_all = self.get_data('df_spec')
-    # if df is not None and df_spec_all is not None:
-    #   print('spec all columns:')
-    #   print(*df_spec_all.columns, sep=', ')
-      # n_redshift = len(df[~df.z.isna()])
-    #   df_spec_all['f_z'] = df_spec_all['f_z'].astype('str')
-    #   df_spec_all['original_class_spec'] = df_spec_all['original_class_spec'].astype('str')
-    #   # spec_all_ra, spec_all_dec = guess_coords_columns(df_spec_all)
-    #   df = crossmatch(
-    #     df,
-    #     df_spec_all,
-    #     ra1='ra_final',
-    #     dec1='dec_final',
-    #     suffix1='_final',
-    #     ra2='ra_spec_all',
-    #     dec2='dec_spec_all',
-    #     suffix2='_spec_all',
-    #     join='all1',
-    #     fmt='csv',
-    #   )
-    #   cols = [
-    #     'z', 'e_z', 'f_z', 'class_spec',
-    #     'original_class_spec', 'source'
-    #   ]
-    #   for col in cols:
-    #     if f'{col}_final' in df.columns:
-    #       df[f'{col}_final'].replace(r'^\s*$', np.nan, regex=True, inplace=True)
-    #       df[f'{col}_final'].fillna(df[f'{col}_spec_all'], inplace=True)
-    #       df.rename(columns={f'{col}_final': col}, inplace=True)
-    #     if f'{col}_spec_all' in df.columns:
-    #       del df[f'{col}_spec_all']
-    #   df['f_z'] = df['f_z'].astype('str')
-    #   df['original_class_spec'] = df['original_class_spec'].astype('str')
-    #   del df['ra_spec_all']
-    #   del df['dec_spec_all']
+    df_spec_all = radial_search(
+        center, 
+        self.get_data('df_spec'), 
+        cls_search_radius_deg,
+        ra='ra_spec_all',
+        dec='dec_spec_all',
+      )
+    if df is not None and df_spec_all is not None:
+      print('spec all columns:')
+      print(*df_spec_all.columns, sep=', ')
+      n_redshift = len(df[~df.z.isna()])
+      df_spec_all['f_z'] = df_spec_all['f_z'].astype('str')
+      df_spec_all['original_class_spec'] = df_spec_all['original_class_spec'].astype('str')
+      # spec_all_ra, spec_all_dec = guess_coords_columns(df_spec_all)
+      df = crossmatch(
+        df,
+        df_spec_all,
+        ra1='ra_final',
+        dec1='dec_final',
+        suffix1='_final',
+        ra2='ra_spec_all',
+        dec2='dec_spec_all',
+        suffix2='_spec_all',
+        join='all1',
+        fmt='csv',
+      )
+      cols = [
+        'z', 'e_z', 'f_z', 'class_spec',
+        'original_class_spec', 'source'
+      ]
+      for col in cols:
+        if f'{col}_final' in df.columns:
+          df[f'{col}_final'].replace(r'^\s*$', np.nan, regex=True, inplace=True)
+          df[f'{col}_final'].fillna(df[f'{col}_spec_all'], inplace=True)
+          df.rename(columns={f'{col}_final': col}, inplace=True)
+        if f'{col}_spec_all' in df.columns:
+          del df[f'{col}_spec_all']
+      df['f_z'] = df['f_z'].astype('str')
+      df['original_class_spec'] = df['original_class_spec'].astype('str')
+      del df['ra_spec_all']
+      del df['dec_spec_all']
       
     df['f_z'] = df['f_z'].astype('str')
     df['original_class_spec'] = df['original_class_spec'].astype('str')
-    # del df['ra_spec_all']
-    # del df['dec_spec_all']
     
     print('\ncolumns after match:')
     print(*df.columns, sep=', ')
     print(f'\nCrossmatch 3 finished. Duration: {t.end()}')
-    # print('Inserted redshifts:', len(df[~df.z.isna()]) - n_redshift)
+    print('Inserted redshifts:', len(df[~df.z.isna()]) - n_redshift)
     print('Number of objects:', len(df))
     
     
@@ -424,24 +403,12 @@ class PhotozSpeczLegacyMatchStage(PipelineStage):
     df['radius_deg_computed'] = coords.separation(center).deg
     df['radius_deg'].fillna(df['radius_deg_computed'], inplace=True)
     del df['radius_deg_computed']
-
+    
+    dfx = crossmatch(df_r, df, ra1='ra_r', dec1='dec_r', ra2='ra_final', dec2='dec_final', join='1not2')
+    print('dfx')
+    print(dfx)
 
     df = df.rename(columns={'ra_final': 'ra', 'dec_final': 'dec'})
-    # photoz_cols = ['ra_photo', 'dec_photo', 'zml', 'odds']
-    # if 'r_auto' in df.columns:
-    #   photoz_cols.append('r_auto')
-    # if 'field' in df.columns:
-    #   photoz_cols.append('field')
-    # specz_cols = ['z', 'e_z', 'f_z', 'class_spec']
-    # legacy_cols = ['mag_r', 'type']
-    # cols = photoz_cols + specz_cols + legacy_cols
-    # df = df[cols]
-
-    # df = df[~df.original_class_spec.isin(['GClstr', 'GGroup', 'GPair', 'GTrpl', 'PofG'])]
-    # print('Number of objects after original_class_spec filter:', len(df))
-
-    # df = df[(df['f_z'] != 'KEEP(    )') & (df['e_z'] != 3.33E-4)]
-    # print('Number of objects after flag z filter:', len(df))
     
     if 'xmatch_sep' in df.columns:
       del df['xmatch_sep']
