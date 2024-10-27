@@ -270,8 +270,8 @@ class PhotozSpeczLegacyMatchStage(PipelineStage):
       df2 = crossmatch(
         df_photo, 
         df_spec_all,
-        ra1='ra_r',
-        dec1='dec_r',
+        ra1='ra_photo',
+        dec1='dec_photo',
         ra2='ra_spec_all',
         dec2='dec_spec_all',
         join='all1'
