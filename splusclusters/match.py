@@ -259,6 +259,8 @@ class PhotozSpeczLegacyMatchStage(PipelineStage):
       )
       
       df = concat_tables([df, df_photo])
+      print('**ALL COLUMNS**')
+      print(*df.columns, sep=', ')
       df = df[[*df_photo.columns, *df_r.columns]]
       df.insert(0, 'ra_final', np.nan)
       df.insert(1, 'dec_final', np.nan)
@@ -278,8 +280,8 @@ class PhotozSpeczLegacyMatchStage(PipelineStage):
           df[col] = df[col].astype('float64')
           
       del df['ra_r']
-      del df['ra_photo']
       del df['dec_r']
+      del df['ra_photo']
       del df['dec_photo']
     elif df_r is not None and len(df_r) > 0:
       df = df_r
@@ -398,7 +400,7 @@ class PhotozSpeczLegacyMatchStage(PipelineStage):
     df['radius_deg'].fillna(df['radius_deg_computed'], inplace=True)
     del df['radius_deg_computed']
     
-    dfx = crossmatch(
+    df_lost = crossmatch(
       table1=df_r, 
       table2=df, 
       ra1='ra_r', 
@@ -408,37 +410,52 @@ class PhotozSpeczLegacyMatchStage(PipelineStage):
       join='1not2'
     )
     
-    print('dfx')
-    print(dfx)
+    print('df_lost')
+    print(df_lost)
     
-    dfx = crossmatch(
-      table1=dfx, 
+    df_lost = crossmatch(
+      table1=df_lost, 
       table2=df_photo, 
       ra1='ra_r', 
       dec1='dec_r', 
       ra2='ra_photo', 
       dec2='dec_photo', 
-      join='all1'
+      join='all1',
+      suffix1='_final',
+      suffix2='_photo'
     )
     
-    print('dfx')
-    print(dfx)
-    
-    
-    dfx = crossmatch(
-      table1=dfx, 
+    df_lost = crossmatch(
+      table1=df_lost, 
       table2=df_spec_all, 
       ra1='ra_r', 
       dec1='dec_r', 
       ra2='ra_spec_all', 
       dec2='dec_spec_all', 
-      join='all1'
+      join='all1',
+      suffix1='_final',
+      suffix2='_spec_all',
     )
     
-    print('dfx')
-    print(dfx)
+    df_lost.insert(0, 'ra_final', np.nan)
+    df_lost.insert(1, 'dec_final', np.nan)
+    df_lost['ra_final'] = df_lost['ra_final'].fillna(df_lost['ra_r'])
+    df_lost['ra_final'] = df_lost['ra_final'].fillna(df_lost['ra_photo'])
+    df_lost['dec_final'] = df_lost['dec_final'].fillna(df_lost['dec_r'])
+    df_lost['dec_final'] = df_lost['dec_final'].fillna(df_lost['dec_photo'])
+    df_lost['z_final'] = df_lost['z_final'].fillna(df_lost['z_spec_all'])
+    df_lost.rename(columns={'z_final': 'z'}, inplace=True)
     
-    print(*dfx.columns, sep=', ')
+    del df_lost['ra_r']
+    del df_lost['dec_r']
+    del df_lost['ra_photo']
+    del df_lost['dec_photo']
+    
+    print(*df_lost.columns, sep=', ')
+    
+    df = concat_tables([df, df_lost])
+    df['z_err'] = df['z_err'].fillna(df['e_z'])
+    del df['e_z']
 
     df = df.rename(columns={'ra_final': 'ra', 'dec_final': 'dec'})
     
