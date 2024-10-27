@@ -342,12 +342,13 @@ class PhotozSpeczLegacyMatchStage(PipelineStage):
     t = Timming()
     print('\nCrossmatch 3: match LEFT OUTER JOIN spec-z-all')
     df_spec_all = radial_search(
-        center, 
-        self.get_data('df_spec'), 
-        cls_search_radius_deg,
-        ra='ra_spec_all',
-        dec='dec_spec_all',
-      )
+      center, 
+      self.get_data('df_spec'), 
+      cls_search_radius_deg,
+      ra='ra_spec_all',
+      dec='dec_spec_all',
+    )
+    print(df_spec_all)
     if df is not None and df_spec_all is not None:
       print('spec all columns:')
       print(*df_spec_all.columns, sep=', ')
