@@ -398,9 +398,47 @@ class PhotozSpeczLegacyMatchStage(PipelineStage):
     df['radius_deg'].fillna(df['radius_deg_computed'], inplace=True)
     del df['radius_deg_computed']
     
-    dfx = crossmatch(df_r, df, ra1='ra_r', dec1='dec_r', ra2='ra_final', dec2='dec_final', join='1not2')
+    dfx = crossmatch(
+      table1=df_r, 
+      table2=df, 
+      ra1='ra_r', 
+      dec1='dec_r', 
+      ra2='ra_final', 
+      dec2='dec_final', 
+      join='1not2'
+    )
+    
     print('dfx')
     print(dfx)
+    
+    dfx = crossmatch(
+      table1=dfx, 
+      table2=df_photo, 
+      ra1='ra_r', 
+      dec1='dec_r', 
+      ra2='ra_photo', 
+      dec2='dec_photo', 
+      join='all1'
+    )
+    
+    print('dfx')
+    print(dfx)
+    
+    
+    dfx = crossmatch(
+      table1=dfx, 
+      table2=df_spec_all, 
+      ra1='ra_r', 
+      dec1='dec_r', 
+      ra2='ra_spec_all', 
+      dec2='dec_spec_all', 
+      join='all1'
+    )
+    
+    print('dfx')
+    print(dfx)
+    
+    print(*dfx.columns, sep=', ')
 
     df = df.rename(columns={'ra_final': 'ra', 'dec_final': 'dec'})
     
