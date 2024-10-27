@@ -258,7 +258,7 @@ class PhotozSpeczLegacyMatchStage(PipelineStage):
         join='all1'
       )
       del df1['ra_photo']
-      del df2['ra_photo']
+      del df1['dec_photo']
       
       df_spec_all = radial_search(
         center, 
