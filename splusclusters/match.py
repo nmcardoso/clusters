@@ -258,7 +258,14 @@ class PhotozSpeczLegacyMatchStage(PipelineStage):
         join='all1'
       )
 
-      df_spec_all = radial_search(center, self.get_data('df_spec'), cls_search_radius_deg, cached_catalog=self.get_data('specz_skycoord'))
+      df_spec_all = radial_search(
+        center, 
+        self.get_data('df_spec'), 
+        cls_search_radius_deg,
+        ra='ra_spec_all',
+        dec='dec_spec_all',
+        cached_catalog=self.get_data('specz_skycoord')
+      )
       df_spec_all['f_z'] = df_spec_all['f_z'].astype('str')
       df_spec_all['original_class_spec'] = df_spec_all['original_class_spec'].astype('str')
       df2 = crossmatch(
@@ -266,8 +273,8 @@ class PhotozSpeczLegacyMatchStage(PipelineStage):
         df_spec_all,
         ra1='ra_r',
         dec1='dec_r',
-        ra2='ra_photo',
-        dec2='dec_photo',
+        ra2='ra_spec_all',
+        dec2='dec_spec_all',
         join='all1'
       )
       
