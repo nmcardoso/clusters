@@ -348,7 +348,7 @@ class PhotozSpeczLegacyMatchStage(PipelineStage):
       ra='ra_spec_all',
       dec='dec_spec_all',
     )
-    print(df_spec_all)
+    print(cls_search_radius_deg, center)
     if df is not None and df_spec_all is not None:
       print('spec all columns:')
       print(*df_spec_all.columns, sep=', ')
