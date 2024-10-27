@@ -293,6 +293,8 @@ class PhotozSpeczLegacyMatchStage(PipelineStage):
       df['dec_final'] = df['dec_final'].fillna(df['dec_r'])
       df['dec_final'] = df['dec_final'].fillna(df['dec_photo'])
       
+      print(*df.columns, sep=', ')
+      
       for col in df.columns:
         if df[col].dtype == 'int64' or df[col].dtype == 'int64[pyarrow]':
           df[col].replace(r'^\s*$', np.nan, regex=True, inplace=True)
