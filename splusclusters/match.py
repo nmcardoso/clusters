@@ -264,7 +264,6 @@ class PhotozSpeczLegacyMatchStage(PipelineStage):
         cls_search_radius_deg,
         ra='ra_spec_all',
         dec='dec_spec_all',
-        cached_catalog=self.get_data('specz_skycoord')
       )
       df_spec_all['f_z'] = df_spec_all['f_z'].astype('str')
       df_spec_all['original_class_spec'] = df_spec_all['original_class_spec'].astype('str')
