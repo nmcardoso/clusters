@@ -280,7 +280,7 @@ class PhotozSpeczLegacyMatchStage(PipelineStage):
       df = concat_tables([df1, df2])
       df = df[[*df2.columns, *df1.columns]]
       
-      print(df.coluns)
+      print(df.columns)
       print(df)
       print(df['ra_photo'])
       
