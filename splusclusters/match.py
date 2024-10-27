@@ -454,8 +454,20 @@ class PhotozSpeczLegacyMatchStage(PipelineStage):
     print(*df_lost.columns, sep=', ')
     
     df = concat_tables([df, df_lost])
+    
     df['z_err'] = df['z_err'].fillna(df['e_z'])
     del df['e_z']
+    
+    df_lost = crossmatch(
+      table1=df_r, 
+      table2=df, 
+      ra1='ra_r', 
+      dec1='dec_r', 
+      ra2='ra_final', 
+      dec2='dec_final', 
+      join='1not2'
+    )
+    print('Lost objects (check):', len(df_lost))
 
     df = df.rename(columns={'ra_final': 'ra', 'dec_final': 'dec'})
     
