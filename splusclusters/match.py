@@ -282,7 +282,6 @@ class PhotozSpeczLegacyMatchStage(PipelineStage):
       del df2['dec_spec_all']
       
       df = concat_tables([df1, df2])
-      df = df[[*df2.columns, *df1.columns]]
       
       # df = concat_tables([df, df_photo])
       # df = df[[*df_photo.columns, *df_r.columns]]
