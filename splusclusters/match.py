@@ -394,12 +394,6 @@ class PhotozSpeczLegacyMatchStage(PipelineStage):
       df.loc[~df.flag_member.isin([0, 1]), 'flag_member'] = -1
     
     
-    # compute radius_deg for all objects
-    coords = SkyCoord(ra=df['ra_final'].values, dec=df['dec_final'].values, unit=u.deg)
-    df['radius_deg_computed'] = coords.separation(center).deg
-    df['radius_deg'].fillna(df['radius_deg_computed'], inplace=True)
-    del df['radius_deg_computed']
-    
     df_lost = crossmatch(
       table1=df_r, 
       table2=df, 
@@ -499,6 +493,14 @@ class PhotozSpeczLegacyMatchStage(PipelineStage):
         join='1not2'
       )
       print('\nLost objects (check):', len(df_lost))
+      
+      
+    # compute radius_deg for all objects
+    coords = SkyCoord(ra=df['ra_final'].values, dec=df['dec_final'].values, unit=u.deg)
+    df['radius_deg_computed'] = coords.separation(center).deg
+    df['radius_deg'].fillna(df['radius_deg_computed'], inplace=True)
+    del df['radius_deg_computed']
+
 
     df = df.rename(columns={'ra_final': 'ra', 'dec_final': 'dec'})
     
@@ -516,7 +518,10 @@ class PhotozSpeczLegacyMatchStage(PipelineStage):
     print('\nRemoving bad objects classified by visual inspection')
     l = len(df)
     filter_df = read_table(configs.ROOT / 'tables' / 'objects_to_exclude.csv', comment='#')
-    df_rem = crossmatch(df, filter_df, radius=1*u.arcsec, join='1and2')
+    df_rem = crossmatch(df, filter_df, radius=1*u.arcsec, join='1and2', suffix1='', suffix2='_rem')
+    if df_rem is not None and len(df_rem) > 0:
+      del df_rem['ra_rem']
+      del df_rem['dec_rem']
     write_table(df_rem, out_removed_vi_path)
     df = crossmatch(df, filter_df, radius=1*u.arcsec, join='1not2')
     print('Number of objects before filter:', l)
