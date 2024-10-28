@@ -209,6 +209,8 @@ class PhotozSpeczLegacyMatchStage(PipelineStage):
   ):
     out_path = configs.PHOTOZ_SPECZ_LEG_FOLDER / f'{cls_name}.parquet'
     out_flags_path = configs.PHOTOZ_SPECZ_LEG_FOLDER / f'{cls_name}+flags.parquet'
+    out_recovered_path = configs.PHOTOZ_SPECZ_LEG_FOLDER / f'{cls_name}+recovered.parquet'
+    out_removed_path = configs.PHOTOZ_SPECZ_LEG_FOLDER / f'{cls_name}+removed.parquet'
     if out_path.exists() and not self.overwrite:
       return
     
@@ -450,6 +452,8 @@ class PhotozSpeczLegacyMatchStage(PipelineStage):
       del df_lost['dec_photo']
       
       print(*df_lost.columns, sep=', ')
+      
+      write_table(df_lost, out_recovered_path)
       
       df = concat_tables([df, df_lost])
       
