@@ -454,9 +454,9 @@ class PhotozSpeczLegacyMatchStage(PipelineStage):
           suffix2='_spec_all',
         )
       
-      if not 'ra_final' in df.columns:
+      if not 'ra_final' in df_lost.columns:
         df_lost.insert(0, 'ra_final', np.nan)
-      if not 'dec_final' in df.columns:
+      if not 'dec_final' in df_lost.columns:
         df_lost.insert(1, 'dec_final', np.nan)
       
       df_lost['ra_final'] = df_lost['ra_final'].fillna(df_lost['ra_r'])
