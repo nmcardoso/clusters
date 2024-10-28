@@ -467,15 +467,10 @@ class PhotozSpeczLegacyMatchStage(PipelineStage):
       if 'z_spec_all' in df_lost.columns:
         df_lost['z_final'] = df_lost['z_final'].fillna(df_lost['z_spec_all'])
         df_lost.rename(columns={'z_final': 'z'}, inplace=True)
-        df['e_z'] = df['e_z'].fillna(df['z_err'])
-        del df['z_err']
-        del df['z_spec_all']
-        del df['ra_spec_all']
-        del df['dec_spec_all']
       
-      if 'ra_legacy' in df.columns:
-        del df['ra_legacy']
-        del df['dec_legacy']
+      if 'ra_legacy' in df_lost.columns:
+        del df_lost['ra_legacy']
+        del df_lost['dec_legacy']
       
       del df_lost['ra_r']
       del df_lost['dec_r']
@@ -485,6 +480,14 @@ class PhotozSpeczLegacyMatchStage(PipelineStage):
       write_table(df_lost, out_recovered_path)
       
       df = concat_tables([df, df_lost])
+      
+      if 'z_err' in df.columns:
+        df['e_z'] = df['e_z'].fillna(df['z_err'])
+        del df['z_err']
+      if 'z_spec_all' in df.columns:
+        del df['z_spec_all']
+        del df['ra_spec_all']
+        del df['dec_spec_all']
       
       df_lost = crossmatch(
         table1=df_r, 
