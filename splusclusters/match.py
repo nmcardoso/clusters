@@ -295,9 +295,12 @@ class PhotozSpeczLegacyMatchStage(PipelineStage):
     print('\ncolumns after match:')
     print(*df.columns, sep=', ')
     print(f'\nCrossmatch 1 finished. Duration: {t.end()}')
-    print('Objects with photo-z only:', len(df[~df.zml.isna() & df.z.isna()]))
-    print('Objects with spec-z only:', len(df[df.zml.isna() & ~df.z.isna()]))
-    print('Objects with photo-z and spec-z:', len(df[~df.zml.isna() & ~df.z.isna()]))
+    
+    if len(df_photo) > 0:
+      print('Objects with photo-z only:', len(df[~df.zml.isna() & df.z.isna()]))
+      print('Objects with spec-z only:', len(df[df.zml.isna() & ~df.z.isna()]))
+      print('Objects with photo-z and spec-z:', len(df[~df.zml.isna() & ~df.z.isna()]))
+    
     print('Total of objects after first match:', len(df))
     
     
