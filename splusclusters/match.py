@@ -512,7 +512,7 @@ class PhotozSpeczLegacyMatchStage(PipelineStage):
     del df['radius_deg_computed']
 
     df.insert(0, 'ra', df['ra_final'].values)
-    df.insert(1, 'dec', df['ra_final'].values)
+    df.insert(1, 'dec', df['dec_final'].values)
     del df['ra_final']
     del df['dec_final']
     
@@ -575,7 +575,6 @@ class PhotozSpeczLegacyMatchStage(PipelineStage):
     # Flag: remove_neighbours
     df['remove_neighbours'] = 0
     if 'mag_r' in df.columns and 'source' in df.columns and 'z' in df.columns:
-      print(df)
       df = selfmatch(df, 10*u.arcsec, 'identify')
       
       if 'GroupID' in df.columns:
