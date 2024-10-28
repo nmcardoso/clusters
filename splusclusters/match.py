@@ -622,9 +622,6 @@ class PhotozSpeczLegacyMatchStage(PipelineStage):
       df.loc[((df.A < 1.5e-4) | (df.B < 1.5e-4)) & df.mag_r.isna() & df.z.isna(), 'remove_radius'] = 1
     df['remove_radius'] = df['remove_radius'].astype('int32')
     
-    if 'GroupSize' in df.columns:
-      del df['GroupSize']
-    
     
     print('\nFinal columns:')
     print(*df.columns, sep=', ')
@@ -643,4 +640,6 @@ class PhotozSpeczLegacyMatchStage(PipelineStage):
     del df['remove_radius']
     if 'GroupID' in df.columns:
       del df['GroupID']  
+    if 'GroupSize' in df.columns:
+      del df['GroupSize']
     write_table(df, out_path)
