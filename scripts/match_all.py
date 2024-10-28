@@ -29,7 +29,7 @@ def match_all_pipeline(overwrite: bool = False, version: int = 6, z_photo_delta:
   # df_clusters = load_clusters()
   df_clusters = load_members_index_v6()
   # df_clusters = df_clusters[df_clusters.name.isin(['MKW4', 'A168'])]
-  df_clusters = df_clusters.iloc[25:]
+  df_clusters = df_clusters.iloc[26:]
   df_spec, specz_skycoord = load_spec()
   df_spec.rename(columns={'RA': 'ra_spec_all', 'DEC': 'dec_spec_all'}, inplace=True)
   df_spec = df_spec[
