@@ -455,8 +455,8 @@ class PhotozSpeczLegacyMatchStage(PipelineStage):
     
     df = concat_tables([df, df_lost])
     
-    df['z_err'] = df['z_err'].fillna(df['e_z'])
-    del df['e_z']
+    df['e_z'] = df['e_z'].fillna(df['z_err'])
+    del df['z_err']
     
     df_lost = crossmatch(
       table1=df_r, 
