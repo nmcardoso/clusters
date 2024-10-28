@@ -410,65 +410,66 @@ class PhotozSpeczLegacyMatchStage(PipelineStage):
     print('Lost Objects:')
     print(df_lost)
     
-    df_lost = crossmatch(
-      table1=df_lost, 
-      table2=df_photo, 
-      ra1='ra_r', 
-      dec1='dec_r', 
-      ra2='ra_photo', 
-      dec2='dec_photo', 
-      join='all1',
-      suffix1='_final',
-      suffix2='_photo'
-    )
-    
-    df_lost = crossmatch(
-      table1=df_lost, 
-      table2=df_spec_all, 
-      ra1='ra_r', 
-      dec1='dec_r', 
-      ra2='ra_spec_all', 
-      dec2='dec_spec_all', 
-      join='all1',
-      suffix1='_final',
-      suffix2='_spec_all',
-    )
-    
-    df_lost.insert(0, 'ra_final', np.nan)
-    df_lost.insert(1, 'dec_final', np.nan)
-    df_lost['ra_final'] = df_lost['ra_final'].fillna(df_lost['ra_r'])
-    df_lost['ra_final'] = df_lost['ra_final'].fillna(df_lost['ra_photo'])
-    df_lost['dec_final'] = df_lost['dec_final'].fillna(df_lost['dec_r'])
-    df_lost['dec_final'] = df_lost['dec_final'].fillna(df_lost['dec_photo'])
-    df_lost['z_final'] = df_lost['z_final'].fillna(df_lost['z_spec_all'])
-    df_lost.rename(columns={'z_final': 'z'}, inplace=True)
-    
-    del df_lost['ra_r']
-    del df_lost['dec_r']
-    del df_lost['ra_photo']
-    del df_lost['dec_photo']
-    
-    print(*df_lost.columns, sep=', ')
-    
-    df = concat_tables([df, df_lost])
-    
-    df['e_z'] = df['e_z'].fillna(df['z_err'])
-    del df['z_err']
-    df['z'] = df['z'].fillna(df['z_spec_all'])
-    del df['z_spec_all']
-    del df['ra_spec_all']
-    del df['dec_spec_all']
-    
-    df_lost = crossmatch(
-      table1=df_r, 
-      table2=df, 
-      ra1='ra_r', 
-      dec1='dec_r', 
-      ra2='ra_final', 
-      dec2='dec_final', 
-      join='1not2'
-    )
-    print('\nLost objects (check):', len(df_lost))
+    if df_lost and len(df_lost) > 0:
+      df_lost = crossmatch(
+        table1=df_lost, 
+        table2=df_photo, 
+        ra1='ra_r', 
+        dec1='dec_r', 
+        ra2='ra_photo', 
+        dec2='dec_photo', 
+        join='all1',
+        suffix1='_final',
+        suffix2='_photo'
+      )
+      
+      df_lost = crossmatch(
+        table1=df_lost, 
+        table2=df_spec_all, 
+        ra1='ra_r', 
+        dec1='dec_r', 
+        ra2='ra_spec_all', 
+        dec2='dec_spec_all', 
+        join='all1',
+        suffix1='_final',
+        suffix2='_spec_all',
+      )
+      
+      df_lost.insert(0, 'ra_final', np.nan)
+      df_lost.insert(1, 'dec_final', np.nan)
+      df_lost['ra_final'] = df_lost['ra_final'].fillna(df_lost['ra_r'])
+      df_lost['ra_final'] = df_lost['ra_final'].fillna(df_lost['ra_photo'])
+      df_lost['dec_final'] = df_lost['dec_final'].fillna(df_lost['dec_r'])
+      df_lost['dec_final'] = df_lost['dec_final'].fillna(df_lost['dec_photo'])
+      df_lost['z_final'] = df_lost['z_final'].fillna(df_lost['z_spec_all'])
+      df_lost.rename(columns={'z_final': 'z'}, inplace=True)
+      
+      del df_lost['ra_r']
+      del df_lost['dec_r']
+      del df_lost['ra_photo']
+      del df_lost['dec_photo']
+      
+      print(*df_lost.columns, sep=', ')
+      
+      df = concat_tables([df, df_lost])
+      
+      df['e_z'] = df['e_z'].fillna(df['z_err'])
+      del df['z_err']
+      df['z'] = df['z'].fillna(df['z_spec_all'])
+      del df['z_spec_all']
+      del df['ra_spec_all']
+      del df['dec_spec_all']
+      
+      df_lost = crossmatch(
+        table1=df_r, 
+        table2=df, 
+        ra1='ra_r', 
+        dec1='dec_r', 
+        ra2='ra_final', 
+        dec2='dec_final', 
+        join='1not2'
+      )
+      print('\nLost objects (check):', len(df_lost))
 
     df = df.rename(columns={'ra_final': 'ra', 'dec_final': 'dec'})
     
