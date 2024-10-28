@@ -575,6 +575,7 @@ class PhotozSpeczLegacyMatchStage(PipelineStage):
     # Flag: remove_neighbours
     df['remove_neighbours'] = 0
     if 'mag_r' in df.columns and 'source' in df.columns and 'z' in df.columns:
+      print(df)
       df = selfmatch(df, 10*u.arcsec, 'identify')
       
       if 'GroupID' in df.columns:
