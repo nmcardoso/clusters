@@ -467,7 +467,7 @@ class PhotozSpeczLegacyMatchStage(PipelineStage):
       dec2='dec_final', 
       join='1not2'
     )
-    print('Lost objects (check):', len(df_lost))
+    print('\nLost objects (check):', len(df_lost))
 
     df = df.rename(columns={'ra_final': 'ra', 'dec_final': 'dec'})
     
