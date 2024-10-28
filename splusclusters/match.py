@@ -454,8 +454,11 @@ class PhotozSpeczLegacyMatchStage(PipelineStage):
           suffix2='_spec_all',
         )
       
-      df_lost.insert(0, 'ra_final', np.nan)
-      df_lost.insert(1, 'dec_final', np.nan)
+      if not 'ra_final' in df.columns:
+        df_lost.insert(0, 'ra_final', np.nan)
+      if not 'dec_final' in df.columns:
+        df_lost.insert(1, 'dec_final', np.nan)
+      
       df_lost['ra_final'] = df_lost['ra_final'].fillna(df_lost['ra_r'])
       df_lost['dec_final'] = df_lost['dec_final'].fillna(df_lost['dec_r'])
       
@@ -508,8 +511,10 @@ class PhotozSpeczLegacyMatchStage(PipelineStage):
     df['radius_deg'].fillna(df['radius_deg_computed'], inplace=True)
     del df['radius_deg_computed']
 
-
-    df = df.rename(columns={'ra_final': 'ra', 'dec_final': 'dec'})
+    df.insert(0, 'ra', df['ra_final'].values)
+    df.insert(1, 'dec', df['ra_final'].values)
+    del df['ra_final']
+    del df['dec_final']
     
     if 'xmatch_sep' in df.columns:
       del df['xmatch_sep']
