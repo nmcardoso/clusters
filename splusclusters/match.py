@@ -202,7 +202,6 @@ class PhotozSpeczLegacyMatchStage(PipelineStage):
     cls_name: str, 
     cls_ra: float,
     cls_dec: float,
-    cls_search_radius_deg: float,
     df_specz_radial: pd.DataFrame,
     df_photoz_radial: pd.DataFrame, 
     df_legacy_radial: pd.DataFrame,
@@ -259,8 +258,6 @@ class PhotozSpeczLegacyMatchStage(PipelineStage):
       )
       
       df = concat_tables([df, df_photo])
-      print('**ALL COLUMNS**')
-      print(*df.columns, sep=', ')
       df = df[[*df_photo.columns, *df_r.columns]]
       df.insert(0, 'ra_final', np.nan)
       df.insert(1, 'dec_final', np.nan)
@@ -410,7 +407,7 @@ class PhotozSpeczLegacyMatchStage(PipelineStage):
       join='1not2'
     )
     
-    print('df_lost')
+    print('Lost Objects:')
     print(df_lost)
     
     df_lost = crossmatch(
@@ -457,6 +454,10 @@ class PhotozSpeczLegacyMatchStage(PipelineStage):
     
     df['e_z'] = df['e_z'].fillna(df['z_err'])
     del df['z_err']
+    df['z'] = df['z'].fillna(df['z_spec_all'])
+    del df['z_spec_all']
+    del df['ra_spec_all']
+    del df['dec_spec_all']
     
     df_lost = crossmatch(
       table1=df_r, 
