@@ -211,6 +211,7 @@ class PhotozSpeczLegacyMatchStage(PipelineStage):
     out_flags_path = configs.PHOTOZ_SPECZ_LEG_FOLDER / f'{cls_name}+flags.parquet'
     out_recovered_path = configs.PHOTOZ_SPECZ_LEG_FOLDER / f'{cls_name}+recovered.parquet'
     out_removed_path = configs.PHOTOZ_SPECZ_LEG_FOLDER / f'{cls_name}+removed.parquet'
+    out_removed_vi_path = configs.PHOTOZ_SPECZ_LEG_FOLDER / f'{cls_name}+removed_vi.parquet'
     if out_path.exists() and not self.overwrite:
       return
     
@@ -490,7 +491,10 @@ class PhotozSpeczLegacyMatchStage(PipelineStage):
     # Filter bad objects after visual inspection
     print('\nRemoving bad objects classified by visual inspection')
     l = len(df)
-    df = remove_bad_objects(df)
+    filter_df = read_table(configs.ROOT / 'tables' / 'objects_to_exclude.csv', comment='#')
+    df_rem = crossmatch(df, filter_df, radius=1*u.arcsec, join='1and2')
+    write_table(df_rem, out_removed_vi_path)
+    df = crossmatch(df, filter_df, radius=1*u.arcsec, join='1not2')
     print('Number of objects before filter:', l)
     print('Number of objects after filter:', len(df))
     
@@ -598,14 +602,18 @@ class PhotozSpeczLegacyMatchStage(PipelineStage):
     
     write_table(df, out_flags_path)
     
+    
+    df_rem = df[(df.remove_star == 1) | (df.remove_z == 1) | (df.remove_neighbours == 1) | (df.remove_radius == 1)]
+    write_table(df_rem, out_removed_path)
+    
+    
     df = df[(df.remove_star != 1) & (df.remove_z != 1) & (df.remove_neighbours != 1) & (df.remove_radius != 1)]
     del df['remove_star']
     del df['remove_z']
     del df['remove_neighbours']
     del df['remove_radius']
     if 'GroupID' in df.columns:
-      del df['GroupID']
-      
+      del df['GroupID']  
     write_table(df, out_path)
   
   
