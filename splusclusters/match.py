@@ -189,7 +189,10 @@ class PhotozSpeczLegacyMatchStage(PipelineStage):
       'e_J0515_PStotal', 'e_J0660_PStotal', 'e_J0861_PStotal', 'e_g_PStotal', 
       'e_i_PStotal', 'e_r_PStotal', 'e_u_PStotal', 'e_z_PStotal',
       # R mags
-      'r_iso', 'r_petro', 'r_aper_3', 'r_aper_6', 'Field'
+      'r_iso', 'r_petro', 'r_aper_3', 'r_aper_6',
+      # G mags
+      'g_iso', 'g_petro', 'g_aper_3', 'g_aper_6', 
+      'Field'
     ]
     self.returned_columns = [
       'ra', 'dec', 'z', 'z_err', 'v', 'v_err', 'radius_deg', 
@@ -524,8 +527,18 @@ class PhotozSpeczLegacyMatchStage(PipelineStage):
       del df['xmatch_sep_2']
     if 'xmatch_sep_final' in df.columns:
       del df['xmatch_sep_final']
-      
-    
+
+    # colors
+    if 'g_aper_6' in df.columns and 'r_aper_6' in df.columns:
+      df['g_aper_6-r_aper_6'] = df['g_aper_6'] - df['r_aper_6']
+    if 'g_auto' in df.column and 'r_auto' in df.columns:
+      df['g_auto-r_auto'] = df['g_auto'] - df['r_auto']
+    if 'g_petro' in df.columns and 'r_petro' in df.columns:
+      df['g_petro-r_petro'] = df['g_petro'] - df['r_petro']
+    if 'g_aper_3' in df.columns and 'r_aper_3' in df.columns:
+      df['g_aper_3-r_aper_3'] = df['g_aper_3'] - df['r_aper_3']
+  
+  
     # Filter bad objects after visual inspection
     print('\nRemoving bad objects classified by visual inspection')
     l = len(df)
