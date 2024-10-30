@@ -531,7 +531,7 @@ class PhotozSpeczLegacyMatchStage(PipelineStage):
     # colors
     if 'g_aper_6' in df.columns and 'r_aper_6' in df.columns:
       df['g_aper_6-r_aper_6'] = df['g_aper_6'] - df['r_aper_6']
-    if 'g_auto' in df.column and 'r_auto' in df.columns:
+    if 'g_auto' in df.columns and 'r_auto' in df.columns:
       df['g_auto-r_auto'] = df['g_auto'] - df['r_auto']
     if 'g_petro' in df.columns and 'r_petro' in df.columns:
       df['g_petro-r_petro'] = df['g_petro'] - df['r_petro']
