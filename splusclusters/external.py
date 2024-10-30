@@ -251,7 +251,10 @@ class DownloadSplusPhotozStage(PipelineStage):
         'e_J0515_PStotal', 'e_J0660_PStotal', 'e_J0861_PStotal', 'e_g_PStotal', 
         'e_i_PStotal', 'e_r_PStotal', 'e_u_PStotal', 'e_z_PStotal',
         # R mags
-        'r_iso', 'r_petro', 'r_aper_3', 'r_aper_6', 'Field'
+        'r_iso', 'r_petro', 'r_aper_3', 'r_aper_6',
+        # G mags
+        'g_iso', 'g_petro', 'g_aper_3', 'g_aper_6', 
+        'Field'
       ],
       filters=[
         ('r_auto', '<=', 22)

@@ -41,7 +41,7 @@ def photoz_pipeline_v5(overwrite: bool = False, z_photo_delta: float | None = No
 
 def photoz_pipeline_v6(overwrite: bool = False, z_photo_delta: float | None = None):
   df_clusters = load_members_index_v6()
-  # df_clusters = df_clusters[df_clusters.name.isin(['MKW4'])]
+  df_clusters = df_clusters[df_clusters.name.isin(['MKW4', 'A168'])]
   df_clusters = df_clusters.iloc[6:]
   
   if z_photo_delta is not None:
