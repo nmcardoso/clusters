@@ -19,7 +19,7 @@ from splusclusters.match import (PhotoZRadialSearchStage,
 from splusclusters.plots import ClusterPlotStage
 
 
-def match_all_pipeline(overwrite: bool = False, version: int = 6, z_photo_delta: float | None = None):
+def match_all_pipeline(overwrite: bool = False, version: int = 6, z_photo_delta: float | None = None, two: bool = False):
   configs.Z_SPEC_DELTA = configs.Z_SPEC_DELTA_PAULO
   if z_photo_delta is not None:
     configs.Z_PHOTO_DELTA = z_photo_delta
@@ -28,7 +28,10 @@ def match_all_pipeline(overwrite: bool = False, version: int = 6, z_photo_delta:
   
   # df_clusters = load_clusters()
   df_clusters = load_members_index_v6()
-  df_clusters = df_clusters[df_clusters.name.isin(['MKW4', 'A168'])]
+  
+  if two:
+    df_clusters = df_clusters[df_clusters.name.isin(['MKW4', 'A168'])]
+  
   # df_clusters = df_clusters.iloc[25:]
   df_spec, specz_skycoord = load_spec()
   df_spec.rename(columns={'RA': 'ra_spec_all', 'DEC': 'dec_spec_all'}, inplace=True)
@@ -56,7 +59,8 @@ if __name__ == "__main__":
   parser.add_argument('--v6', action='store_true')
   parser.add_argument('--overwrite', action='store_true')
   parser.add_argument('--delta', action='store', default=None, type=float)
+  parser.add_argument('--two', action='store_true')
   args = parser.parse_args()
   
   v = 6 if args.v6 else 5
-  match_all_pipeline(overwrite=args.overwrite, version=v, z_photo_delta=args.delta)
+  match_all_pipeline(overwrite=args.overwrite, version=v, z_photo_delta=args.delta, two=args.two)
