@@ -215,8 +215,17 @@ class PhotozSpeczLegacyMatchStage(PipelineStage):
     out_recovered_path = configs.PHOTOZ_SPECZ_LEG_FOLDER / f'{cls_name}+recovered.parquet'
     out_removed_path = configs.PHOTOZ_SPECZ_LEG_FOLDER / f'{cls_name}+removed.parquet'
     out_removed_vi_path = configs.PHOTOZ_SPECZ_LEG_FOLDER / f'{cls_name}+removed_vi.parquet'
+    
     if out_path.exists() and not self.overwrite:
       return
+    
+    if out_path.exists():
+      df = read_table(out_path)
+      if 'g_aper_3-r_aper_3' in df.columns:
+        print('>> "g_aper_3-r_aper_3" columns found: skiping download')
+        return
+      else:
+        del df
     
     center = SkyCoord(ra=cls_ra, dec=cls_dec, unit=u.deg)
     df_spec = df_specz_radial.copy()
