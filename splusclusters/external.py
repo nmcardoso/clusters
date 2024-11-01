@@ -355,7 +355,7 @@ class DownloadSplusPhotozStage(PipelineStage):
     while attempt <= 5 and not success:
       print('>> Attempt', attempt)
       signal.signal(signal.SIGALRM, timeout_handler)
-      signal.alarm(10*60) # 10 minutes
+      signal.alarm(20*60) # 20 minutes
       print(f'\nPerforming conesearch within {radius:.2f} deg.')
       try:
         result = result.compute()
