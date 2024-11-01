@@ -348,6 +348,7 @@ class DownloadSplusPhotozStage(PipelineStage):
     
     
     print(f'\nPerforming conesearch within {radius:.2f} deg.', end='')
+    result = result.compute()
     print(f' [OK] Duration: {t.duration_str}')
       
     
