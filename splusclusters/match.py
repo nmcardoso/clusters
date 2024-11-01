@@ -549,6 +549,10 @@ class PhotozSpeczLegacyMatchStage(PipelineStage):
       df.insert(idx + 3, 'g_petro-r_petro', df['g_petro'] - df['r_petro'])
     if 'g_aper_3' in df.columns and 'r_aper_3' in df.columns:
       df.insert(idx + 4, 'g_aper_3-r_aper_3', df['g_aper_3'] - df['r_aper_3'])
+    if 'g_auto' in df.columns and 'r_auto' in df.columns and 'mag_g' in df.columns and 'mag_r' in df.columns:
+      df.insert(idx + 5, 'g-r_auto-legacy', (df['g_auto'] - df['r_auto']) - (df['mag_g'] - df['mag_r']))
+    if 'g_aper_6' in df.columns and 'r_aper_6' in df.columns and 'mag_g' in df.columns and 'mag_r' in df.columns:
+      df.insert(idx + 6, 'g-r_aper6-legacy', (df['g_aper_6'] - df['r_aper_6']) - (df['mag_g'] - df['mag_r']))
   
   
     # Filter bad objects after visual inspection
