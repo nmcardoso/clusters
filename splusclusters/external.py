@@ -1,5 +1,6 @@
 import os
 import re
+import signal
 import subprocess
 from shutil import copy
 from typing import Tuple
@@ -344,9 +345,27 @@ class DownloadSplusPhotozStage(PipelineStage):
     print('Table columns: ', end='')
     print(*result.columns, sep=', ')
     
-    print(f'\nPerforming conesearch within {radius:.2f} deg.', end='')
-    result = result.compute()
-    print(f' [OK] Duration: {t.duration_str}')
+    
+    # Fault tolerant compute
+    success = False
+    attempt = 1
+    def timeout_handler():
+      raise Exception('Execution Timeout')
+    
+    while attempt <= 5 and not success:
+      print('>> Attempt', attempt)
+      signal.signal(signal.SIGALRM, timeout_handler)
+      signal.alarm(10*60) # 10 minutes
+      print(f'\nPerforming conesearch within {radius:.2f} deg.')
+      try:
+        result = result.compute()
+        signal.alarm(0)
+        success = True
+      except Exception as e:
+        print(str(e))
+        attempt += 1
+      print(f' [OK] Duration: {t.duration_str}')
+      
     
     # drop repeated columns
     result = result.drop(columns=[
