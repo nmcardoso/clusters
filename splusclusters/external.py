@@ -209,13 +209,13 @@ class DownloadSplusPhotozStage(PipelineStage):
     if not self.overwrite and out_path.exists():
       return
     
-    if out_path.exists():
-      df = read_table(out_path)
-      if 'g_aper_6' in df.columns:
-        print('>> "g_aper_6" columns found: skiping download')
-        return
-      else:
-        del df
+    # if out_path.exists():
+    #   df = read_table(out_path)
+    #   if 'g_aper_6' in df.columns:
+    #     print('>> "g_aper_6" columns found: skiping download')
+    #     return
+    #   else:
+    #     del df
         
     radius = self.get_data(self.radius_key)
     
