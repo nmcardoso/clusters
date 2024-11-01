@@ -202,8 +202,9 @@ class DownloadSplusPhotozStage(PipelineStage):
     self.radius_key = radius_key
     self.overwrite = overwrite
     self.workers = workers
-  
-  def run(self, cls_name: str, cls_ra: float, cls_dec: float, z_photo_range: Tuple[float, float]):
+    
+    
+  def download(self, cls_name: str, cls_ra: float, cls_dec: float, z_photo_range: Tuple[float, float]):
     out_path = configs.PHOTOZ_FOLDER / f'{cls_name}.parquet'
     if not self.overwrite and out_path.exists():
       return
@@ -215,7 +216,7 @@ class DownloadSplusPhotozStage(PipelineStage):
         return
       else:
         del df
-    
+        
     radius = self.get_data(self.radius_key)
     
     # config_dask()
@@ -346,25 +347,8 @@ class DownloadSplusPhotozStage(PipelineStage):
     print(*result.columns, sep=', ')
     
     
-    # Fault tolerant compute
-    success = False
-    attempt = 1
-    def timeout_handler():
-      raise Exception('Execution Timeout')
-    
-    while attempt <= 5 and not success:
-      print('>> Attempt', attempt)
-      signal.signal(signal.SIGALRM, timeout_handler)
-      signal.alarm(20*60) # 20 minutes
-      print(f'\nPerforming conesearch within {radius:.2f} deg.')
-      try:
-        result = result.compute()
-        signal.alarm(0)
-        success = True
-      except Exception as e:
-        print(str(e))
-        attempt += 1
-      print(f' [OK] Duration: {t.duration_str}')
+    print(f'\nPerforming conesearch within {radius:.2f} deg.', end='')
+    print(f' [OK] Duration: {t.duration_str}')
       
     
     # drop repeated columns
@@ -401,6 +385,36 @@ class DownloadSplusPhotozStage(PipelineStage):
     print(result)
     write_table(result, out_path)
     
+  
+  def run(self, cls_name: str, cls_ra: float, cls_dec: float, z_photo_range: Tuple[float, float]):
+    def timeout_handler():
+      raise Exception('Execution Timeout')
+    
+    success = False
+    attempt = 1
+    while attempt <= 6 and not success:
+      try:
+        print('\n>> Download Attempt', attempt, 'of', 6, '\n')
+        signal.signal(signal.SIGALRM, timeout_handler)
+        signal.alarm(20*60) # 20 minutes
+        
+        self.download(
+          cls_name=cls_name, 
+          cls_ra=cls_ra, 
+          cls_dec=cls_dec, 
+          z_photo_range=z_photo_range,
+        )
+        
+        signal.alarm(0)
+        success = True
+      except Exception as e:
+        print('\n>> Attempt', attempt, 'failed!\n')
+        attempt += 1
+        print(e)
+
+
+
+
 class FixZRange(PipelineStage):
   def run(self, cls_name: str, z_photo_range: Tuple[float, float]):
     out_path = configs.PHOTOZ_FOLDER / f'{cls_name}.parquet'
