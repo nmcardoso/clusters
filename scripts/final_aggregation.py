@@ -66,6 +66,8 @@ def match_all_pipeline(overwrite: bool = False, z_photo_delta: float | None = No
     )
   print('Table size:', len(final_df))
   write_table(final_df, configs.OUT_PATH / 'table_2.parquet')
+  write_table(final_df[final_df.cluster_name == 'A168'], configs.OUT_PATH / 'table_3b.parquet')
+  write_table(final_df[final_df.cluster_name == 'MKW4'], configs.OUT_PATH / 'table_3c.parquet')
   
   
 if __name__ == "__main__":
