@@ -47,7 +47,6 @@ def match_all_pipeline(overwrite: bool = False, z_photo_delta: float | None = No
     
     path = configs.PHOTOZ_SPECZ_LEG_FOLDER / f'{name}.parquet'
     df = read_table(path)
-    print(z_photo_delta)
     mask = (
       (df.flag_member == 0) & 
       (df.z.between(z_cluster-z_photo_delta, z_cluster+z_photo_delta)) &
