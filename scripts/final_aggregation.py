@@ -33,13 +33,13 @@ def match_all_pipeline(overwrite: bool = False, z_photo_delta: float | None = No
   
   if two:
     df_clusters = df_clusters[df_clusters.name.isin(['MKW4', 'A168'])]
+  else:
+    allowed_names = read_table(configs.ROOT / 'tables' / 'clusters_59.csv').name
+    df_clusters = df_clusters[df_clusters.name.isin(allowed_names)]
     
   df_clusters = df_clusters[(df_clusters.z_spec >= 0.02) & (df_clusters.z_spec <= 0.1)]
   df_clusters = df_clusters.sort_values(by='z_spec', ascending=True).reset_index()
   
-  allowed_names = read_table(configs.ROOT / 'tables' / 'clusters_59.csv').name
-  df_clusters = df_clusters[df_clusters.name.isin(allowed_names)]
-
   final_df = pd.DataFrame()
   for i, row in df_clusters.iterrows():
     z_cluster = row['z_spec']
