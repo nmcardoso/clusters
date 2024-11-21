@@ -56,7 +56,7 @@ def match_all_pipeline(overwrite: bool = False, z_photo_delta: float | None = No
     df.insert(1, 'cluster_id', i+1)
     final_df = concat_tables([final_df, df])
     print(
-      'cluster_id:', i+1, '\tcluster_name:', f'{name}: <17', '\tz_cluster:', z_cluster, 
+      'cluster_id:', i+1, '\tcluster_name:', f'{name: <17}', '\tz_cluster:', z_cluster, 
       '\tz_range:', f'[{df.z.min():.4f}, {df.z.max():.4f}]', '\tNmemb (total):', n_memb,
       '\tNmemb (5R200):', len(df)
     )
