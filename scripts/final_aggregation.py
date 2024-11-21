@@ -33,6 +33,8 @@ def match_all_pipeline(overwrite: bool = False, z_photo_delta: float | None = No
   
   if two:
     df_clusters = df_clusters[df_clusters.name.isin(['MKW4', 'A168'])]
+    
+  df_clusters = df_clusters[(df_clusters >= 0.02) & (df_clusters.z_spec <= 0.1)]
   
   df_clusters = df_clusters.sort_values(by='z_spec', ascending=True).reset_index()
 
