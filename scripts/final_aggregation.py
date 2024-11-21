@@ -35,7 +35,6 @@ def match_all_pipeline(overwrite: bool = False, z_photo_delta: float | None = No
     df_clusters = df_clusters[df_clusters.name.isin(['MKW4', 'A168'])]
     
   df_clusters = df_clusters[(df_clusters.z_spec >= 0.02) & (df_clusters.z_spec <= 0.1)]
-  
   df_clusters = df_clusters.sort_values(by='z_spec', ascending=True).reset_index()
 
   final_df = pd.DataFrame()
@@ -50,7 +49,7 @@ def match_all_pipeline(overwrite: bool = False, z_photo_delta: float | None = No
     df = read_table(path)
     mask = (
       (df.flag_member == 0) & 
-      (df.z.between(z_cluster-configs.Z_SPEC_DELTA, z_cluster+configs.Z_SPEC_DELTA)) &
+      (df.z.between(z_cluster-z_photo_delta, z_cluster+z_photo_delta)) &
       (df.radius_Mpc < 5*r200_Mpc)
     )
     df = df[mask]
