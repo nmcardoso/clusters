@@ -58,6 +58,7 @@ def website_pipeline(overwrite: Sequence[str] | None = None, version: int = 6, d
   
   WebsitePagesStage(df_clusters=df_clusters, version=version).make_index()
   WebsitePagesStage(df_clusters=df_clusters, version=version).make_landing()
+  WebsitePagesStage(df_clusters=df_clusters, version=version).make_zoffset_page()
   
 
 if __name__ == '__main__':

@@ -10,6 +10,7 @@ __all__ = ['configs']
   
 class Configs(metaclass=SingletonMeta):
   ROOT = Path(__file__).parent.parent
+  Z_OFFSET_TABLE_PATH = ROOT / 'tables' / 'z_offset.csv'
   PHOTOZ_TABLE_PATH = Path('/mnt/hd/natanael/astrodata/idr5_photoz_clean.parquet')
   PHOTOZ2_TABLE_PATH = ROOT / Path('tables/idr5_v3.parquet')
   SPEC_TABLE_PATH = ROOT / Path('tables/SpecZ_Catalogue_20240124.parquet')

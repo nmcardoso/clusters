@@ -1,6 +1,9 @@
 from datetime import datetime, timedelta
 from multiprocessing import Lock
 
+import matplotlib.pyplot as plt
+import numpy as np
+import seaborn as sns
 from dask import config as dask_config
 from dask.distributed import Client
 
@@ -82,3 +85,21 @@ class SingletonMeta(type):
         instance = super().__call__(*args, **kwargs)
         cls._instances[cls] = instance
     return cls._instances[cls]
+
+
+def rmse(a1, a2):
+  return np.linalg.norm(a1 - a2) / np.sqrt(len(a1))
+
+
+def relative_err(actual, expected):
+  return (actual - expected) / expected
+
+
+def compute_pdf_peak(a, binrange = None, binwidth = None):
+  fig = plt.figure()
+  ax = fig.add_subplot(1, 1, 1)
+  ax = sns.histplot(x=a, binrange=binrange, binwidth=binwidth, kde=True)
+  x, y = ax.get_lines()[0].get_data()
+  x_max, y_max = x[np.argmax(y)], np.max(y)
+  plt.close()
+  return x_max, y_max

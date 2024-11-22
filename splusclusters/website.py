@@ -1,11 +1,13 @@
 from typing import Sequence, Tuple
 
+import numpy as np
 import pandas as pd
 from astromodule.io import write_table
 from astromodule.pipeline import PipelineStage
 from astromodule.table import crossmatch, radial_search
 from astropy import units as u
 from astropy.coordinates import SkyCoord
+from pylegs.io import read_table
 
 from splusclusters.configs import configs
 from splusclusters.loaders import (load_clusters, load_members_v5,
@@ -100,6 +102,10 @@ class WebsitePagesStage(PipelineStage):
                   <li><a class="dropdown-item" href="/clusters_v5">Version 5</a></li>
                 </ul>
               </li>
+              <li class="nav-item">
+                <a class="nav-link" href="/clusters_v6/zoffset.html">Redshift offset</a>
+              </li>
+            </ul>
           </div>
         </div>
       </nav>
@@ -159,7 +165,120 @@ class WebsitePagesStage(PipelineStage):
     html += f'<span class="badge text-bg-danger">interlopers excluded: {len(df[df.flag_member == 1])}</span><br /><br />'
     return html
   
-  def run(
+  def make_zoffset_page(self,):
+    df = read_table(configs.Z_OFFSET_TABLE_PATH)
+    rows = ''
+    for i, row in df.iterrows():
+      cls_m = [''] * 3
+      cls_mi = [''] * 3
+      cls_offset = [''] * 2
+      err_m = np.asarray([row['rmse_om_m'], row['rmse_omi_m']])
+      err_mi = np.asarray([row['rmse_om_mi'], row['rmse_omi_mi']])
+      cls_m[np.argmin(err_m)] = 'table-info fw-bold'
+      cls_mi[np.argmin(err_mi)] = 'table-info fw-bold'
+      # cls_offset[np.argmin([err_m.min(), err_mi.min()])] = 'bg-success text-light fw-bold'
+      rows += f"""
+      <tr>
+        <th>{i+1}</th>
+        <td>{row['name']}</td>
+        
+        <td class="">{row['z_offset_m']:.4f}</td>
+        <td class="">{row['z_offset_mi']:.4f}</td>
+        
+        <td>{row['rmse_base_m']:.3f} (0%)</td>
+        <td class="{cls_m[0]}">{row['rmse_om_m']:.3f} ({row['rel_om_m']:.1f}%)</td>
+        <td class="{cls_mi[0]}">{row['rmse_om_mi']:.3f} ({row['rel_om_mi']:.1f}%)</td>
+        
+        <td>{row['rmse_base_mi']:.3f} (0%)</td>
+        <td class="{cls_m[1]}">{row['rmse_omi_m']:.3f} ({row['rel_omi_m']:.1f}%)</td>
+        <td class="{cls_mi[1]}">{row['rmse_omi_mi']:.3f} ({row['rel_omi_mi']:.1f}%)</td>
+        
+        <td>
+          <a href="{row['name']}/zoffset_baseline_m.jpg" class="gallery" data-lightbox="{row['name']}">
+            <img height="120" src="{row['name']}/zoffset_baseline_m.jpg" />
+          </a>
+        </td>
+        <td>
+          <a href="{row['name']}/zoffset_baseline_mi.jpg" class="gallery" data-lightbox="{row['name']}">
+            <img height="120" src="{row['name']}/zoffset_baseline_mi.jpg" />
+          </a>
+        </td>
+        <td>
+          <a href="{row['name']}/zoffset_m-shift_m.jpg" class="gallery" data-lightbox="{row['name']}">
+            <img height="120" src="{row['name']}/zoffset_m-shift_m.jpg" />
+          </a>
+        </td>
+        <td>
+          <a href="{row['name']}/zoffset_mi-shift_mi.jpg" class="gallery" data-lightbox="{row['name']}">
+            <img height="120" src="{row['name']}/zoffset_mi-shift_mi.jpg" />
+          </a>
+        </td>
+      </tr>
+      """
+    
+    html = f'''<!DOCTYPE html>
+    <html>
+    {self.get_head()}
+    <body>
+      {self.get_nav()}
+      
+      <hr />
+      
+      <div class="container-fluid">
+        <h6>Columns description:</h6>
+        <ul>
+          <li><b>off<sub>M</sub>:</b> redshift offset computed in members sample</li>
+          <li><b>off<sub>M+I</sub>:</b> redshift offset computed in members+interlopers sample</li>
+          
+          <li><b>e<sub>base</sub> (M):</b> RMSE between reference and estimated redshift without any correction (baseline) in the members sample</li>
+          <li><b>e<sub>M</sub> (M):</b> RMSE between reference and estimated redshift corrected by members-offset in the members sample</li>
+          <li><b>e<sub>M</sub> (M+I):</b> RMSE between reference and estimated redshift corrected by members-offset in the members+interlopers sample</li>
+          
+          <li><b>e<sub>base</sub> (M+I):</b> RMSE between reference and estimated redshift without any correction (baseline) in the members+interlopers sample</li>
+          <li><b>e<sub>M+I</sub> (M):</b> RMSE between reference and estimated redshift corrected by members+interlopers-offset in the members sample</li>
+          <li><b>e<sub>M+I</sub> (M+I):</b> RMSE between reference and estimated redshift corrected by members+interlopers-offset in the members+interlopers sample</li>
+        </ul>
+      </div>
+      
+      <div class="container-fuild w-100">
+        <table class="table table-hover align-middle w-100">
+          <thead>
+            <th>#</th>
+            <th>cluster</th>
+            
+            <th>off<sub>M</sub></th>
+            <th>off<sub>M+I</sub></th>
+            
+            <th>e<sub>base</sub> (M)</th>
+            <th>e<sub>M</sub> (M)</th>
+            <th>e<sub>M</sub> (M+I)</th>
+            
+            <th>e<sub>base</sub> (M+I)</th>
+            <th>e<sub>M+I</sub> (M)</th>
+            <th>e<sub>M+I</sub> (M+I)</th>
+            
+            <th>No correction (M)</th>
+            <th>No correction (MI)</th>
+            <th>M-shift (M)</th>
+            <th>MI-shift (MI)</th>
+          </thead>
+          
+          <tbody class="table-group-divider">
+            {rows}
+          </tbody>
+        </table>
+      </div>
+      {self.get_scripts()}
+    </body>
+    </html>
+    '''
+    
+    zoffset_path = configs.WEBSITE_PATH / f'clusters_v{self.version}' / 'zoffset.html'
+    zoffset_path.parent.mkdir(parents=True, exist_ok=True)
+    zoffset_path.write_text(html)
+  
+  
+  def make_cluster_page(
     self, 
     cls_name: str, 
     cls_ra: float, 
@@ -173,8 +292,6 @@ class WebsitePagesStage(PipelineStage):
     cls_r500_Mpc: float,
     z_spec_range: Tuple[float, float],
     z_photo_range: Tuple[float, float],
-    df_photoz_radial: pd.DataFrame,
-    df_members: pd.DataFrame,
   ):
     width = 400
     height = 400
@@ -202,6 +319,7 @@ class WebsitePagesStage(PipelineStage):
       f'<a href="{img}" class="gallery" data-lightbox="images"><img src="{img}" width="{width}" height="{height}" /></a>'
       for img in img_paths
     ]
+    
     page = f'''<!DOCTYPE html>
     <html>
     {self.get_head()}
@@ -333,6 +451,40 @@ class WebsitePagesStage(PipelineStage):
     index_path = folder_path / 'index.html'
     index_path.parent.mkdir(parents=True, exist_ok=True)
     index_path.write_text(page)
+  
+  
+  
+  def run(
+    self, 
+    cls_name: str, 
+    cls_ra: float, 
+    cls_dec: float, 
+    cls_z: float,
+    cls_search_radius_deg: float,
+    cls_search_radius_Mpc: float,
+    cls_r200_deg: float,
+    cls_r200_Mpc: float,
+    cls_r500_deg: float,
+    cls_r500_Mpc: float,
+    z_spec_range: Tuple[float, float],
+    z_photo_range: Tuple[float, float],
+    df_photoz_radial: pd.DataFrame,
+    df_members: pd.DataFrame,
+  ):
+    self.make_cluster_page(
+      cls_name=cls_name, 
+      cls_ra=cls_ra, 
+      cls_dec=cls_dec, 
+      cls_z=cls_z,
+      cls_search_radius_deg=cls_search_radius_deg,
+      cls_search_radius_Mpc=cls_search_radius_Mpc,
+      cls_r200_deg=cls_r200_deg,
+      cls_r200_Mpc=cls_r200_Mpc,
+      cls_r500_deg=cls_r500_deg,
+      cls_r500_Mpc=cls_r500_Mpc,
+      z_spec_range=z_spec_range,
+      z_photo_range=z_photo_range,
+    )
     
     self.make_splus_fields_tables(
       cls_name=cls_name, 
@@ -344,4 +496,5 @@ class WebsitePagesStage(PipelineStage):
     )
     
     if df_members is not None:
+      folder_path = configs.WEBSITE_PATH / f'clusters_v{self.version}' / cls_name
       write_table(df_members, folder_path / 'members.csv')
