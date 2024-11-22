@@ -136,7 +136,7 @@ def create_zoffset_plots(df_clusters: pd.DataFrame, z_delta: float = 0.02, overw
       zml=df_members.zml.values, 
       z_label=f'spec-z M ({len(df_members)})', 
       zml_label=f'photo-z M ({len(df_members)})', 
-      title=f'{name}: MEM (no correction) $z_{{offset}} = {zoffset['z_offset_m']:.4f}$; $RMSE = {zoffset['rmse_base_m']:.4f}$', 
+      title=f"{name}: MEM (no correction) $z_{{offset}} = {zoffset['z_offset_m']:.4f}$; $RMSE = {zoffset['rmse_base_m']:.4f}$", 
       filename=configs.WEBSITE_PATH / 'clusters_v6' / name / 'zoffset_baseline_m.jpg', 
       binrange=binrange
     )
@@ -145,7 +145,7 @@ def create_zoffset_plots(df_clusters: pd.DataFrame, z_delta: float = 0.02, overw
       zml=df.zml.values, 
       z_label=f'spec-z M+I ({len(df)})', 
       zml_label=f'photo-z M+I ({len(df)})', 
-      title=f'{name}: M+I (no correction) $z_{{offset}} = {zoffset['z_offset_mi']:.4f}$; $RMSE = {zoffset['rmse_base_mi']:.4f}$', 
+      title=f"{name}: M+I (no correction) $z_{{offset}} = {zoffset['z_offset_mi']:.4f}$; $RMSE = {zoffset['rmse_base_mi']:.4f}$", 
       filename=configs.WEBSITE_PATH / 'clusters_v6' / name / 'zoffset_baseline_mi.jpg', 
       binrange=binrange
     )
@@ -154,7 +154,7 @@ def create_zoffset_plots(df_clusters: pd.DataFrame, z_delta: float = 0.02, overw
       zml=df_members.zml.values - zoffset['z_offset_m'], 
       z_label=f'spec-z M ({len(df_members)})', 
       zml_label=f'photo-z M ({len(df_members)})', 
-      title=f'{name}: M (M shift) $z_{{offset}} = {0.0:.4f}$; $RMSE = {zoffset['rmse_om_m']:.4f}$', 
+      title=f"{name}: M (M shift) $z_{{offset}} = {0.0:.4f}$; $RMSE = {zoffset['rmse_om_m']:.4f}$", 
       filename=configs.WEBSITE_PATH / 'clusters_v6' / name / 'zoffset_m-shift_m.jpg', 
       binrange=binrange
     )
@@ -163,7 +163,7 @@ def create_zoffset_plots(df_clusters: pd.DataFrame, z_delta: float = 0.02, overw
       zml=df.zml.values - zoffset['z_offset_mi'], 
       z_label=f'spec-z M+I ({len(df)})', 
       zml_label=f'photo-z M+I ({len(df)})', 
-      title=f'{name}: M+I (M+I shift) $z_{{offset}} = {0.0:.4f}$; $RMSE = {zoffset['rmse_om_mi']:.4f}$', 
+      title=f"{name}: M+I (M+I shift) $z_{{offset}} = {0.0:.4f}$; $RMSE = {zoffset['rmse_om_mi']:.4f}$", 
       filename=configs.WEBSITE_PATH / 'clusters_v6' / name / 'zoffset_mi-shift_mi.jpg', 
       binrange=binrange
     )
