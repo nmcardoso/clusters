@@ -36,6 +36,7 @@ def create_zoffset_table(df_clusters: pd.DataFrame, z_delta: float = 0.02, overw
     return
   
   data = []
+  skiped_clusters = 0
   
   for i, row in df_clusters.iterrows():
     z_cluster = row['z_spec']
@@ -60,7 +61,8 @@ def create_zoffset_table(df_clusters: pd.DataFrame, z_delta: float = 0.02, overw
     print(f'Members + Interlopers: {len(df)}')
     
     if len(df_members) < 10: 
-      print('>> skiped')
+      print('>> skiped\n')
+      skiped_clusters += 1
       continue
     
     row = dict()
@@ -97,6 +99,8 @@ def create_zoffset_table(df_clusters: pd.DataFrame, z_delta: float = 0.02, overw
     
     data.append(row)
     print()
+  
+  print('Skiped clusters:', skiped_clusters)
   
   write_table(pd.DataFrame(data), configs.Z_OFFSET_TABLE_PATH)
 
