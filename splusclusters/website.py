@@ -199,13 +199,13 @@ class WebsitePagesStage(PipelineStage):
           </a>
         </td>
         <td>
-          <a href="{row['name']}/zoffset_baseline_mi.jpg" class="gallery" data-lightbox="{row['name']}">
-            <img height="120" src="{row['name']}/zoffset_baseline_mi.jpg" />
+          <a href="{row['name']}/zoffset_m-shift_m.jpg" class="gallery" data-lightbox="{row['name']}">
+            <img height="120" src="{row['name']}/zoffset_m-shift_m.jpg" />
           </a>
         </td>
         <td>
-          <a href="{row['name']}/zoffset_m-shift_m.jpg" class="gallery" data-lightbox="{row['name']}">
-            <img height="120" src="{row['name']}/zoffset_m-shift_m.jpg" />
+          <a href="{row['name']}/zoffset_baseline_mi.jpg" class="gallery" data-lightbox="{row['name']}">
+            <img height="120" src="{row['name']}/zoffset_baseline_mi.jpg" />
           </a>
         </td>
         <td>
@@ -258,8 +258,8 @@ class WebsitePagesStage(PipelineStage):
             <th>e<sub>M+I</sub> (M+I)</th>
             
             <th>No correction (M)</th>
-            <th>No correction (MI)</th>
             <th>M-shift (M)</th>
+            <th>No correction (MI)</th>
             <th>MI-shift (MI)</th>
           </thead>
           
