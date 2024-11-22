@@ -242,7 +242,7 @@ class WebsitePagesStage(PipelineStage):
       
       <div class="container-fuild w-100">
         <table class="table table-hover align-middle w-100">
-          <thead>
+          <thead class="sticky-top">
             <th>#</th>
             <th>cluster</th>
             
