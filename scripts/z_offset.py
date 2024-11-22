@@ -59,6 +59,10 @@ def create_zoffset_table(df_clusters: pd.DataFrame, z_delta: float = 0.02, overw
     print(f'Members: {len(df_members)}')
     print(f'Members + Interlopers: {len(df)}')
     
+    if len(df_members) < 10: 
+      print('>> skiped')
+      continue
+    
     row = dict()
     row['name'] = name
     row['clsid'] = cls_id
