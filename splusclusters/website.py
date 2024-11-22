@@ -186,12 +186,12 @@ class WebsitePagesStage(PipelineStage):
         <td class="">{row['z_offset_mi']:.4f}</td>
         
         <td>{row['rmse_base_m']:.3f} (0%)</td>
-        <td class="{cls_m[0]}">{row['rmse_om_m']:.3f} ({row['rel_om_m']:.1f}%)</td>
-        <td class="{cls_mi[0]}">{row['rmse_om_mi']:.3f} ({row['rel_om_mi']:.1f}%)</td>
+        <td class="{cls_m[0]}">{row['rmse_om_m']:.3f} ({row['rel_om_m']*100:.1f}%)</td>
+        <td class="{cls_mi[0]}">{row['rmse_om_mi']:.3f} ({row['rel_om_mi']*100:.1f}%)</td>
         
         <td>{row['rmse_base_mi']:.3f} (0%)</td>
-        <td class="{cls_m[1]}">{row['rmse_omi_m']:.3f} ({row['rel_omi_m']:.1f}%)</td>
-        <td class="{cls_mi[1]}">{row['rmse_omi_mi']:.3f} ({row['rel_omi_mi']:.1f}%)</td>
+        <td class="{cls_m[1]}">{row['rmse_omi_m']:.3f} ({row['rel_omi_m']*100:.1f}%)</td>
+        <td class="{cls_mi[1]}">{row['rmse_omi_mi']:.3f} ({row['rel_omi_mi']*100:.1f}%)</td>
         
         <td>
           <a href="{row['name']}/zoffset_baseline_m.jpg" class="gallery" data-lightbox="{row['name']}">
