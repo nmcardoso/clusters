@@ -1461,7 +1461,7 @@ class MagDiffPlotStage(PipelineStage):
     cls_search_radius_deg: float,
     cls_search_radius_Mpc: float,
   ):
-    if 'r_auto' not in df_all_radial.columns or 'mag_r' not in df_all_radial:
+    if len(set(df_all_radial.columns.tolist()) & {'r_auto', 'mag_r', 'zml'}) == 0:
       return
     
     df = df_all_radial[
