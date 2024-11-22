@@ -16,6 +16,7 @@ from astromodule.pipeline import Pipeline, PipelineStorage
 from astromodule.table import concat_tables
 from pylegs.io import read_table, write_table
 from scipy.stats import gaussian_kde
+from tqdm import tqdm
 
 from splusclusters.configs import configs
 from splusclusters.loaders import (LoadClusterInfoStage, LoadLegacyRadialStage,
@@ -36,13 +37,14 @@ def create_zoffset_table(df_clusters: pd.DataFrame, z_delta: float = 0.02, overw
   
   data = []
   
-  for i, row in df_clusters.iterrows():
+  for i, row in (pbar := tqdm(df_clusters.iterrows())):
     z_cluster = row['z_spec']
     r200_Mpc = row['R200_Mpc']
     cls_id = row['clsid']
     name = row['name']
     n_memb = row['Nmemb']
     
+    pbar.set_description(name)
     path = configs.PHOTOZ_SPECZ_LEG_FOLDER / f'{name}.parquet'
     df = read_table(path)
     mask = (
