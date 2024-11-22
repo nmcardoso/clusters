@@ -56,7 +56,7 @@ def create_zoffset_table(df_clusters: pd.DataFrame, z_delta: float = 0.02, overw
     df = df[mask]
     df_members = df[df.flag_member == 0]
     
-    print(f'Cluster: {name}')
+    print(f'[{i+1} / {len(df_clusters)}] Cluster: {name}')
     print(f'Members: {len(df_members)}')
     print(f'Members + Interlopers: {len(df)}')
     
@@ -127,9 +127,13 @@ def create_zoffset_plots(df_clusters: pd.DataFrame, z_delta: float = 0.02, overw
     name = row['name']
     n_memb = row['Nmemb']
     
+    print(f'[{i+1} / {len(df_clusters)}] Cluster: {name}')
+    
     zoffset = read_table(configs.Z_OFFSET_TABLE_PATH)
     zoffset = zoffset[zoffset['name'] == name]
-    if len(zoffset) == 0: continue
+    if len(zoffset) == 0: 
+      print('>> Skiped\n')
+      continue
     zoffset = zoffset.iloc[0]
     
     path = configs.PHOTOZ_SPECZ_LEG_FOLDER / f'{name}.parquet'
@@ -183,6 +187,7 @@ def create_zoffset_plots(df_clusters: pd.DataFrame, z_delta: float = 0.02, overw
       filename=configs.WEBSITE_PATH / 'clusters_v6' / name / 'zoffset_mi-shift_mi.jpg', 
       binrange=binrange
     )
+    print()
     
 
 
