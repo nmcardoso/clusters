@@ -128,7 +128,9 @@ def create_zoffset_plots(df_clusters: pd.DataFrame, z_delta: float = 0.02, overw
     n_memb = row['Nmemb']
     
     zoffset = read_table(configs.Z_OFFSET_TABLE_PATH)
-    zoffset = zoffset[zoffset['name'] == name].iloc[0]
+    zoffset = zoffset[zoffset['name'] == name]
+    if len(zoffset) == 0: continue
+    zoffset = zoffset.iloc[0]
     
     path = configs.PHOTOZ_SPECZ_LEG_FOLDER / f'{name}.parquet'
     df = read_table(path)
