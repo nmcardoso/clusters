@@ -56,7 +56,8 @@ def create_zoffset_table(df_clusters: pd.DataFrame, z_delta: float = 0.02, overw
     df_members = df[df.flag_member == 0]
     
     print(f'Cluster: {name}')
-    print(f'Members: {len(df_members)}; Members + Interlopers: {len(df)}')
+    print(f'Members: {len(df_members)}')
+    print(f'Members + Interlopers: {len(df)}')
     
     row = dict()
     row['name'] = name
@@ -91,9 +92,9 @@ def create_zoffset_table(df_clusters: pd.DataFrame, z_delta: float = 0.02, overw
     row['rel_omi_mi'] = relative_err(row['rmse_omi_mi'], row['rmse_base_mi'])
     
     data.append(row)
+    print()
   
   write_table(pd.DataFrame(data), configs.Z_OFFSET_TABLE_PATH)
-  print()
 
 
 
