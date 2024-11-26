@@ -49,7 +49,7 @@ def load_members_index_v6():
     'm200_lower', 'm200_upper', 'nwcls', 'n_memb', 'n_memb_wR200', 'name'
   ]
   path = 'https://github.com/nmcardoso/clusters/raw/refs/heads/main/tables/members_v6/info_cls_shiftgap_iter_10.0hmpcf_nrb.dat'
-  names_df = pd.read_csv(path, names=cols, sep='\s+', comment='#')
+  names_df = pd.read_csv(path, names=cols, sep=r'\s+', comment='#')
   path = 'https://github.com/nmcardoso/clusters/raw/refs/heads/main/tables/members_v6/info_cls_shiftgap_iter_10.0hmpcf.dat_nrb'
   cols = [
     'clsid', 'ra', 'dec', 'z_spec', 'veli', 'velf', 'Nwcls', 'Nmemb', 'sigma_p',
@@ -58,7 +58,7 @@ def load_members_index_v6():
     'R200_upper', 'M200_solar', 'M200_lower', 'M200_upper', 'znew', 'znew_err',
     'Rap', 'Nmemb_wR200', 'col1', 'col2', 'col3', 'col4'
   ]
-  info_df = pd.read_csv(path, names=cols, sep='\s+', comment='#')
+  info_df = pd.read_csv(path, names=cols, sep=r'\s+', comment='#')
   info_df['name'] = names_df['name'].values
   return info_df
 
