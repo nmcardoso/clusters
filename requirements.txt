@@ -4,3 +4,12 @@ pandas
 numpy
 scipy
 ipywidgets>=7.0.0
+matplotlib
+tqdm
+astropy
+scipy
+astroquery
+scikit-image
+streamlit-plotly-events
+astromodule
+seaborn
