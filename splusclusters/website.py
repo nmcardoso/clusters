@@ -105,6 +105,12 @@ class WebsitePagesStage(PipelineStage):
               <li class="nav-item">
                 <a class="nav-link" href="/clusters_v6/zoffset.html">Redshift offset</a>
               </li>
+              <li class="nav-item">
+                <a class="nav-link" href="https://zoffset.streamlit.app">Odds App</a>
+              </li>
+              <li class="nav-item">
+                <a class="nav-link" href="https://erosita.streamlit.app">Crossmatch App</a>
+              </li>
             </ul>
           </div>
         </div>
