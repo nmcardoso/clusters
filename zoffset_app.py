@@ -98,6 +98,7 @@ def main():
     z_delta = 0.02
     mask = (
       (df.cluster_name == cluster) &
+      (df.flag_member == 0) &
       (df.z.between(z_cluster-z_delta, z_cluster+z_delta)) &
       (df.zml.between(z_cluster-0.03, z_cluster+0.03)) &
       (df.radius_Mpc < 5*r200_Mpc) &
