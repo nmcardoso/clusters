@@ -366,7 +366,7 @@ class DownloadSplusPhotozStage(PipelineStage):
     result = result.rename(columns=mapper)
     
     # filter overlap objects
-    if 'in_overlap_region' in result.columns:
+    if 'in_overlap_region' in result.columns and cls_name.upper() != 'MKW4':
       result = result[result['in_overlap_region'] == 0]
 
     # result = result.rename(columns={
