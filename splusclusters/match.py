@@ -420,7 +420,8 @@ class PhotozSpeczLegacyMatchStage(PipelineStage):
       dec1='dec_r', 
       ra2='ra_final', 
       dec2='dec_final', 
-      join='1not2'
+      join='1not2',
+      find='all',
     )
     
     print('Lost Objects:')
@@ -512,7 +513,8 @@ class PhotozSpeczLegacyMatchStage(PipelineStage):
         dec1='dec_r', 
         ra2='ra_final', 
         dec2='dec_final', 
-        join='1not2'
+        join='1not2',
+        find='all',
       )
       print('\nLost objects (check):', len(df_lost))
       
@@ -564,7 +566,7 @@ class PhotozSpeczLegacyMatchStage(PipelineStage):
       del df_rem['ra_rem']
       del df_rem['dec_rem']
     write_table(df_rem, out_removed_vi_path)
-    df = crossmatch(df, filter_df, radius=1*u.arcsec, join='1not2')
+    df = crossmatch(df, filter_df, radius=1*u.arcsec, join='1not2', find='all')
     print('Number of objects before filter:', l)
     print('Number of objects after filter:', len(df))
     
