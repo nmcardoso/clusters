@@ -659,11 +659,12 @@ class PhotozSpeczLegacyMatchStage(PipelineStage):
             if len(group_df[~group_df.mag_r.isna()]) > 0:
               z_mask = group_df.mag_r != group_df.mag_r.min()
             else:
-              if len(group_df[(~group_df.r_auto.isna()) & (group_df.r_auto < 99)]) > 0:
-                z_mask = group_df.r_auto != group_df.r_auto.min()
-              else:
-                z_mask = np.ones(shape=(len(group_df),), dtype=np.bool)
-                z_mask[0] = False
+              z_mask = np.ones(shape=(len(group_df),), dtype=np.bool)
+              # if len(group_df[(~group_df.r_auto.isna()) & (group_df.r_auto < 99)]) > 0:
+              #   z_mask = group_df.r_auto != group_df.r_auto.min()
+              # else:
+              #   z_mask = np.ones(shape=(len(group_df),), dtype=np.bool)
+              #   z_mask[0] = False
 
           df.loc[group_df[z_mask].index, 'remove_neighbours'] = 1
     df['remove_neighbours'] = df['remove_neighbours'].astype('int32')
