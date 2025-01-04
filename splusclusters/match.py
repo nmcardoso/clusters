@@ -629,10 +629,7 @@ class PhotozSpeczLegacyMatchStage(PipelineStage):
             z_mask = ~group_df.flag_member.isin([0, 1])
           
           elif len(group_df[~group_df.z.isna()]) == 1:
-            if len(group_df[~group_df.mag_r.isna()]) > 0:
-              z_mask = group_df.z.isna() | (group_df.mag_r != group_df.mag_r.min())
-            else:
-              z_mask = group_df.z.isna()
+            z_mask = group_df.z.isna()
               
           elif len(group_df[~group_df.z.isna()]) > 1:
             if len(group_df[group_df.source.str.upper().str.contains('SDSSDR18_SDSS')]) == 1:
