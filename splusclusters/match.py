@@ -597,22 +597,33 @@ class PhotozSpeczLegacyMatchStage(PipelineStage):
           mask = (
             df.Field.str.lower().str.startswith(tile) & 
             df.r_auto.between(*r_auto) &
-            (df.PROB_GAL_GAIA < prob)
+            (df.PROB_GAL_GAIA < prob) &
+            (df.class_spec != 'GALAXY')
           )
           df.loc[mask, 'remove_star'] = 1
     df['remove_star'] = df['remove_star'].astype('int32')
     
     
+    # Flag: remove_radius
+    df['remove_radius'] = 0
+    if 'PETRO_RADIUS' in df.columns and 'mag_r' in df.columns and 'A' in df.columns and 'B' in df.columns:
+      df.loc[(df.PETRO_RADIUS == 0) & df.mag_r.isna() & df.z.isna(), 'remove_radius'] = 1
+      df.loc[(df.PETRO_RADIUS == df.PETRO_RADIUS.max()) & df.mag_r.isna() & df.z.isna(), 'remove_radius'] = 1
+      df.loc[((df.A < 1.5e-4) | (df.B < 1.5e-4)) & df.mag_r.isna() & df.z.isna(), 'remove_radius'] = 1
+    df['remove_radius'] = df['remove_radius'].astype('int32')
+    
+    
     # Flag: remove_neighbours
     df['remove_neighbours'] = 0
     if 'mag_r' in df.columns and 'source' in df.columns and 'z' in df.columns:
-      df = selfmatch(df, 10*u.arcsec, 'identify')
+      df_no_flags = df[(df['remove_z'] != 1) & (df['remove_star'] != 1) & (df['remove_radius'] != 1)]
+      df = selfmatch(df_no_flags, 10*u.arcsec, 'identify')
       
       if 'GroupID' in df.columns:
         gids = df['GroupID'].unique()
         gids = gids[gids > 0]
         for group_id in gids:
-          group_df = df[(df['GroupID'] == group_id) & (df['remove_z'] != 1)]
+          group_df = df[(df['GroupID'] == group_id)]
           
           if len(group_df[group_df.flag_member.isin([0, 1])]) > 0:
             z_mask = ~group_df.flag_member.isin([0, 1])
@@ -651,19 +662,14 @@ class PhotozSpeczLegacyMatchStage(PipelineStage):
             if len(group_df[~group_df.mag_r.isna()]) > 0:
               z_mask = group_df.mag_r != group_df.mag_r.min()
             else:
-              z_mask = np.ones(shape=(len(group_df),), dtype=np.bool)
+              if len(group_df[(~group_df.r_auto.isna()) & (group_df.r_auto < 99)]) > 0:
+                z_mask = group_df.r_auto != group_df.r_auto.min()
+              else:
+                z_mask = np.ones(shape=(len(group_df),), dtype=np.bool)
+                z_mask[0] = False
 
           df.loc[group_df[z_mask].index, 'remove_neighbours'] = 1
     df['remove_neighbours'] = df['remove_neighbours'].astype('int32')
-    
-    
-    # Flag: remove_radius
-    df['remove_radius'] = 0
-    if 'PETRO_RADIUS' in df.columns and 'mag_r' in df.columns and 'A' in df.columns and 'B' in df.columns:
-      df.loc[(df.PETRO_RADIUS == 0) & df.mag_r.isna() & df.z.isna(), 'remove_radius'] = 1
-      df.loc[(df.PETRO_RADIUS == df.PETRO_RADIUS.max()) & df.mag_r.isna() & df.z.isna(), 'remove_radius'] = 1
-      df.loc[((df.A < 1.5e-4) | (df.B < 1.5e-4)) & df.mag_r.isna() & df.z.isna(), 'remove_radius'] = 1
-    df['remove_radius'] = df['remove_radius'].astype('int32')
     
     
     print('\nFinal columns:')
