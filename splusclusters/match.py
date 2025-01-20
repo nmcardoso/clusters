@@ -690,3 +690,21 @@ class PhotozSpeczLegacyMatchStage(PipelineStage):
     if 'GroupSize' in df.columns:
       del df['GroupSize']
     write_table(df, out_path)
+
+
+
+
+class FilterR200(PipelineStage):
+  def __init__(self, overwrite: bool = False):
+    self.overwrite = overwrite
+  
+  def run(
+    self, 
+    cls_name: str, 
+    cls_r200_deg: float,
+    df_all_radial: pd.DataFrame,
+  ):
+    out_path = configs.PHOTOZ_SPECZ_LEG_FOLDER / f'{cls_name}+5r200.parquet'
+    if out_path.exists() or not self.overwrite: return
+    df = df[df_all_radial.radius_deg <= 5*cls_r200_deg]
+    write_table(df, out_path)
