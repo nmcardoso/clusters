@@ -705,6 +705,6 @@ class FilterR200(PipelineStage):
     df_all_radial: pd.DataFrame,
   ):
     out_path = configs.PHOTOZ_SPECZ_LEG_FOLDER / f'{cls_name}+5r200.parquet'
-    if out_path.exists() or not self.overwrite: return
+    if out_path.exists() and not self.overwrite: return
     df = df[df_all_radial.radius_deg <= 5*cls_r200_deg]
     write_table(df, out_path)
