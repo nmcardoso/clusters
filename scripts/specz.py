@@ -6,7 +6,6 @@ sys.path.insert(0, str(Path(__file__).parent.parent.absolute()))
 from astromodule.io import merge_pdf
 from astromodule.pipeline import Pipeline, PipelineStorage
 
-from splusclusters.constants import *
 from splusclusters.loaders import (LoadClusterInfoStage, load_clusters,
                                    load_spec)
 from splusclusters.match import SpecZRadialSearchStage
