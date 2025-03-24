@@ -36,7 +36,7 @@ class DownloadLegacyCatalogStage(PipelineStage):
       return
     
     sql = """
-      SELECT t.ra, t.dec, t.type, t.mag_g, t.mag_r, t.mag_i, t.mag_z
+      SELECT t.ra, t.dec, t.type, t.shape_r, t.mag_g, t.mag_r, t.mag_i, t.mag_z
       FROM ls_dr10.tractor AS t
       WHERE (ra BETWEEN {ra_min} AND {ra_max}) AND 
       (dec BETWEEN {dec_min} AND {dec_max}) AND
@@ -244,6 +244,10 @@ class DownloadSplusPhotozStage(PipelineStage):
         'J0378_PStotal', 'J0395_PStotal', 'J0410_PStotal', 'J0430_PStotal', 
         'J0515_PStotal', 'J0660_PStotal', 'J0861_PStotal', 'g_PStotal', 
         'i_PStotal', 'r_PStotal', 'u_PStotal', 'z_PStotal',
+        # aper_6 mags
+        'J0378_aper_6', 'J0395_aper_6', 'J0410_aper_6', 'J0430_aper_6', 'J0515_aper_6',
+        'J0660_aper_6', 'J0861_aper_6', 'g_aper_6', 'i_aper_6', 'r_aper_6', 'u_aper_6', 
+        'z_aper_6',
         # auto error
         'e_J0378_auto', 'e_J0395_auto', 'e_J0410_auto', 'e_J0430_auto', 
         'e_J0515_auto', 'e_J0660_auto', 'e_J0861_auto', 'e_g_auto', 'e_i_auto', 
@@ -252,10 +256,14 @@ class DownloadSplusPhotozStage(PipelineStage):
         'e_J0378_PStotal', 'e_J0395_PStotal', 'e_J0410_PStotal', 'e_J0430_PStotal', 
         'e_J0515_PStotal', 'e_J0660_PStotal', 'e_J0861_PStotal', 'e_g_PStotal', 
         'e_i_PStotal', 'e_r_PStotal', 'e_u_PStotal', 'e_z_PStotal',
+        # aper_6 mags
+        'e_J0378_aper_6', 'e_J0395_aper_6', 'e_J0410_aper_6', 'e_J0430_aper_6', 'e_J0515_aper_6',
+        'e_J0660_aper_6', 'e_J0861_aper_6', 'e_g_aper_6', 'e_i_aper_6', 'e_r_aper_6', 'e_u_aper_6', 
+        'e_z_aper_6',
         # R mags
-        'r_iso', 'r_petro', 'r_aper_3', 'r_aper_6',
+        'r_iso', 'r_petro', 'r_aper_3',
         # G mags
-        'g_iso', 'g_petro', 'g_aper_3', 'g_aper_6', 
+        'g_iso', 'g_petro', 'g_aper_3', 
         'Field'
       ],
       filters=[
