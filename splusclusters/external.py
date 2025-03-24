@@ -36,7 +36,7 @@ class DownloadLegacyCatalogStage(PipelineStage):
       return
     
     sql = """
-      SELECT t.ra, t.dec, t.type, t.shape_r, t.mag_g, t.mag_r, t.mag_i, t.mag_z
+      SELECT t.ra, t.dec, t.type, t.shape_r, t.mag_g, t.mag_r, t.mag_i, t.mag_z, t.mag_w1, t.mag_w2, t.mag_w3, t.mag_w4
       FROM ls_dr10.tractor AS t
       WHERE (ra BETWEEN {ra_min} AND {ra_max}) AND 
       (dec BETWEEN {dec_min} AND {dec_max}) AND
@@ -232,8 +232,8 @@ class DownloadSplusPhotozStage(PipelineStage):
       margin_cache=idr5_margin,
       storage_options=dict(headers=conn.headers),
       columns = [
-        'RA', 'DEC', 'A', 'B', 'THETA', 'ELLIPTICITY', 'ELONGATION',
-        'PETRO_RADIUS', 'FLUX_RADIUS_50', 'FLUX_RADIUS_90', 
+        'RA', 'DEC', 'A', 'B', 'THETA', 'ELLIPTICITY',
+        'PETRO_RADIUS', 'FLUX_RADIUS_20', 'FLUX_RADIUS_50', 'FLUX_RADIUS_90', 
         'MU_MAX_g', 'MU_MAX_r', 'BACKGROUND_g', 'BACKGROUND_r',
         's2n_g_auto', 's2n_r_auto',
         # auto mags
@@ -260,10 +260,10 @@ class DownloadSplusPhotozStage(PipelineStage):
         'e_J0378_aper_6', 'e_J0395_aper_6', 'e_J0410_aper_6', 'e_J0430_aper_6', 'e_J0515_aper_6',
         'e_J0660_aper_6', 'e_J0861_aper_6', 'e_g_aper_6', 'e_i_aper_6', 'e_r_aper_6', 'e_u_aper_6', 
         'e_z_aper_6',
-        # R mags
-        'r_iso', 'r_petro', 'r_aper_3',
         # G mags
-        'g_iso', 'g_petro', 'g_aper_3', 
+        'g_aper_3', 'g_res', 'g_iso', 'g_petro', 
+        # R mags
+        'r_aper_3', 'r_res', 'r_iso', 'r_petro', 
         'Field'
       ],
       filters=[
