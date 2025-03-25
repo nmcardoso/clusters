@@ -276,8 +276,8 @@ class DownloadSplusPhotozStage(PipelineStage):
     t = Timer()
     print('Downloading Photo-z HIPS.', end='')
     idr5_pz = splusdata.get_hipscats('idr5/photoz', headers=conn.headers)[0]
-    idr5_pz_margin = lsdb.read_hipscat(idr5_pz[1], storage_options=dict(headers=conn.headers))
-    pz = lsdb.read_hipscat(
+    idr5_pz_margin = lsdb.read_hats(idr5_pz[1], storage_options=dict(headers=conn.headers))
+    pz = lsdb.read_hats(
       idr5_pz[0],
       margin_cache=idr5_pz_margin,
       storage_options=dict(headers=conn.headers),
@@ -294,8 +294,8 @@ class DownloadSplusPhotozStage(PipelineStage):
     t = Timer()
     print('Downloading SQG HIPS.', end='')
     idr5_sqg = splusdata.get_hipscats('idr5/sqg', headers=conn.headers)[0]
-    idr5_sqg_margin = lsdb.read_hipscat(idr5_sqg[1], storage_options=dict(headers=conn.headers))
-    sqg = lsdb.read_hipscat(
+    idr5_sqg_margin = lsdb.read_hats(idr5_sqg[1], storage_options=dict(headers=conn.headers))
+    sqg = lsdb.read_hats(
       idr5_sqg[0],
       margin_cache=idr5_sqg_margin,
       storage_options=dict(headers=conn.headers),
@@ -308,8 +308,8 @@ class DownloadSplusPhotozStage(PipelineStage):
     t = Timer()
     print('Downloading Overlap HIPS.', end='')
     idr5_overlap = splusdata.get_hipscats('idr5/overlap_flags', headers=conn.headers)[0]
-    idr5_overlap_margin = lsdb.read_hipscat(idr5_overlap[1], storage_options=dict(headers=conn.headers))
-    overlap = lsdb.read_hipscat(
+    idr5_overlap_margin = lsdb.read_hats(idr5_overlap[1], storage_options=dict(headers=conn.headers))
+    overlap = lsdb.read_hats(
       idr5_overlap[0],
       margin_cache=idr5_overlap_margin,
       storage_options=dict(headers=conn.headers),
