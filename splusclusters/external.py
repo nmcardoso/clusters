@@ -227,7 +227,7 @@ class DownloadSplusPhotozStage(PipelineStage):
     print('Downloading Dual HIPS.', end='')
     idr5_links  = splusdata.get_hipscats('idr5/dual', headers=conn.headers)[0]
     idr5_margin = lsdb.read_hipscat(idr5_links[1], storage_options=dict(headers=conn.headers))
-    dual = lsdb.read_hipscat(
+    dual = lsdb.read_hats(
       idr5_links[0],
       margin_cache=idr5_margin,
       storage_options=dict(headers=conn.headers),
