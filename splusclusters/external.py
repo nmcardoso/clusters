@@ -19,6 +19,7 @@ from astromodule.splus import SplusService
 from astropy.units import Quantity
 from pylegs.archive import RadialMatcher
 from pylegs.utils import Timer
+from upath import UPath
 
 from splusclusters.configs import configs
 from splusclusters.utils import config_dask
@@ -226,11 +227,9 @@ class DownloadSplusPhotozStage(PipelineStage):
     t = Timer()
     print('Downloading Dual HIPS.', end='')
     idr5_links  = splusdata.get_hipscats('idr5/dual', headers=conn.headers)[0]
-    idr5_margin = lsdb.read_hats(idr5_links[1], storage_options=dict(headers=conn.headers))
+    # idr5_margin = lsdb.read_hats(idr5_links[1], storage_options=dict(headers=conn.headers))
     dual = lsdb.read_hats(
-      idr5_links[0],
-      margin_cache=idr5_margin,
-      storage_options=dict(headers=conn.headers),
+      UPath(idr5_links[0], headers=conn.headers),
       columns = [
         'RA', 'DEC', 'A', 'B', 'THETA', 'ELLIPTICITY',
         'PETRO_RADIUS', 'FLUX_RADIUS_20', 'FLUX_RADIUS_50', 'FLUX_RADIUS_90', 
@@ -276,11 +275,9 @@ class DownloadSplusPhotozStage(PipelineStage):
     t = Timer()
     print('Downloading Photo-z HIPS.', end='')
     idr5_pz = splusdata.get_hipscats('idr5/photoz', headers=conn.headers)[0]
-    idr5_pz_margin = lsdb.read_hats(idr5_pz[1], storage_options=dict(headers=conn.headers))
+    # idr5_pz_margin = lsdb.read_hats(idr5_pz[1], storage_options=dict(headers=conn.headers))
     pz = lsdb.read_hats(
-      idr5_pz[0],
-      margin_cache=idr5_pz_margin,
-      storage_options=dict(headers=conn.headers),
+      UPath(idr5_pz_margin[0], headers=conn.headers),
       columns=[
         'RA', 'DEC', 'zml', 'odds', 'pdf_weights_0', 'pdf_weights_1', 
         'pdf_weights_2', 'pdf_means_0', 'pdf_means_1', 'pdf_means_2', 
@@ -294,11 +291,9 @@ class DownloadSplusPhotozStage(PipelineStage):
     t = Timer()
     print('Downloading SQG HIPS.', end='')
     idr5_sqg = splusdata.get_hipscats('idr5/sqg', headers=conn.headers)[0]
-    idr5_sqg_margin = lsdb.read_hats(idr5_sqg[1], storage_options=dict(headers=conn.headers))
+    # idr5_sqg_margin = lsdb.read_hats(idr5_sqg[1], storage_options=dict(headers=conn.headers))
     sqg = lsdb.read_hats(
-      idr5_sqg[0],
-      margin_cache=idr5_sqg_margin,
-      storage_options=dict(headers=conn.headers),
+      UPath(idr5_sqg[0], headers=conn.headers),
       columns=['RA', 'DEC', 'PROB_GAL_GAIA'],
       # filters=[('PROB_GAL', '>=', 0.5)]
     )
@@ -308,11 +303,9 @@ class DownloadSplusPhotozStage(PipelineStage):
     t = Timer()
     print('Downloading Overlap HIPS.', end='')
     idr5_overlap = splusdata.get_hipscats('idr5/overlap_flags', headers=conn.headers)[0]
-    idr5_overlap_margin = lsdb.read_hats(idr5_overlap[1], storage_options=dict(headers=conn.headers))
+    # idr5_overlap_margin = lsdb.read_hats(idr5_overlap[1], storage_options=dict(headers=conn.headers))
     overlap = lsdb.read_hats(
-      idr5_overlap[0],
-      margin_cache=idr5_overlap_margin,
-      storage_options=dict(headers=conn.headers),
+      UPath(idr5_overlap[0], headers=conn.headers),
       columns=['RA', 'DEC', 'in_overlap_region'],
       # filters=[('in_overlap_region', '==', 0)]
     )
