@@ -168,8 +168,8 @@ class PhotozSpeczLegacyMatchStage(PipelineStage):
   def __init__(self, overwrite: bool = False):
     self.overwrite = overwrite
     self.photo_columns = [
-      'RA', 'DEC', 'A', 'B', 'THETA', 'ELLIPTICITY', 'ELONGATION',
-      'PETRO_RADIUS', 'FLUX_RADIUS_50', 'FLUX_RADIUS_90', 
+      'RA', 'DEC', 'A', 'B', 'THETA', 'ELLIPTICITY',
+      'PETRO_RADIUS', 'FLUX_RADIUS_20', 'FLUX_RADIUS_50', 'FLUX_RADIUS_90', 
       'MU_MAX_g', 'MU_MAX_r', 'BACKGROUND_g', 'BACKGROUND_r',
       's2n_g_auto', 's2n_r_auto',
       # auto mags
@@ -180,6 +180,10 @@ class PhotozSpeczLegacyMatchStage(PipelineStage):
       'J0378_PStotal', 'J0395_PStotal', 'J0410_PStotal', 'J0430_PStotal', 
       'J0515_PStotal', 'J0660_PStotal', 'J0861_PStotal', 'g_PStotal', 
       'i_PStotal', 'r_PStotal', 'u_PStotal', 'z_PStotal',
+      # aper_6 mags
+      'J0378_aper_6', 'J0395_aper_6', 'J0410_aper_6', 'J0430_aper_6', 'J0515_aper_6',
+      'J0660_aper_6', 'J0861_aper_6', 'g_aper_6', 'i_aper_6', 'r_aper_6', 'u_aper_6', 
+      'z_aper_6',
       # auto error
       'e_J0378_auto', 'e_J0395_auto', 'e_J0410_auto', 'e_J0430_auto', 
       'e_J0515_auto', 'e_J0660_auto', 'e_J0861_auto', 'e_g_auto', 'e_i_auto', 
@@ -188,10 +192,14 @@ class PhotozSpeczLegacyMatchStage(PipelineStage):
       'e_J0378_PStotal', 'e_J0395_PStotal', 'e_J0410_PStotal', 'e_J0430_PStotal', 
       'e_J0515_PStotal', 'e_J0660_PStotal', 'e_J0861_PStotal', 'e_g_PStotal', 
       'e_i_PStotal', 'e_r_PStotal', 'e_u_PStotal', 'e_z_PStotal',
-      # R mags
-      'r_iso', 'r_petro', 'r_aper_3', 'r_aper_6',
+      # aper_6 mags
+      'e_J0378_aper_6', 'e_J0395_aper_6', 'e_J0410_aper_6', 'e_J0430_aper_6', 'e_J0515_aper_6',
+      'e_J0660_aper_6', 'e_J0861_aper_6', 'e_g_aper_6', 'e_i_aper_6', 'e_r_aper_6', 'e_u_aper_6', 
+      'e_z_aper_6',
       # G mags
-      'g_iso', 'g_petro', 'g_aper_3', 'g_aper_6', 
+      'g_aper_3', 'g_res', 'g_iso', 'g_petro', 
+      # R mags
+      'r_aper_3', 'r_res', 'r_iso', 'r_petro', 
       'Field'
     ]
     self.returned_columns = [
@@ -542,19 +550,19 @@ class PhotozSpeczLegacyMatchStage(PipelineStage):
       del df['xmatch_sep_finala']
 
     # colors
-    idx = df.columns.get_loc('Field')
-    if 'g_aper_6' in df.columns and 'r_aper_6' in df.columns:
-      df.insert(idx + 1, 'g_aper_6-r_aper_6', df['g_aper_6'] - df['r_aper_6'])
-    if 'g_auto' in df.columns and 'r_auto' in df.columns:
-      df.insert(idx + 2, 'g_auto-r_auto', df['g_auto'] - df['r_auto'])
-    if 'g_petro' in df.columns and 'r_petro' in df.columns:
-      df.insert(idx + 3, 'g_petro-r_petro', df['g_petro'] - df['r_petro'])
-    if 'g_aper_3' in df.columns and 'r_aper_3' in df.columns:
-      df.insert(idx + 4, 'g_aper_3-r_aper_3', df['g_aper_3'] - df['r_aper_3'])
-    if 'g_auto' in df.columns and 'r_auto' in df.columns and 'mag_g' in df.columns and 'mag_r' in df.columns:
-      df.insert(idx + 5, 'g-r_auto-legacy', (df['g_auto'] - df['r_auto']) - (df['mag_g'] - df['mag_r']))
-    if 'g_aper_6' in df.columns and 'r_aper_6' in df.columns and 'mag_g' in df.columns and 'mag_r' in df.columns:
-      df.insert(idx + 6, 'g-r_aper6-legacy', (df['g_aper_6'] - df['r_aper_6']) - (df['mag_g'] - df['mag_r']))
+    # idx = df.columns.get_loc('Field')
+    # if 'g_aper_6' in df.columns and 'r_aper_6' in df.columns:
+    #   df.insert(idx + 1, 'g_aper_6-r_aper_6', df['g_aper_6'] - df['r_aper_6'])
+    # if 'g_auto' in df.columns and 'r_auto' in df.columns:
+    #   df.insert(idx + 2, 'g_auto-r_auto', df['g_auto'] - df['r_auto'])
+    # if 'g_petro' in df.columns and 'r_petro' in df.columns:
+    #   df.insert(idx + 3, 'g_petro-r_petro', df['g_petro'] - df['r_petro'])
+    # if 'g_aper_3' in df.columns and 'r_aper_3' in df.columns:
+    #   df.insert(idx + 4, 'g_aper_3-r_aper_3', df['g_aper_3'] - df['r_aper_3'])
+    # if 'g_auto' in df.columns and 'r_auto' in df.columns and 'mag_g' in df.columns and 'mag_r' in df.columns:
+    #   df.insert(idx + 5, 'g-r_auto-legacy', (df['g_auto'] - df['r_auto']) - (df['mag_g'] - df['mag_r']))
+    # if 'g_aper_6' in df.columns and 'r_aper_6' in df.columns and 'mag_g' in df.columns and 'mag_r' in df.columns:
+    #   df.insert(idx + 6, 'g-r_aper6-legacy', (df['g_aper_6'] - df['r_aper_6']) - (df['mag_g'] - df['mag_r']))
   
   
     # Filter bad objects after visual inspection

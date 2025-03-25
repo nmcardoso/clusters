@@ -62,10 +62,6 @@ def clusters_v5_remake_pipeline(clear: bool = False):
     PhotoZRadialSearchStage(overwrite=False),
     SpecZRadialSearchStage(overwrite=False),
     DownloadLegacyCatalogStage('cls_search_radius_deg', overwrite=False, workers=6),
-    # ArchiveDownloadLegacyCatalogStage(
-    #   radius_key='cls_search_radius_deg', workers=15,
-    #   overwrite=True, overwrite_bricks=False, 
-    # ),
     LoadPhotozRadialStage(),
     LoadSpeczRadialStage(),
     LoadLegacyRadialStage(),
@@ -120,10 +116,6 @@ def hydra_neighbours_pipeline(clear: bool = False):
     PhotoZRadialSearchStage(overwrite=False),
     SpecZRadialSearchStage(overwrite=False),
     DownloadLegacyCatalogStage('cls_search_radius_deg', overwrite=False, workers=6),
-    # ArchiveDownloadLegacyCatalogStage(
-    #   radius_key='cls_search_radius_deg', workers=15,
-    #   overwrite=True, overwrite_bricks=False, 
-    # ),
     LoadPhotozRadialStage(),
     LoadSpeczRadialStage(),
     LoadLegacyRadialStage(),
@@ -177,10 +169,6 @@ def clusters_v6_pipeline(clear: bool = False):
     PhotoZRadialSearchStage(overwrite=False),
     SpecZRadialSearchStage(overwrite=False),
     DownloadLegacyCatalogStage('cls_search_radius_deg', overwrite=False, workers=6),
-    # ArchiveDownloadLegacyCatalogStage(
-    #   radius_key='cls_search_radius_deg', workers=15,
-    #   overwrite=True, overwrite_bricks=False, 
-    # ),
     LoadPhotozRadialStage(),
     LoadSpeczRadialStage(),
     LoadLegacyRadialStage(),
