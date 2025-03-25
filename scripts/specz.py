@@ -3,7 +3,6 @@ from pathlib import Path
 
 sys.path.insert(0, str(Path(__file__).parent.parent.absolute()))
 
-from astromodule.io import merge_pdf
 from astromodule.pipeline import Pipeline, PipelineStorage
 
 from splusclusters.loaders import (LoadClusterInfoStage, load_clusters,
@@ -13,9 +12,10 @@ from splusclusters.plots import ClusterPlotStage
 
 
 def spec_pipeline(overwrite: bool = False):
-  df_clusters = load_clusters()
+  df_clusters = load_catalog_v6()
   df_spec, specz_skycoord = load_spec()
   
+  configs.Z_SPEC_DELTA = 0.02
   pipe = Pipeline(
     LoadClusterInfoStage(df_clusters),
     SpecZRadialSearchStage(overwrite=overwrite),
