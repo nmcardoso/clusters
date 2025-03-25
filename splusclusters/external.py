@@ -277,7 +277,7 @@ class DownloadSplusPhotozStage(PipelineStage):
     idr5_pz = splusdata.get_hipscats('idr5/photoz', headers=conn.headers)[0]
     # idr5_pz_margin = lsdb.read_hats(idr5_pz[1], storage_options=dict(headers=conn.headers))
     pz = lsdb.read_hats(
-      UPath(idr5_pz_margin[0], headers=conn.headers),
+      UPath(idr5_pz[0], headers=conn.headers),
       columns=[
         'RA', 'DEC', 'zml', 'odds', 'pdf_weights_0', 'pdf_weights_1', 
         'pdf_weights_2', 'pdf_means_0', 'pdf_means_1', 'pdf_means_2', 
