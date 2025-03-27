@@ -230,7 +230,7 @@ class DownloadSplusPhotozStage(PipelineStage):
     # idr5_margin = lsdb.read_hats(idr5_links[1], storage_options=dict(headers=conn.headers))
     dual = lsdb.read_hats(
       UPath(idr5_links[0], headers=conn.headers),
-      margin_cache=idr5_links[1],
+      # margin_cache=idr5_links[1],
       columns = [
         'RA', 'DEC', 'A', 'B', 'THETA', 'ELLIPTICITY',
         'PETRO_RADIUS', 'FLUX_RADIUS_20', 'FLUX_RADIUS_50', 'FLUX_RADIUS_90', 
@@ -279,7 +279,7 @@ class DownloadSplusPhotozStage(PipelineStage):
     # idr5_pz_margin = lsdb.read_hats(idr5_pz[1], storage_options=dict(headers=conn.headers))
     pz = lsdb.read_hats(
       UPath(idr5_pz[0], headers=conn.headers),
-      margin_cache=idr5_pz[1],
+      # margin_cache=idr5_pz[1],
       columns=[
         'RA', 'DEC', 'zml', 'odds', 'pdf_weights_0', 'pdf_weights_1', 
         'pdf_weights_2', 'pdf_means_0', 'pdf_means_1', 'pdf_means_2', 
@@ -296,7 +296,7 @@ class DownloadSplusPhotozStage(PipelineStage):
     # idr5_sqg_margin = lsdb.read_hats(idr5_sqg[1], storage_options=dict(headers=conn.headers))
     sqg = lsdb.read_hats(
       UPath(idr5_sqg[0], headers=conn.headers),
-      margin_cache=idr5_sqg[1],
+      # margin_cache=idr5_sqg[1],
       columns=['RA', 'DEC', 'PROB_GAL_GAIA'],
       # filters=[('PROB_GAL', '>=', 0.5)]
     )
@@ -309,7 +309,7 @@ class DownloadSplusPhotozStage(PipelineStage):
     # idr5_overlap_margin = lsdb.read_hats(idr5_overlap[1], storage_options=dict(headers=conn.headers))
     overlap = lsdb.read_hats(
       UPath(idr5_overlap[0], headers=conn.headers),
-      margin_cache=idr5_overlap[1],
+      # margin_cache=idr5_overlap[1],
       columns=['RA', 'DEC', 'in_overlap_region'],
       # filters=[('in_overlap_region', '==', 0)]
     )
