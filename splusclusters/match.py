@@ -396,9 +396,9 @@ class PhotozSpeczLegacyMatchStage(PipelineStage):
       ]
       for col in cols:
         if f'{col}_final' in df.columns:
-          df[f'{col}_final'].replace(r'^\s*$', np.nan, regex=True, inplace=True)
-          df[f'{col}_final'].fillna(df[f'{col}_spec_all'], inplace=True)
-          df.rename(columns={f'{col}_final': col}, inplace=True)
+          df[f'{col}_final'] = df[f'{col}_final'].replace(r'^\s*$', np.nan, regex=True)
+          df[f'{col}_final'] = df[f'{col}_final'].fillna(df[f'{col}_spec_all'])
+          df = df.rename(columns={f'{col}_final': col})
         if f'{col}_spec_all' in df.columns:
           del df[f'{col}_spec_all']
       df['f_z'] = df['f_z'].astype('str')
@@ -491,7 +491,7 @@ class PhotozSpeczLegacyMatchStage(PipelineStage):
       
       if 'z_spec_all' in df_lost.columns:
         df_lost['z_final'] = df_lost['z_final'].fillna(df_lost['z_spec_all'])
-        df_lost.rename(columns={'z_final': 'z'}, inplace=True)
+        df_lost = df_lost.rename(columns={'z_final': 'z'})
       
       if 'ra_legacy' in df_lost.columns:
         del df_lost['ra_legacy']
