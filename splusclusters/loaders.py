@@ -74,15 +74,15 @@ def load_spec(coords: bool = True):
   if 'original_f_z' in df_spec.columns:
     if 'f_z' in df_spec.columns:
       del df_spec['f_z']
-    df_spec.rename({'original_f_z': 'f_z'}, inplace=True)
+    df_spec.rename(columns={'original_f_z': 'f_z'}, inplace=True)
   if 'class' in df_spec.columns:
     if 'class_spec' in df_spec.columns:
       del df_spec['class_spec']
-    df_spec.rename({'class': 'class_spec'}, inplace=True)
+    df_spec.rename(columns={'class': 'class_spec'}, inplace=True)
   if 'original_class' in df_spec.columns:
     if 'original_class_spec' in df_spec.columns:
       del df_spec['original_class_spec']
-    df_spec.rename({'original_class': 'original_class_spec'}, inplace=True)
+    df_spec.rename(columns={'original_class': 'original_class_spec'}, inplace=True)
   if coords:
     ra, dec = guess_coords_columns(df_spec)
     coords = SkyCoord(
