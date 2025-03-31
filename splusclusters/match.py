@@ -48,6 +48,7 @@ class RadialSearchStage(PipelineStage):
     t = Timming()
     print(f'Starting radial search with radius: {radius:.2f} deg')
     pos = SkyCoord(ra=cls_ra, dec=cls_dec, unit=u.deg, frame='icrs')
+    print(self.get_data(self.df_name))
     df_search = radial_search(
       position=pos, 
       table=self.get_data(self.df_name), 
