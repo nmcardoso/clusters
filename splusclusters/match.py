@@ -297,11 +297,9 @@ class PhotozSpeczLegacyMatchStage(PipelineStage):
       
       for col in df.columns:
         if df[col].dtype == 'int64' or df[col].dtype == 'int64[pyarrow]':
-          df[col].replace(r'^\s*$', np.nan, regex=True, inplace=True)
-          df[col] = df[col].astype('int32')
+          df[col] = df[col].replace(r'^\s*$', np.nan, regex=True).astype('int32')
         if df[col].dtype == 'float64' or df[col].dtype == 'float64[pyarrow]' or df[col].dtype == 'float[pyarrow]' or df[col].dtype == 'double[pyarrow]':
-          df[col].replace(r'^\s*$', np.nan, regex=True, inplace=True)
-          df[col] = df[col].astype('float64')
+          df[col] = df[col].replace(r'^\s*$', np.nan, regex=True).astype('float64')
           
       del df['ra_r']
       del df['dec_r']
@@ -345,7 +343,6 @@ class PhotozSpeczLegacyMatchStage(PipelineStage):
         dec1='dec_final',
         ra2='ra_legacy',
         dec2='dec_legacy',
-        fmt='csv',
       )
       # df['ra_final'] = df['ra_final'].fillna(df['ra_legacy'])
       # df['dec_final'] = df['dec_final'].fillna(df['dec_legacy'])
@@ -392,7 +389,6 @@ class PhotozSpeczLegacyMatchStage(PipelineStage):
         dec2='dec_spec_all',
         suffix2='_spec_all',
         join='all1',
-        fmt='csv',
       )
       cols = [
         'z', 'e_z', 'f_z', 'class_spec',
