@@ -72,9 +72,11 @@ def load_members_v6(cls_name: str = None, cls_id: str | int = None):
 def load_spec(coords: bool = True):
   df_spec = read_table(configs.SPEC_TABLE_PATH)
   if 'original_f_z' in df_spec.columns:
-    if 'f_z' in df_spec.columns:
-      del df_spec['f_z']
-    df_spec = df_spec.rename(columns={'original_f_z': 'f_z'})
+    df_spec['f_z_new'] = ''
+    df_spec.loc[df_spec['f_z'] == 1, 'f_z_new'] = 'KEEP'
+    del df_spec['f_z']
+    df_spec = df_spec.rename(columns={'f_z_new': 'f_z'})
+    del df_spec['original_f_z']
   if 'class' in df_spec.columns:
     if 'class_spec' in df_spec.columns:
       del df_spec['class_spec']
