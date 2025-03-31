@@ -26,8 +26,8 @@ def specz_pipeline_v6(overwrite: bool = False, z_photo_delta: float | None = Non
   
   if two:
     df_clusters = df_clusters[df_clusters.name.isin(['MKW4', 'A168'])]
-  else:
-    df_clusters = df_clusters[df_clusters.name.str.lower().isin(['fornax', 'antlia', 'hydra'])]
+  # else:
+    # df_clusters = df_clusters[df_clusters.name.str.lower().isin(['fornax', 'antlia', 'hydra'])]
     # df_clusters = df_clusters.iloc[-4:]
   
   df_spec, specz_skycoord = load_spec()
@@ -36,6 +36,8 @@ def specz_pipeline_v6(overwrite: bool = False, z_photo_delta: float | None = Non
     df_spec.class_spec.str.upper().str.startswith('GALAXY') &
     df_spec.f_z.str.upper().str.startswith('KEEP')
   ]
+  
+  print(df_spec)
   
   pipe = Pipeline(
     LoadClusterInfoStage(df_clusters, version=6),
