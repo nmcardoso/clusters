@@ -54,8 +54,6 @@ class RadialSearchStage(PipelineStage):
       table=df, 
       radius=radius*u.deg,
       cached_catalog=self.get_data(self.skycoord_name),
-      ra=self.ra_col,
-      dec=self.dec_col,
     )
     
     if self.kind == 'spec':
@@ -106,8 +104,6 @@ class PhotoZRadialSearchStage(RadialSearchStage):
     radius_key: str = 'cls_search_radius_deg', 
     overwrite: bool = False,
   ):
-    self.ra_col = None
-    self.dec_col = None
     super().__init__(
       df_name='df_photoz',
       radius_key=radius_key, 
@@ -126,8 +122,6 @@ class LegacyRadialSearchStage(RadialSearchStage):
     radius_key: str = 'cls_search_radius_deg', 
     overwrite: bool = False,
   ):
-    self.ra_col = 'ra_spec_all'
-    self.dec_col = 'dec_spec_all'
     super().__init__(
       df_name='df_legacy',
       radius_key=radius_key, 
