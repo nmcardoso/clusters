@@ -85,7 +85,7 @@ def load_spec(coords: bool = True):
     if 'original_class_spec' in df_spec.columns:
       del df_spec['original_class_spec']
     df_spec = df_spec.rename(columns={'original_class': 'original_class_spec'})
-  df_spec = df_spec.source.fillna('')
+  df_spec['source'] = df_spec['source'].fillna('')
   if coords:
     ra, dec = guess_coords_columns(df_spec)
     coords = SkyCoord(
