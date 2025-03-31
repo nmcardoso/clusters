@@ -48,12 +48,14 @@ class RadialSearchStage(PipelineStage):
     t = Timming()
     print(f'Starting radial search with radius: {radius:.2f} deg')
     pos = SkyCoord(ra=cls_ra, dec=cls_dec, unit=u.deg, frame='icrs')
-    print(self.get_data(self.df_name))
+    df = self.get_data(self.df_name)
     df_search = radial_search(
       position=pos, 
-      table=self.get_data(self.df_name), 
+      table=df, 
       radius=radius*u.deg,
       cached_catalog=self.get_data(self.skycoord_name),
+      ra='ra_spec_all' if 'ra_spec_all' in df.columns else None,
+      dec='dec_spec_all' if 'dec_spec_all' in df.columns else None,
     )
     
     if self.kind == 'spec':
