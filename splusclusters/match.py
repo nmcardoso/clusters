@@ -530,7 +530,7 @@ class PhotozSpeczLegacyMatchStage(PipelineStage):
     # compute radius_deg for all objects
     coords = SkyCoord(ra=df['ra_final'].values, dec=df['dec_final'].values, unit=u.deg)
     df['radius_deg_computed'] = coords.separation(center).deg
-    df['radius_deg'].fillna(df['radius_deg_computed'], inplace=True)
+    df['radius_deg'] = df['radius_deg'].fillna(df['radius_deg_computed'])
     del df['radius_deg_computed']
 
     df.insert(0, 'ra', df['ra_final'].values)
