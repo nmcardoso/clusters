@@ -54,8 +54,8 @@ class RadialSearchStage(PipelineStage):
       table=df, 
       radius=radius*u.deg,
       cached_catalog=self.get_data(self.skycoord_name),
-      ra='ra_spec_all' if 'ra_spec_all' in df.columns else None,
-      dec='dec_spec_all' if 'dec_spec_all' in df.columns else None,
+      ra=self.ra_col,
+      dec=self.dec_col,
     )
     
     if self.kind == 'spec':
@@ -106,6 +106,8 @@ class PhotoZRadialSearchStage(RadialSearchStage):
     radius_key: str = 'cls_search_radius_deg', 
     overwrite: bool = False,
   ):
+    self.ra_col = None
+    self.dec_col = None
     super().__init__(
       df_name='df_photoz',
       radius_key=radius_key, 
@@ -124,6 +126,8 @@ class LegacyRadialSearchStage(RadialSearchStage):
     radius_key: str = 'cls_search_radius_deg', 
     overwrite: bool = False,
   ):
+    self.ra_col = 'ra_spec_all'
+    self.dec_col = 'dec_spec_all'
     super().__init__(
       df_name='df_legacy',
       radius_key=radius_key, 
@@ -245,7 +249,10 @@ class PhotozSpeczLegacyMatchStage(PipelineStage):
     df_r = df_ret.copy()
     
     if len(df_spec) > 0:
-      ra, dec = guess_coords_columns(df_spec)
+      if 'ra_spec_all' in df_spec.columns and 'dec_spec_all' in df_spec.coluns:
+        ra, dec = 'ra_spec_all', 'dec_spec_all'
+      else:
+        ra, dec = guess_coords_columns(df_spec)
       df_spec = df_spec.rename(columns={ra: 'ra_spec', dec: 'dec_spec'})
     if len(df_photo) > 0:
       ra, dec = guess_coords_columns(df_photo)
