@@ -31,6 +31,8 @@ def specz_pipeline_v6(overwrite: bool = False, z_photo_delta: float | None = Non
     # df_clusters = df_clusters.iloc[-4:]
   
   df_spec, specz_skycoord = load_spec()
+  print(df_spec)
+  
   df_spec.rename(columns={'RA': 'ra_spec_all', 'DEC': 'dec_spec_all'}, inplace=True)
   df_spec = df_spec[
     df_spec.class_spec.str.upper().str.startswith('GALAXY') &
@@ -38,6 +40,7 @@ def specz_pipeline_v6(overwrite: bool = False, z_photo_delta: float | None = Non
   ]
   
   print(df_spec)
+  return 
   
   pipe = Pipeline(
     LoadClusterInfoStage(df_clusters, version=6),
