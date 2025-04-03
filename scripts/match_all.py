@@ -31,8 +31,8 @@ def match_all_pipeline(overwrite: bool = False, version: int = 6, z_photo_delta:
   
   if two:
     df_clusters = df_clusters[df_clusters.name.isin(['MKW4', 'A168'])]
-  else:
-    df_clusters = df_clusters[df_clusters.name.str.lower().isin(['fornax', 'antlia', 'hydra'])]
+  # else:
+  #   df_clusters = df_clusters[df_clusters.name.str.lower().isin(['fornax', 'antlia', 'hydra'])]
     # df_clusters = df_clusters.iloc[-4:]
   
   df_spec, specz_skycoord = load_spec()
