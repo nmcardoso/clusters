@@ -551,6 +551,10 @@ class PhotozSpeczLegacyMatchStage(PipelineStage):
 
     # colors
     # idx = df.columns.get_loc('Field')
+    # if 'u_aper_6' in df.columns and 'r_aper_6' in df.columns:
+    #   df.insert(idx + 1, 'u_aper_6-r_aper_6', df['u_aper_6'] - df['r_aper_6'])
+    # if 'u_aper_6' in df.columns and 'r_aper_6' in df.columns:
+    #   df.insert(idx + 2, 'u_aper_6-r_aper_6', df['u_aper_6'] - df['r_aper_6'])
     # if 'g_aper_6' in df.columns and 'r_aper_6' in df.columns:
     #   df.insert(idx + 1, 'g_aper_6-r_aper_6', df['g_aper_6'] - df['r_aper_6'])
     # if 'g_auto' in df.columns and 'r_auto' in df.columns:
@@ -640,7 +644,10 @@ class PhotozSpeczLegacyMatchStage(PipelineStage):
             z_mask = group_df.z.isna()
               
           elif len(group_df[~group_df.z.isna()]) > 1:
-            sdss_mask = group_df.source.str.upper().str.contains('SDSSDR18_SDSS').astype(np.bool)
+            sdss_mask = (
+              group_df.source.str.upper().str.contains('SDSSDR18_SDSS').astype(np.bool) |
+              group_df.source.str.upper().str.contains('DESI').astype(np.bool)
+            )
             if len(group_df[sdss_mask]) == 1:
               z_mask = ~sdss_mask
             elif len(group_df[sdss_mask]) > 1:
