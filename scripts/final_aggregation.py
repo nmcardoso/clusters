@@ -39,6 +39,7 @@ def match_all_pipeline(overwrite: bool = False, z_photo_delta: float | None = No
     
   df_clusters = df_clusters[(df_clusters.z_spec >= 0.02) & (df_clusters.z_spec <= 0.1)]
   df_clusters = df_clusters.sort_values(by='z_spec', ascending=True).reset_index()
+  print(df_clusters.columns)
   
   final_df = pd.DataFrame()
   for i, row in df_clusters.iterrows():
