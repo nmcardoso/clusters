@@ -7,8 +7,11 @@ sys.path.insert(0, str(Path(__file__).parent.parent.absolute()))
 from argparse import ArgumentParser
 
 import pandas as pd
+from astromodule.distance import mpc2arcsec
 from astromodule.pipeline import Pipeline, PipelineStorage
 from astromodule.table import concat_tables
+from astropy import units as u
+from astropy.cosmology import LambdaCDM
 from pylegs.io import read_table, write_table
 
 from splusclusters.configs import configs
@@ -39,7 +42,6 @@ def match_all_pipeline(overwrite: bool = False, z_photo_delta: float | None = No
     
   df_clusters = df_clusters[(df_clusters.z_spec >= 0.02) & (df_clusters.z_spec <= 0.1)]
   df_clusters = df_clusters.sort_values(by='z_spec', ascending=True).reset_index()
-  print(df_clusters.columns)
   
   final_df = pd.DataFrame()
   for i, row in df_clusters.iterrows():
@@ -69,13 +71,21 @@ def match_all_pipeline(overwrite: bool = False, z_photo_delta: float | None = No
   write_table(final_df, configs.OUT_PATH / 'table_3.parquet')
   
   df = read_table(configs.PHOTOZ_SPECZ_LEG_FOLDER / f'A168.parquet')
-  r200 = df_clusters[df_clusters.name == 'A168']['R200_deg']
-  df = df[df.radius_deg < 5*r200]
+  cluster = df_clusters[df_clusters.name == 'A168']
+  r200 = cluster['R200_Mpc']
+  z = cluster['z_spec']
+  cosmo = LambdaCDM(H0=70, Om0=0.3, Ode0=0.7)
+  search_radius_deg = mpc2arcsec(5*r200, z, cosmo).to(u.deg).value
+  df = df[df.radius_deg < search_radius_deg]
   write_table(df, configs.OUT_PATH / 'table_4.parquet')
   
   df = read_table(configs.PHOTOZ_SPECZ_LEG_FOLDER / f'MKW4.parquet')
-  r200 = df_clusters[df_clusters.name == 'MKW4']['R200_deg']
-  df = df[df.radius_deg < 5*r200]
+  cluster = df_clusters[df_clusters.name == 'MKW4']
+  r200 = cluster['R200_Mpc']
+  z = cluster['z_spec']
+  cosmo = LambdaCDM(H0=70, Om0=0.3, Ode0=0.7)
+  search_radius_deg = mpc2arcsec(5*r200, z, cosmo).to(u.deg).value
+  df = df[df.radius_deg < search_radius_deg]
   write_table(final_df[final_df.cluster_name == 'MKW4'], configs.OUT_PATH / 'table_5.parquet')
   
   
