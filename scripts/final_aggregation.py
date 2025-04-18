@@ -86,7 +86,7 @@ def match_all_pipeline(overwrite: bool = False, z_photo_delta: float | None = No
   cosmo = LambdaCDM(H0=70, Om0=0.3, Ode0=0.7)
   search_radius_deg = mpc2arcsec(5*r200, z, cosmo).to(u.deg).value
   df = df[df.radius_deg < search_radius_deg]
-  write_table(final_df[final_df.cluster_name == 'MKW4'], configs.OUT_PATH / 'table_5.parquet')
+  write_table(df, configs.OUT_PATH / 'table_5.parquet')
   
   
 if __name__ == "__main__":
