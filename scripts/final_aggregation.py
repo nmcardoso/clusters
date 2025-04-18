@@ -51,13 +51,13 @@ def match_all_pipeline(overwrite: bool = False, z_photo_delta: float | None = No
     path = configs.PHOTOZ_SPECZ_LEG_FOLDER / f'{name}.parquet'
     df = read_table(path)
     mask = (
-      (df.flag_member == 0) & 
+      (df.flag_member.isin([0, 1])) & 
       (df.z.between(z_cluster-z_photo_delta, z_cluster+z_photo_delta)) &
       (df.radius_Mpc < 5*r200_Mpc)
     )
     df = df[mask]
     df.insert(0, 'cluster_name', name)
-    df.insert(1, 'cluster_id', i+1)
+    # df.insert(1, 'cluster_id', i+1)
     final_df = concat_tables([final_df, df])
     print(
       'cluster_id:', i+1, '\tcluster_name:', f'{name: <17}', '\tz_cluster:', z_cluster, 
@@ -65,9 +65,17 @@ def match_all_pipeline(overwrite: bool = False, z_photo_delta: float | None = No
       '\tNmemb (5R200):', len(df)
     )
   print('Table size:', len(final_df))
-  write_table(final_df, configs.OUT_PATH / 'table_2.parquet')
-  write_table(final_df[final_df.cluster_name == 'A168'], configs.OUT_PATH / 'table_3b.parquet')
-  write_table(final_df[final_df.cluster_name == 'MKW4'], configs.OUT_PATH / 'table_3c.parquet')
+  write_table(final_df, configs.OUT_PATH / 'table_3.parquet')
+  
+  df = read_table(configs.PHOTOZ_SPECZ_LEG_FOLDER / f'A168.parquet')
+  r200 = df_clusters[df_clusters.name == 'A168']['R200_deg']
+  df = df[df.radius_deg < 5*r200]
+  write_table(df, configs.OUT_PATH / 'table_4.parquet')
+  
+  df = read_table(configs.PHOTOZ_SPECZ_LEG_FOLDER / f'MKW4.parquet')
+  r200 = df_clusters[df_clusters.name == 'MKW4']['R200_deg']
+  df = df[df.radius_deg < 5*r200]
+  write_table(final_df[final_df.cluster_name == 'MKW4'], configs.OUT_PATH / 'table_5.parquet')
   
   
 if __name__ == "__main__":
