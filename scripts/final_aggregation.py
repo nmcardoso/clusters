@@ -72,8 +72,8 @@ def match_all_pipeline(overwrite: bool = False, z_photo_delta: float | None = No
   
   df = read_table(configs.PHOTOZ_SPECZ_LEG_FOLDER / f'A168.parquet')
   cluster = df_clusters[df_clusters.name == 'A168']
-  r200 = cluster['R200_Mpc']
-  z = cluster['z_spec']
+  r200 = cluster['R200_Mpc'].values[0]
+  z = cluster['z_spec'].values[0]
   cosmo = LambdaCDM(H0=70, Om0=0.3, Ode0=0.7)
   search_radius_deg = mpc2arcsec(5*r200, z, cosmo).to(u.deg).value
   df = df[df.radius_deg < search_radius_deg]
@@ -81,8 +81,8 @@ def match_all_pipeline(overwrite: bool = False, z_photo_delta: float | None = No
   
   df = read_table(configs.PHOTOZ_SPECZ_LEG_FOLDER / f'MKW4.parquet')
   cluster = df_clusters[df_clusters.name == 'MKW4']
-  r200 = cluster['R200_Mpc']
-  z = cluster['z_spec']
+  r200 = cluster['R200_Mpc'].values[0]
+  z = cluster['z_spec'].values[0]
   cosmo = LambdaCDM(H0=70, Om0=0.3, Ode0=0.7)
   search_radius_deg = mpc2arcsec(5*r200, z, cosmo).to(u.deg).value
   df = df[df.radius_deg < search_radius_deg]
