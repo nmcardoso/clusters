@@ -1,9 +1,14 @@
 import sys
+from pathlib import Path
+
+sys.path.insert(0, str(Path(__file__).parent.parent.absolute()))
 
 import numpy as np
 from astropy import units as u
 from astropy.table import Column, MaskedColumn, Table
 from pylegs.io import read_table, write_table
+
+from splusclusters.configs import configs
 
 TABLE_DESC = {
   'cluster_name': 'Cluster name, according with the Table 1',
@@ -245,8 +250,8 @@ TABLE_UNIT = {
 }
 
 
-def main():
-  df = read_table('~/Downloads/MKW4.parquet').iloc[100].reset_index(drop=True).copy()
+def make_mrt(table: str):
+  df = read_table(configs.OUT_PATH / f'{table}.parquet')
   t = Table(meta={'Author': 'C. Mendes de Oliveira et al.', 'Table': '3', 'Title': 'MKW4 members'})
   for c in df.columns:
     desc = TABLE_DESC.get(c)
@@ -259,7 +264,12 @@ def main():
       else:
         col = Column(df[c].values, name=c, description=desc, unit=TABLE_UNIT.get(c))
       t[c] = col
-  t.write('broca.mrt', format='ascii.mrt', overwrite=True)
+  t.write(configs.OUT_PATH / f'{table}.dat', format='ascii.mrt', overwrite=True)
   
 if __name__ == '__main__':
-  main()
+  print('>> Table 3')
+  make_mrt('table_3')
+  print('>> Table 4')
+  make_mrt('table_4')
+  print('>> Table 5')
+  make_mrt('table_5')
