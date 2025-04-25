@@ -339,7 +339,7 @@ class PhotozSpeczLegacyMatchStage(PipelineStage):
     if df is not None and len(df_legacy) > 0:
       print('legacy columns:')
       print(*df_legacy.columns, sep=', ')
-      df = crossmatch(
+      df_result = crossmatch(
         table1=df,
         table2=df_legacy,
         join='all1',
@@ -348,10 +348,12 @@ class PhotozSpeczLegacyMatchStage(PipelineStage):
         ra2='ra_legacy',
         dec2='dec_legacy',
       )
-      # df['ra_final'] = df['ra_final'].fillna(df['ra_legacy'])
-      # df['dec_final'] = df['dec_final'].fillna(df['dec_legacy'])
-      del df['ra_legacy']
-      del df['dec_legacy']
+      if df_result is not None:
+        df = df_result
+        # df['ra_final'] = df['ra_final'].fillna(df['ra_legacy'])
+        # df['dec_final'] = df['dec_final'].fillna(df['dec_legacy'])
+        del df['ra_legacy']
+        del df['dec_legacy']
     else:
       df['type'] = np.nan
       df['mag_r'] = np.nan
