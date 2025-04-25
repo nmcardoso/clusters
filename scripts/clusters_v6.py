@@ -15,7 +15,8 @@ from astropy.coordinates import SkyCoord, match_coordinates_sky
 
 from splusclusters.configs import configs
 from splusclusters.external import (ArchiveDownloadLegacyCatalogStage,
-                                    DownloadLegacyCatalogStage)
+                                    DownloadLegacyCatalogStage,
+                                    DownloadSplusPhotozStage)
 from splusclusters.loaders import (LoadAllRadialStage, LoadClusterInfoStage,
                                    LoadGenericInfoStage, LoadLegacyRadialStage,
                                    LoadPauloInfoStage, LoadPhotozRadialStage,
@@ -59,9 +60,10 @@ def clusters_v5_remake_pipeline(clear: bool = False):
   
   pipe = Pipeline(
     LoadPauloInfoStage(df_clusters),
-    # PhotoZRadialSearchStage(overwrite=False),
-    # SpecZRadialSearchStage(overwrite=False),
-    # DownloadLegacyCatalogStage('cls_search_radius_deg', overwrite=False, workers=6),
+    DownloadSplusPhotozStage(overwrite=False),
+    PhotoZRadialSearchStage(overwrite=False),
+    SpecZRadialSearchStage(overwrite=False),
+    DownloadLegacyCatalogStage('cls_search_radius_deg', overwrite=False, workers=6),
     LoadPhotozRadialStage(),
     LoadSpeczRadialStage(),
     LoadLegacyRadialStage(),
@@ -113,9 +115,10 @@ def hydra_neighbours_pipeline(clear: bool = False):
   
   pipe = Pipeline(
     LoadGenericInfoStage(df_clusters),
-    # PhotoZRadialSearchStage(overwrite=False),
-    # SpecZRadialSearchStage(overwrite=False),
-    # DownloadLegacyCatalogStage('cls_search_radius_deg', overwrite=False, workers=6),
+    DownloadSplusPhotozStage(overwrite=False),
+    PhotoZRadialSearchStage(overwrite=False),
+    SpecZRadialSearchStage(overwrite=False),
+    DownloadLegacyCatalogStage('cls_search_radius_deg', overwrite=False, workers=6),
     LoadPhotozRadialStage(),
     LoadSpeczRadialStage(),
     LoadLegacyRadialStage(),
@@ -166,9 +169,10 @@ def clusters_v6_pipeline(clear: bool = False):
         
   ls10_pipe = Pipeline(
     LoadPauloInfoStage(df_clusters),
-    # PhotoZRadialSearchStage(overwrite=False),
-    # SpecZRadialSearchStage(overwrite=False),
-    # DownloadLegacyCatalogStage('cls_search_radius_deg', overwrite=False, workers=6),
+    DownloadSplusPhotozStage(overwrite=False),
+    PhotoZRadialSearchStage(overwrite=False),
+    SpecZRadialSearchStage(overwrite=False),
+    DownloadLegacyCatalogStage('cls_search_radius_deg', overwrite=False, workers=6),
     LoadPhotozRadialStage(),
     LoadSpeczRadialStage(),
     LoadLegacyRadialStage(),
