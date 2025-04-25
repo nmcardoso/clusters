@@ -544,6 +544,10 @@ class PhotozSpeczLegacyMatchStage(PipelineStage):
     df['radius_deg'] = df['radius_deg'].fillna(df['radius_deg_computed'])
     del df['radius_deg_computed']
 
+    if 'ra' in df.columns:
+      del df['ra']
+    if 'dec' in df.columns:
+      del df['dec']
     df.insert(0, 'ra', df['ra_final'].values)
     df.insert(1, 'dec', df['dec_final'].values)
     del df['ra_final']
