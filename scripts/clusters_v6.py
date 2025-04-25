@@ -29,6 +29,7 @@ from splusclusters.match import (PhotoZRadialSearchStage,
                                  PhotozSpeczLegacyMatchStage,
                                  SpecZRadialSearchStage)
 from splusclusters.plots import ClusterPlotStage
+from splusclusters.utils import config_dask
 
 
 def add_xray_flag(df: pd.DataFrame, threshold: float = 1):
@@ -217,6 +218,7 @@ def create_zip():
 
 
 if __name__ == "__main__":
+  config_dask()
   hydra_neighbours_pipeline()
   clusters_v5_remake_pipeline()
   clusters_v6_pipeline()
