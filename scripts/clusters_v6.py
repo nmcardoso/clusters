@@ -59,9 +59,9 @@ def clusters_v5_remake_pipeline(clear: bool = False):
   
   pipe = Pipeline(
     LoadPauloInfoStage(df_clusters),
-    PhotoZRadialSearchStage(overwrite=False),
-    SpecZRadialSearchStage(overwrite=False),
-    DownloadLegacyCatalogStage('cls_search_radius_deg', overwrite=False, workers=6),
+    # PhotoZRadialSearchStage(overwrite=False),
+    # SpecZRadialSearchStage(overwrite=False),
+    # DownloadLegacyCatalogStage('cls_search_radius_deg', overwrite=False, workers=6),
     LoadPhotozRadialStage(),
     LoadSpeczRadialStage(),
     LoadLegacyRadialStage(),
@@ -113,9 +113,9 @@ def hydra_neighbours_pipeline(clear: bool = False):
   
   pipe = Pipeline(
     LoadGenericInfoStage(df_clusters),
-    PhotoZRadialSearchStage(overwrite=False),
-    SpecZRadialSearchStage(overwrite=False),
-    DownloadLegacyCatalogStage('cls_search_radius_deg', overwrite=False, workers=6),
+    # PhotoZRadialSearchStage(overwrite=False),
+    # SpecZRadialSearchStage(overwrite=False),
+    # DownloadLegacyCatalogStage('cls_search_radius_deg', overwrite=False, workers=6),
     LoadPhotozRadialStage(),
     LoadSpeczRadialStage(),
     LoadLegacyRadialStage(),
@@ -166,9 +166,9 @@ def clusters_v6_pipeline(clear: bool = False):
         
   ls10_pipe = Pipeline(
     LoadPauloInfoStage(df_clusters),
-    PhotoZRadialSearchStage(overwrite=False),
-    SpecZRadialSearchStage(overwrite=False),
-    DownloadLegacyCatalogStage('cls_search_radius_deg', overwrite=False, workers=6),
+    # PhotoZRadialSearchStage(overwrite=False),
+    # SpecZRadialSearchStage(overwrite=False),
+    # DownloadLegacyCatalogStage('cls_search_radius_deg', overwrite=False, workers=6),
     LoadPhotozRadialStage(),
     LoadSpeczRadialStage(),
     LoadLegacyRadialStage(),
