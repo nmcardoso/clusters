@@ -401,7 +401,7 @@ class DownloadSplusPhotozStage(PipelineStage):
     
   
   def run(self, cls_name: str, cls_ra: float, cls_dec: float, z_photo_range: Tuple[float, float]):
-    def timeout_handler():
+    def timeout_handler(*kargs, **kwargs):
       raise Exception('Execution Timeout')
     
     success = False
@@ -410,7 +410,7 @@ class DownloadSplusPhotozStage(PipelineStage):
       try:
         print('\n>> Download Attempt', attempt, 'of', 6, '\n')
         signal.signal(signal.SIGALRM, timeout_handler)
-        signal.alarm(20*60) # 20 minutes
+        signal.alarm(12*60) # 12 minutes
         
         self.download(
           cls_name=cls_name, 
