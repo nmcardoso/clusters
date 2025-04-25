@@ -44,7 +44,7 @@ def add_xray_flag(df: pd.DataFrame, threshold: float = 1):
 
 def clusters_v5_remake_pipeline(clear: bool = False):
   df_clusters = load_catalog_v6_old()
-  df_photoz, photoz_skycoord = load_photoz2()
+  # df_photoz, photoz_skycoord = load_photoz2()
   df_spec, specz_skycoord = load_spec()
   
   configs.Z_SPEC_DELTA = 0.02
@@ -71,8 +71,8 @@ def clusters_v5_remake_pipeline(clear: bool = False):
     PrepareCatalogToSubmitStage(overwrite=False),
   )
   
-  PipelineStorage().write('df_photoz', df_photoz)
-  PipelineStorage().write('photoz_skycoord', photoz_skycoord)
+  # PipelineStorage().write('df_photoz', df_photoz)
+  # PipelineStorage().write('photoz_skycoord', photoz_skycoord)
   PipelineStorage().write('df_spec', df_spec)
   PipelineStorage().write('specz_skycoord', specz_skycoord)
   
@@ -98,7 +98,7 @@ def clusters_v5_remake_pipeline(clear: bool = False):
 
 def hydra_neighbours_pipeline(clear: bool = False):
   df_clusters = load_catalog_v6_hydra()
-  df_photoz, photoz_skycoord = load_photoz2()
+  # df_photoz, photoz_skycoord = load_photoz2()
   df_spec, specz_skycoord = load_spec()
   
   configs.Z_SPEC_DELTA = 0.02
@@ -125,8 +125,8 @@ def hydra_neighbours_pipeline(clear: bool = False):
     PrepareCatalogToSubmitStage(overwrite=False),
   )
   
-  PipelineStorage().write('df_photoz', df_photoz)
-  PipelineStorage().write('photoz_skycoord', photoz_skycoord)
+  # PipelineStorage().write('df_photoz', df_photoz)
+  # PipelineStorage().write('photoz_skycoord', photoz_skycoord)
   PipelineStorage().write('df_spec', df_spec)
   PipelineStorage().write('specz_skycoord', specz_skycoord)
   
@@ -151,7 +151,7 @@ def hydra_neighbours_pipeline(clear: bool = False):
 
 def clusters_v6_pipeline(clear: bool = False):
   df_clusters = load_catalog_v6()
-  df_photoz, photoz_skycoord = load_photoz2()
+  # df_photoz, photoz_skycoord = load_photoz2()
   df_spec, specz_skycoord = load_spec()
   
   configs.Z_SPEC_DELTA = 0.02
@@ -178,8 +178,8 @@ def clusters_v6_pipeline(clear: bool = False):
     PrepareCatalogToSubmitStage(overwrite=False),
   )
   
-  PipelineStorage().write('df_photoz', df_photoz)
-  PipelineStorage().write('photoz_skycoord', photoz_skycoord)
+  # PipelineStorage().write('df_photoz', df_photoz)
+  # PipelineStorage().write('photoz_skycoord', photoz_skycoord)
   PipelineStorage().write('df_spec', df_spec)
   PipelineStorage().write('specz_skycoord', specz_skycoord)
   
