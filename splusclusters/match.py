@@ -251,7 +251,7 @@ class PhotozSpeczLegacyMatchStage(PipelineStage):
     df_r = df_ret.copy() if df_ret is not None else None
     
     if len(df_spec) > 0:
-      if 'ra_spec_all' in df_spec.columns and 'dec_spec_all' in df_spec.coluns:
+      if 'ra_spec_all' in df_spec.columns and 'dec_spec_all' in df_spec.columns:
         ra, dec = 'ra_spec_all', 'dec_spec_all'
       else:
         ra, dec = guess_coords_columns(df_spec)
