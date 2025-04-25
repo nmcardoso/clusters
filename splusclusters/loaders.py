@@ -629,7 +629,8 @@ class PrepareCatalogToSubmitStage(PipelineStage):
     
     df_submit = df_all_radial[(~df_all_radial.z.isna()) & df_all_radial.z.between(*z_spec_range)]
     df_submit = df_submit.reset_index(drop=True).copy(deep=True)
-    del df_submit['field'] # causa desalinhamento na tabela, união com objs sem SPLUS
+    if 'field' in df_submit.columns:
+      del df_submit['field'] # causa desalinhamento na tabela, união com objs sem SPLUS
     # df_submit['ls10_photo'] = np.zeros(shape=((len(df_submit),)), dtype=int)
     # df_submit.ls10_photo[~df_submit.mag_r.isna()] = 1
     df_submit['class_spec'] = df_submit.class_spec.str.replace(' ', '')
