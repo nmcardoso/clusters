@@ -252,7 +252,7 @@ TABLE_UNIT = {
 
 def make_mrt(table: str):
   df = read_table(configs.OUT_PATH / f'{table}.parquet')
-  t = Table(meta={'Author': 'C. Mendes de Oliveira et al.', 'Table': '3', 'Title': 'MKW4 members'})
+  t = Table()
   for c in df.columns:
     desc = TABLE_DESC.get(c)
     if desc is not None:
