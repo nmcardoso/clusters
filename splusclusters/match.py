@@ -316,9 +316,8 @@ class PhotozSpeczLegacyMatchStage(PipelineStage):
         df[c] = np.nan
     elif df_photo is not None and len(df_photo) > 0:
       df = df_photo
-      if df_r is not None:
-        df['ra_final'] = df_r['ra_photo']
-        df['dec_final'] = df_r['dec_photo']
+      df['ra_final'] = df_photo['ra_photo']
+      df['dec_final'] = df_photo['dec_photo']
       for c in self.returned_columns:
         df[c] = np.nan
     
