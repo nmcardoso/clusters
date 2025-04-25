@@ -645,7 +645,7 @@ class PrepareCatalogToSubmitStage(PipelineStage):
     df_submit.loc[df_submit.f_z == '', 'f_z'] = '-999'
     df_submit.loc[df_submit.f_z == 'None', 'f_z'] = '-999'
     df_submit['ls10_photo'] = (~df_submit['mag_r'].isna()).astype(int)
-    df_submit = df_submit.fillna(-999)
+    # df_submit = df_submit.fillna(-999)
     df_submit = df_submit.rename(columns={
       'ra': 'RA',
       'dec': 'DEC',
