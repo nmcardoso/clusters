@@ -388,7 +388,7 @@ class PhotozSpeczLegacyMatchStage(PipelineStage):
       df_spec_all['f_z'] = df_spec_all['f_z'].astype('str')
       df_spec_all['original_class_spec'] = df_spec_all['original_class_spec'].astype('str')
       # spec_all_ra, spec_all_dec = guess_coords_columns(df_spec_all)
-      df = crossmatch(
+      df_result = crossmatch(
         df,
         df_spec_all,
         ra1='ra_final',
@@ -399,30 +399,32 @@ class PhotozSpeczLegacyMatchStage(PipelineStage):
         suffix2='_spec_all',
         join='all1',
       )
-      cols = [
-        'z', 'e_z', 'f_z', 'class_spec',
-        'original_class_spec', 'source'
-      ]
-      for col in cols:
-        if f'{col}_final' in df.columns:
-          df[f'{col}_final'] = df[f'{col}_final'].replace(r'^\s*$', np.nan, regex=True)
-          df[f'{col}_final'] = df[f'{col}_final'].fillna(df[f'{col}_spec_all'])
-          df = df.rename(columns={f'{col}_final': col})
-        if f'{col}_spec_all' in df.columns:
-          del df[f'{col}_spec_all']
-      df['f_z'] = df['f_z'].astype('str')
-      df['original_class_spec'] = df['original_class_spec'].astype('str')
-      del df['ra_spec_all']
-      del df['dec_spec_all']
+      if df_result is not None:
+        df = df_result
+        cols = [
+          'z', 'e_z', 'f_z', 'class_spec',
+          'original_class_spec', 'source'
+        ]
+        for col in cols:
+          if f'{col}_final' in df.columns:
+            df[f'{col}_final'] = df[f'{col}_final'].replace(r'^\s*$', np.nan, regex=True)
+            df[f'{col}_final'] = df[f'{col}_final'].fillna(df[f'{col}_spec_all'])
+            df = df.rename(columns={f'{col}_final': col})
+          if f'{col}_spec_all' in df.columns:
+            del df[f'{col}_spec_all']
+        df['f_z'] = df['f_z'].astype('str')
+        df['original_class_spec'] = df['original_class_spec'].astype('str')
+        del df['ra_spec_all']
+        del df['dec_spec_all']
       
-    df['f_z'] = df['f_z'].astype('str')
-    df['original_class_spec'] = df['original_class_spec'].astype('str')
+        df['f_z'] = df['f_z'].astype('str')
+        df['original_class_spec'] = df['original_class_spec'].astype('str')
     
-    print('\ncolumns after match:')
-    print(*df.columns, sep=', ')
-    print(f'\nCrossmatch 3 finished. Duration: {t.end()}')
-    print('Inserted redshifts:', len(df[~df.z.isna()]) - n_redshift)
-    print('Number of objects:', len(df))
+        print('\ncolumns after match:')
+        print(*df.columns, sep=', ')
+        print(f'\nCrossmatch 3 finished. Duration: {t.end()}')
+        print('Inserted redshifts:', len(df[~df.z.isna()]) - n_redshift)
+        print('Number of objects:', len(df))
     
     
     # fill flag_member
