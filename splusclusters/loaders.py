@@ -379,7 +379,7 @@ class LoadERASSInfoStage(PipelineStage):
     'cls_name', 'cls_z', 'cls_ra', 'cls_dec', 'cls_search_radius_deg',
     'cls_r500_Mpc', 'cls_r500_deg', 'cls_r200_Mpc', 'cls_r200_deg',
     'z_photo_range', 'z_spec_range', 'df_members', 'df_interlopers',
-    'cls_search_radius_Mpc',
+    'cls_search_radius_Mpc', 'df_ret'
   ]
   
   def __init__(self, df_clusters: pd.DataFrame):
@@ -426,7 +426,7 @@ class LoadGenericInfoStage(PipelineStage):
     'cls_name', 'cls_id', 'cls_z', 'cls_ra', 'cls_dec', 'cls_search_radius_deg',
     'cls_r500_Mpc', 'cls_r500_deg', 'cls_r200_Mpc', 'cls_r200_deg',
     'z_photo_range', 'z_spec_range', 'df_members', 'df_interlopers',
-    'cls_search_radius_Mpc',
+    'cls_search_radius_Mpc', 'df_ret'
   ]
   
   def __init__(self, df_clusters: pd.DataFrame):
@@ -476,7 +476,7 @@ class LoadPauloInfoStage(PipelineStage):
     'cls_name', 'cls_z', 'cls_ra', 'cls_dec', 'cls_search_radius_deg',
     'cls_r500_Mpc', 'cls_r500_deg', 'cls_r200_Mpc', 'cls_r200_deg',
     'z_photo_range', 'z_spec_range', 'df_members', 'df_interlopers',
-    'cls_search_radius_Mpc',
+    'cls_search_radius_Mpc', 'df_ret',
   ]
   
   def __init__(
@@ -566,7 +566,7 @@ class LoadERASS2InfoStage(PipelineStage):
     'cls_name', 'cls_z', 'cls_ra', 'cls_dec', 'cls_search_radius_deg', 
     'cls_search_radius_Mpc', 'cls_r500_Mpc', 'cls_r500_deg', 'cls_r200_Mpc', 
     'cls_r200_deg', 'z_photo_range', 'z_spec_range', 'df_members', 
-    'df_interlopers',
+    'df_interlopers', 'df_ret'
   ]
   
   def __init__(self, df_clusters: pd.DataFrame):
