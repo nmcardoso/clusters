@@ -49,11 +49,19 @@ class RadialSearchStage(PipelineStage):
     print(f'Starting radial search with radius: {radius:.2f} deg')
     pos = SkyCoord(ra=cls_ra, dec=cls_dec, unit=u.deg, frame='icrs')
     df = self.get_data(self.df_name)
+    if 'ra_spec_all' in df.columns:
+      _ra = 'ra_spec_all'
+      _dec = 'dec_spec_all'
+    else:
+      _ra = None
+      _dec = None
     df_search = radial_search(
       position=pos, 
       table=df, 
       radius=radius*u.deg,
       cached_catalog=self.get_data(self.skycoord_name),
+      ra=_ra,
+      dec=_dec,
     )
     
     if self.kind == 'spec':
