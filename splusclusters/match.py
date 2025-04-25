@@ -63,6 +63,8 @@ class RadialSearchStage(PipelineStage):
       ra=_ra,
       dec=_dec,
     )
+    if _ra is not None:
+      df_search = df_search.rename(columns={'ra_spec_all': 'ra', 'dec_spec_all': 'dec'})
     
     if self.kind == 'spec':
       df_search = df_search[
