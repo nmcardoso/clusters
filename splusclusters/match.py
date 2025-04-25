@@ -354,6 +354,9 @@ class PhotozSpeczLegacyMatchStage(PipelineStage):
         # df['dec_final'] = df['dec_final'].fillna(df['dec_legacy'])
         del df['ra_legacy']
         del df['dec_legacy']
+      else:
+        df['type'] = np.nan
+        df['mag_r'] = np.nan
     else:
       df['type'] = np.nan
       df['mag_r'] = np.nan
