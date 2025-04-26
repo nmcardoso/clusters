@@ -48,6 +48,7 @@ def clusters_v5_remake_pipeline(clear: bool = False):
   df_clusters = load_catalog_v6_old()
   # df_photoz, photoz_skycoord = load_photoz2()
   df_spec, specz_skycoord = load_spec()
+  df_spec.rename(columns={'RA': 'ra_spec_all', 'DEC': 'dec_spec_all'}, inplace=True)
   
   configs.Z_SPEC_DELTA = 0.02
   configs.SUBMIT_FOLDER = configs.OUT_PATH / 'submit' / 'antigos'
@@ -103,6 +104,7 @@ def hydra_neighbours_pipeline(clear: bool = False):
   df_clusters = load_catalog_v6_hydra()
   # df_photoz, photoz_skycoord = load_photoz2()
   df_spec, specz_skycoord = load_spec()
+  df_spec.rename(columns={'RA': 'ra_spec_all', 'DEC': 'dec_spec_all'}, inplace=True)
   
   configs.Z_SPEC_DELTA = 0.02
   configs.SUBMIT_FOLDER = configs.OUT_PATH / 'submit' / 'hydra'
@@ -197,6 +199,8 @@ def clusters_v6_pipeline(clear: bool = False):
   merge_pdf(plot_paths, concat_plot_path)
   
   df_clusters['clsid'] = df_clusters.clsid.astype(str).str.zfill(4)
+  
+  df_clusters = df_clusters.rename(columns={'z_spec': 'zspec', 'ra': 'RA', 'dec': 'DEC'})
   add_xray_flag(df_clusters)
   write_table(
     df_clusters[['clsid', 'name', 'RA', 'DEC', 'zspec', 'xray-flag']], 
