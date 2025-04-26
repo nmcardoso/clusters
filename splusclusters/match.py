@@ -323,19 +323,22 @@ class PhotozSpeczLegacyMatchStage(PipelineStage):
       df['ra_final'] = df_r['ra_r']
       df['dec_final'] = df_r['dec_r']
       for c in self.photo_columns:
-        df[c] = np.nan
+        if c != 'RA' and c != 'DEC':
+          df[c] = np.nan
     elif df_photo is not None and len(df_photo) > 0:
       df = df_photo
       df['ra_final'] = df_photo['ra_photo']
       df['dec_final'] = df_photo['dec_photo']
       for c in self.returned_columns:
-        df[c] = np.nan
+        if c != 'ra' and c != 'dec':
+          df[c] = np.nan
     elif df_spec is not None and len(df_spec) > 0:
       df = df_spec
       df['ra_final'] = df_spec['ra_spec']
       df['dec_final'] = df_spec['dec_spec']
       for c in self.returned_columns:
-        df[c] = np.nan
+        if c != 'ra' and c != 'dec':
+          df[c] = np.nan
     
     if df is not None:
       print('\ncolumns after match:')
