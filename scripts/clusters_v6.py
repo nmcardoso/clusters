@@ -224,7 +224,7 @@ def create_zip():
 
 if __name__ == "__main__":
   config_dask()
-  # clusters_v6_pipeline()
+  clusters_v6_pipeline()
   clusters_v5_remake_pipeline()
   hydra_neighbours_pipeline()
   create_zip()
