@@ -12,6 +12,7 @@ from astromodule.pipeline import Pipeline, PipelineStorage
 from astromodule.table import guess_coords_columns
 from astropy import units as u
 from astropy.coordinates import SkyCoord, match_coordinates_sky
+from astropy.table import Table
 
 from splusclusters.configs import configs
 from splusclusters.external import (ArchiveDownloadLegacyCatalogStage,
@@ -80,7 +81,7 @@ def clusters_v5_remake_pipeline(clear: bool = False):
   PipelineStorage().write('df_spec', df_spec)
   PipelineStorage().write('specz_skycoord', specz_skycoord)
   
-  pipe.map_run('cls_id', df_clusters.clsid.values, workers=1)
+  # pipe.map_run('cls_id', df_clusters.clsid.values, workers=1)
   
   plot_paths = [configs.PLOTS_FOLDER / f'cls_{c}.pdf' for c in df_clusters.name.values]
   plot_paths = [p for p in plot_paths if p.exists()]
@@ -91,10 +92,13 @@ def clusters_v5_remake_pipeline(clear: bool = False):
   
   df_clusters = df_clusters.rename(columns={'ra': 'RA', 'dec': 'DEC', 'z_spec': 'zspec'})
   add_xray_flag(df_clusters)
-  write_table(
-    df_clusters[['clsid', 'name', 'RA', 'DEC', 'zspec', 'xray-flag']], 
-    configs.SUBMIT_FOLDER / 'index.dat'
-  )
+  # write_table(
+  #   df_clusters[['clsid', 'name', 'RA', 'DEC', 'zspec', 'xray-flag']], 
+  #   configs.SUBMIT_FOLDER / 'index.dat'
+  # )
+  Table.from_pandas(
+    df_clusters[['clsid', 'name', 'RA', 'DEC', 'zspec', 'xray-flag']]
+  ).write(configs.SUBMIT_FOLDER / 'index.dat', format='ascii', overwrite=True)
 
 
 
@@ -136,7 +140,7 @@ def hydra_neighbours_pipeline(clear: bool = False):
   PipelineStorage().write('df_spec', df_spec)
   PipelineStorage().write('specz_skycoord', specz_skycoord)
   
-  pipe.map_run('cls_name', df_clusters.name.values, workers=1)
+  # pipe.map_run('cls_name', df_clusters.name.values, workers=1)
   
   plot_paths = [configs.PLOTS_FOLDER / f'cls_{c}.pdf' for c in df_clusters.name.values]
   plot_paths = [p for p in plot_paths if p.exists()]
@@ -147,10 +151,13 @@ def hydra_neighbours_pipeline(clear: bool = False):
   
   df_clusters = df_clusters.rename(columns={'z_spec': 'zspec', 'ra': 'RA', 'dec': 'DEC'})
   add_xray_flag(df_clusters)
-  write_table(
-    df_clusters[['clsid', 'name', 'RA', 'DEC', 'zspec', 'xray-flag']], 
-    configs.SUBMIT_FOLDER / 'index.dat'
-  )
+  # write_table(
+  #   df_clusters[['clsid', 'name', 'RA', 'DEC', 'zspec', 'xray-flag']], 
+  #   configs.SUBMIT_FOLDER / 'index.dat'
+  # )
+  Table.from_pandas(
+    df_clusters[['clsid', 'name', 'RA', 'DEC', 'zspec', 'xray-flag']]
+  ).write(configs.SUBMIT_FOLDER / 'index.dat', format='ascii', overwrite=True)
 
 
 
@@ -191,7 +198,7 @@ def clusters_v6_pipeline(clear: bool = False):
   PipelineStorage().write('df_spec', df_spec)
   PipelineStorage().write('specz_skycoord', specz_skycoord)
   
-  ls10_pipe.map_run('cls_id', df_clusters.clsid.values, workers=1)
+  # ls10_pipe.map_run('cls_id', df_clusters.clsid.values, workers=1)
   
   plot_paths = [configs.PLOTS_FOLDER / f'cls_{c}.pdf' for c in df_clusters.name.values]
   plot_paths = [p for p in plot_paths if p.exists()]
@@ -202,10 +209,13 @@ def clusters_v6_pipeline(clear: bool = False):
   
   df_clusters = df_clusters.rename(columns={'z_spec': 'zspec', 'ra': 'RA', 'dec': 'DEC'})
   add_xray_flag(df_clusters)
-  write_table(
-    df_clusters[['clsid', 'name', 'RA', 'DEC', 'zspec', 'xray-flag']], 
-    configs.SUBMIT_FOLDER / 'index.dat'
-  )
+  # write_table(
+  #   df_clusters[['clsid', 'name', 'RA', 'DEC', 'zspec', 'xray-flag']], 
+  #   configs.SUBMIT_FOLDER / 'index.dat'
+  # )
+  Table.from_pandas(
+    df_clusters[['clsid', 'name', 'RA', 'DEC', 'zspec', 'xray-flag']]
+  ).write(configs.SUBMIT_FOLDER / 'index.dat', format='ascii', overwrite=True)
 
   
 
