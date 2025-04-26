@@ -11,6 +11,7 @@ from astromodule.table import (concat_tables, crossmatch, fast_crossmatch,
 from astropy import units as u
 from astropy.coordinates import SkyCoord
 from astropy.cosmology import LambdaCDM
+from astropy.table import Table
 
 from splusclusters.configs import configs
 from splusclusters.utils import Timming
@@ -663,7 +664,8 @@ class PrepareCatalogToSubmitStage(PipelineStage):
     objects_before = len(df_submit)
     df_submit = remove_bad_objects(df_submit)
     print('Inspection filter:', objects_before, '->', len(df_submit))
-    write_table(df_submit, out_path)
+    Table.from_pandas(df_submit).write(out_path, format='ascii', overwrite=True)
+    # write_table(df_submit, out_path)
 
 
 
