@@ -278,7 +278,7 @@ class PhotozSpeczLegacyMatchStage(PipelineStage):
     
     df = None
     t = Timming()
-    if df_r is not None and len(df_r) > 0 and len(df_photo) > 0:
+    if df_r is not None and len(df_r) > 0 and df_photo is not None and len(df_photo) > 0:
       print('Crossmatch 1: photo-z UNION spec-members')
       print('spec-members columns:')
       print(*df_r.columns, sep=', ')
@@ -330,17 +330,25 @@ class PhotozSpeczLegacyMatchStage(PipelineStage):
       df['dec_final'] = df_photo['dec_photo']
       for c in self.returned_columns:
         df[c] = np.nan
+    elif df_spec is not None and len(df_spec) > 0:
+      df = df_spec
+      df['ra_final'] = df_spec['ra_spec']
+      df['dec_final'] = df_spec['dec_spec']
+      for c in self.returned_columns:
+        df[c] = np.nan
     
-    print('\ncolumns after match:')
-    print(*df.columns, sep=', ')
-    print(f'\nCrossmatch 1 finished. Duration: {t.end()}')
+    if df is not None:
+      print('\ncolumns after match:')
+      print(*df.columns, sep=', ')
+      print(f'\nCrossmatch 1 finished. Duration: {t.end()}')
     
     if len(df_photo) > 0:
       print('Objects with photo-z only:', len(df[~df.zml.isna() & df.z.isna()]))
       print('Objects with spec-z only:', len(df[df.zml.isna() & ~df.z.isna()]))
       print('Objects with photo-z and spec-z:', len(df[~df.zml.isna() & ~df.z.isna()]))
     
-    print('Total of objects after first match:', len(df))
+    if df is not None:
+      print('Total of objects after first match:', len(df))
     
     
     t = Timming()
