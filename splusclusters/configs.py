@@ -29,6 +29,7 @@ class Configs(metaclass=SingletonMeta):
   MEMBERS_V6_PATH = ROOT / 'tables' / 'members_v6'
   MEMBERS_V6_FOLDER = MEMBERS_V6_PATH / 'hold_cls_files'
   OUT_PATH = ROOT / 'outputs_v6'
+  STUDY_FOLDER = OUT_PATH / 'studies'
   WEBSITE_PATH = ROOT / 'docs'
   PLOTS_FOLDER = OUT_PATH / 'plots'
   VELOCITY_PLOTS_FOLDER = OUT_PATH / 'velocity_plots'
