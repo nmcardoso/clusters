@@ -638,23 +638,28 @@ class PrepareCatalogToSubmitStage(PipelineStage):
     print()
     print(df_submit)
     print()
-    # df_submit['ls10_photo'] = np.zeros(shape=((len(df_submit),)), dtype=int)
-    # df_submit.ls10_photo[~df_submit.mag_r.isna()] = 1
-    df_submit['class_spec'] = df_submit.class_spec.str.replace(' ', '')
-    df_submit.loc[df_submit.class_spec == '', 'class_spec'] = '-999'
-    # df_submit.loc[df_submit.type == '', 'type'] = '-999'
+    df_submit['ls10_photo'] = (~df_submit['mag_r'].isna()).astype(int)
+    df_submit['zml'] = df_submit['zml'].fillna(-9.99)
+    df_submit['odds'] = df_submit['odds'].fillna(-9.99)
+    df_submit['z'] = df_submit['z'].fillna(-9.99)
+    df_submit['e_z'] = df_submit['e_z'].fillna(-9.99)
+    df_submit['f_z'] = df_submit['f_z'].fillna('-999')
     df_submit.loc[df_submit.f_z == '', 'f_z'] = '-999'
     df_submit.loc[df_submit.f_z == 'None', 'f_z'] = '-999'
-    df_submit['ls10_photo'] = (~df_submit['mag_r'].isna()).astype(int)
-    # df_submit = df_submit.fillna(-999)
+    df_submit['mag_r'] = df_submit['mag_r'].fillna(-9.99)
+    df_submit['type'] = df_submit['type'].fillna('-999')
+    df_submit.loc[df_submit['type'] == '', 'type'] = '-999'
+    df_submit['class_spec'] = df_submit.class_spec.str.replace(' ', '')
+    df_submit.loc[df_submit['class_spec'] == '', 'class_spec'] = '-999'
+    df_submit['class_spec'] = df_submit['class_spec'].fillna('-999')
     col_names = {
       'ra': 'RA',
       'dec': 'DEC',
+      'zml': 'z_phot',
+      'odds': 'z_phot_odds',
       'z': 'zspec',
       'e_z': 'zspec-err',
       'f_z': 'zspec-flag',
-      'zml': 'z_phot',
-      'odds': 'z_phot_odds',
       'mag_r': 'ls10_r',
       'type': 'ls10_morpho',
       'class_spec': 'zspec-class',
