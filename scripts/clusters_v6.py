@@ -59,7 +59,7 @@ def _log_clusters(df_clusters):
     df = Table.read(table_path, format='ascii').to_pandas()
     flag_count = ''.join([f'{k} ({v})' for k, v in df['zspec-flag'].value_counts(dropna=False).items()])
     print(
-      f'{cls_name:17s} {len(df):4d} {df.zspec.min():5.2f} {df.zspec.max():5.2f} '
+      f'{cls_name:17s} {len(df):5d} {df.zspec.min():5.2f} {df.zspec.max():5.2f} '
       f'{len(df[df.zspec.isna()]):6d} {len(df[df.zspec < 0]):5d} '
       f'{len(df[df.zspec > 0]):5d} '
       f'{df["zspec-err"].min():8.2f} {df["zspec-err"].max():8.3f} '
