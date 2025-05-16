@@ -628,7 +628,11 @@ class PrepareCatalogToSubmitStage(PipelineStage):
     if out_path.exists() and not self.overwrite:
       return
     
-    df_submit = df_all_radial[(~df_all_radial.z.isna()) & df_all_radial.z.between(*z_spec_range)]
+    df_submit = df_all_radial[
+      (~df_all_radial.z.isna()) & 
+      df_all_radial.z.between(*z_spec_range) &
+      (df_all_radial.f_z == 'KEEP')
+    ]
     df_submit = df_submit.reset_index(drop=True).copy(deep=True)
     if 'field' in df_submit.columns:
       del df_submit['field'] # causa desalinhamento na tabela, união com objs sem SPLUS
