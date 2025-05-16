@@ -64,7 +64,7 @@ def _log_clusters(df_clusters):
       f'{len(df[df.zspec > 0]):5d} '
       f'{df["zspec-err"].min():8.2f} {df["zspec-err"].max():8.3f} '
       f'{len(df[df["zspec-err"].isna()]):9d} {len(df[df["zspec-err"] < 0]):8d} '
-      f'{len(df[df.zspec > 0]):8d} {flag_count} '
+      f'{len(df[df["zspec-err"] > 0]):8d} {flag_count} '
     )
   print()
   print()
