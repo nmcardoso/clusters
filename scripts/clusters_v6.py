@@ -46,6 +46,11 @@ def add_xray_flag(df: pd.DataFrame, threshold: float = 1):
 
 
 def _log_clusters(df_clusters):
+  print(
+    f'{"Cluster":17s} {"total":5s} {"z_min":5s} {"z_max":5s} {"z_null":6s}'
+    f'{"z_neg":5s} {"z_pos":5s} {"zerr_min":8s} {"zerr_max":8s} {"zerr_null":9s}'
+    f'{"zerr_neg":8s} {"zerr_pos":8s} {"z_flag"}'
+  )
   for _, cluster in df_clusters.iterrows():
     cls_id = cluster['clsid']
     cls_name: str = cluster['name']
@@ -54,14 +59,15 @@ def _log_clusters(df_clusters):
     df = Table.read(table_path, format='ascii').to_pandas()
     flag_count = ''.join([f'{k} ({v})' for k, v in df['zspec-flag'].value_counts(dropna=False).items()])
     print(
-      f'{cls_name:16s}: tot: {len(df):4d}, z_min: {df.zspec.min():.2f}, z_max: {df.zspec.max():.2f}, '
-      f'z_null: {len(df[df.zspec.isna()])}, z_neg: {len(df[df.zspec < 0])}, '
-      f'z_pos: {len(df[df.zspec > 0]):4d}, '
-      f'zerr_min: {df["zspec-err"].min():.2f}, zerr_max: {df["zspec-err"].max():.3f}, '
-      f'zerr_null: {len(df[df["zspec-err"].isna()])}, zerr_neg: {len(df[df["zspec-err"] < 0]):3d}, '
-      f'zerr_pos: {len(df[df.zspec > 0]):4d}, z_flag: {flag_count} '
+      f'{cls_name:17s} {len(df):4d} {df.zspec.min():5.2f} {df.zspec.max():5.2f} '
+      f'{len(df[df.zspec.isna()]):6d} {len(df[df.zspec < 0]):5d} '
+      f'{len(df[df.zspec > 0]):5d} '
+      f'{df["zspec-err"].min():8.2f} {df["zspec-err"].max():8.3f} '
+      f'{len(df[df["zspec-err"].isna()]):9d} {len(df[df["zspec-err"] < 0]):8d}, '
+      f'{len(df[df.zspec > 0]):8d} {flag_count} '
     )
-    print()
+  print()
+  print()
 
 
 def clusters_v5_remake_pipeline(clear: bool = False):
