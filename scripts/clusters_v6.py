@@ -223,7 +223,7 @@ def clusters_v6_pipeline(clear: bool = False):
     clusters_path = configs.SUBMIT_FOLDER / 'clusters'
     table_path = clusters_path / f'cluster_{str(cls_id).zfill(4)}.dat'
     df = Table.read(table_path, format='ascii').to_pandas()
-    flag_count = ''.join([f'{k} ({v})' for k, v in df['zspec-flag'].values_counts(dropna=False).items()])
+    flag_count = ''.join([f'{k} ({v})' for k, v in df['zspec-flag'].value_counts(dropna=False).items()])
     print(
       f'{cls_name}: z_min: {df.zspec.min():.2f}, z_max: {df.zspec.max():.2f}, '
       f'z_null: {len(df[df.zspec.isna()])}, z_neg: {len(df[df.zspec < -1])}, '
