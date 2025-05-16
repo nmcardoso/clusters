@@ -60,6 +60,7 @@ def _log_clusters(df_clusters):
       f'zerr_null: {len(df[df["zspec-err"].isna()])}, zerr_neg: {len(df[df["zspec-err"] < -1])}, '
       f'z_flag: {flag_count} '
     )
+    print()
 
 
 def clusters_v5_remake_pipeline(clear: bool = False):
