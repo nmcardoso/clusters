@@ -54,12 +54,12 @@ def _log_clusters(df_clusters):
     df = Table.read(table_path, format='ascii').to_pandas()
     flag_count = ''.join([f'{k} ({v})' for k, v in df['zspec-flag'].value_counts(dropna=False).items()])
     print(
-      f'{cls_name:18s}: tot: {len(df)}, z_min: {df.zspec.min():.2f}, z_max: {df.zspec.max():.2f}, '
+      f'{cls_name:16s}: tot: {len(df):4d}, z_min: {df.zspec.min():.2f}, z_max: {df.zspec.max():.2f}, '
       f'z_null: {len(df[df.zspec.isna()])}, z_neg: {len(df[df.zspec < 0])}, '
-      f'z_pos: {len(df[df.zspec > 0])}, z_tot: {len(df)}, '
-      f'zerr_min: {df["zspec-err"].min():.2f}, zerr_max: {df["zspec-err"].max():.2f}, '
-      f'zerr_null: {len(df[df["zspec-err"].isna()])}, zerr_neg: {len(df[df["zspec-err"] < 0])}, '
-      f'zerr_pos: {len(df[df.zspec > 0])}, z_flag: {flag_count} '
+      f'z_pos: {len(df[df.zspec > 0]):4d}, '
+      f'zerr_min: {df["zspec-err"].min():.2f}, zerr_max: {df["zspec-err"].max():.3f}, '
+      f'zerr_null: {len(df[df["zspec-err"].isna()])}, zerr_neg: {len(df[df["zspec-err"] < 0]):3d}, '
+      f'zerr_pos: {len(df[df.zspec > 0]):4d}, z_flag: {flag_count} '
     )
     print()
 
