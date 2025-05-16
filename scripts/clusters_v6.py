@@ -45,6 +45,23 @@ def add_xray_flag(df: pd.DataFrame, threshold: float = 1):
   return df
 
 
+def _log_clusters(df_clusters):
+  for _, cluster in df_clusters.iterrows():
+    cls_id = cluster['clsid']
+    cls_name = cluster['name']
+    clusters_path = configs.SUBMIT_FOLDER / 'clusters'
+    table_path = clusters_path / f'cluster_{str(cls_id).zfill(4)}.dat'
+    df = Table.read(table_path, format='ascii').to_pandas()
+    flag_count = ''.join([f'{k} ({v})' for k, v in df['zspec-flag'].value_counts(dropna=False).items()])
+    print(
+      f'{cls_name}: z_min: {df.zspec.min():.2f}, z_max: {df.zspec.max():.2f}, '
+      f'z_null: {len(df[df.zspec.isna()])}, z_neg: {len(df[df.zspec < -1])}, '
+      f'zerr_min: {df["zspec-err"].min():.2f}, zerr_max: {df["zspec-err"].max():.2f}, '
+      f'zerr_null: {len(df[df["zspec-err"].isna()])}, zerr_neg: {len(df[df["zspec-err"] < -1])}, '
+      f'z_flag: {flag_count} '
+    )
+
+
 def clusters_v5_remake_pipeline(clear: bool = False):
   df_clusters = load_catalog_v6_old()
   # df_photoz, photoz_skycoord = load_photoz2()
@@ -99,6 +116,8 @@ def clusters_v5_remake_pipeline(clear: bool = False):
   Table.from_pandas(
     df_clusters[['clsid', 'name', 'RA', 'DEC', 'zspec', 'xray-flag']]
   ).write(configs.SUBMIT_FOLDER / 'index.dat', format='ascii', overwrite=True)
+  
+  _log_clusters(df_clusters)
 
 
 
@@ -159,6 +178,7 @@ def hydra_neighbours_pipeline(clear: bool = False):
     df_clusters[['clsid', 'name', 'RA', 'DEC', 'zspec', 'xray-flag']]
   ).write(configs.SUBMIT_FOLDER / 'index.dat', format='ascii', overwrite=True)
 
+  _log_clusters(df_clusters)
 
 
 
@@ -217,20 +237,8 @@ def clusters_v6_pipeline(clear: bool = False):
     df_clusters[['clsid', 'name', 'RA', 'DEC', 'zspec', 'xray-flag']]
   ).write(configs.SUBMIT_FOLDER / 'index.dat', format='ascii', overwrite=True)
   
-  for _, cluster in df_clusters.iterrows():
-    cls_id = cluster['clsid']
-    cls_name = cluster['name']
-    clusters_path = configs.SUBMIT_FOLDER / 'clusters'
-    table_path = clusters_path / f'cluster_{str(cls_id).zfill(4)}.dat'
-    df = Table.read(table_path, format='ascii').to_pandas()
-    flag_count = ''.join([f'{k} ({v})' for k, v in df['zspec-flag'].value_counts(dropna=False).items()])
-    print(
-      f'{cls_name}: z_min: {df.zspec.min():.2f}, z_max: {df.zspec.max():.2f}, '
-      f'z_null: {len(df[df.zspec.isna()])}, z_neg: {len(df[df.zspec < -1])}, '
-      f'zerr_min: {df["zspec-err"].min():.2f}, zerr_max: {df["zspec-err"].max():.2f}, '
-      f'zerr_null: {len(df[df["zspec-err"].isna()])}, zerr_neg: {len(df[df["zspec-err"] < -1])}, '
-      f'z_flag: {flag_count} '
-    )
+  _log_clusters(df_clusters)
+  
     
 
   
