@@ -198,7 +198,7 @@ def clusters_v6_pipeline(clear: bool = False):
   PipelineStorage().write('df_spec', df_spec)
   PipelineStorage().write('specz_skycoord', specz_skycoord)
   
-  ls10_pipe.map_run('cls_id', df_clusters.clsid.values, workers=1)
+  # ls10_pipe.map_run('cls_id', df_clusters.clsid.values, workers=1)
   
   plot_paths = [configs.PLOTS_FOLDER / f'cls_{c}.pdf' for c in df_clusters.name.values]
   plot_paths = [p for p in plot_paths if p.exists()]
@@ -217,7 +217,7 @@ def clusters_v6_pipeline(clear: bool = False):
     df_clusters[['clsid', 'name', 'RA', 'DEC', 'zspec', 'xray-flag']]
   ).write(configs.SUBMIT_FOLDER / 'index.dat', format='ascii', overwrite=True)
   
-  for _, cluster in df_clusters.iterrows:
+  for _, cluster in df_clusters.iterrows():
     cls_id = cluster['clsid']
     cls_name = cluster['name']
     clusters_path = configs.SUBMIT_FOLDER / 'clusters'
