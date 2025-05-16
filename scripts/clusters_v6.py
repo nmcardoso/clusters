@@ -98,7 +98,7 @@ def clusters_v5_remake_pipeline(clear: bool = False):
   PipelineStorage().write('df_spec', df_spec)
   PipelineStorage().write('specz_skycoord', specz_skycoord)
   
-  pipe.map_run('cls_id', df_clusters.clsid.values, workers=1)
+  # pipe.map_run('cls_id', df_clusters.clsid.values, workers=1)
   
   plot_paths = [configs.PLOTS_FOLDER / f'cls_{c}.pdf' for c in df_clusters.name.values]
   plot_paths = [p for p in plot_paths if p.exists()]
@@ -159,7 +159,7 @@ def hydra_neighbours_pipeline(clear: bool = False):
   PipelineStorage().write('df_spec', df_spec)
   PipelineStorage().write('specz_skycoord', specz_skycoord)
   
-  pipe.map_run('cls_name', df_clusters.name.values, workers=1)
+  # pipe.map_run('cls_name', df_clusters.name.values, workers=1)
   
   plot_paths = [configs.PLOTS_FOLDER / f'cls_{c}.pdf' for c in df_clusters.name.values]
   plot_paths = [p for p in plot_paths if p.exists()]
@@ -218,7 +218,7 @@ def clusters_v6_pipeline(clear: bool = False):
   PipelineStorage().write('df_spec', df_spec)
   PipelineStorage().write('specz_skycoord', specz_skycoord)
   
-  ls10_pipe.map_run('cls_id', df_clusters.clsid.values, workers=1)
+  # ls10_pipe.map_run('cls_id', df_clusters.clsid.values, workers=1)
   
   plot_paths = [configs.PLOTS_FOLDER / f'cls_{c}.pdf' for c in df_clusters.name.values]
   plot_paths = [p for p in plot_paths if p.exists()]
