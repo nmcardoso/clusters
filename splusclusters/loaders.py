@@ -638,6 +638,10 @@ class PrepareCatalogToSubmitStage(PipelineStage):
     print()
     print(df_submit)
     print()
+    if 'zml' not in df_submit: df_submit['zml'] = np.nan
+    if 'odds' not in df_submit: df_submit['odds'] = np.nan
+    if 'mag_r' not in df_submit: df_submit['mag_r'] = np.nan
+    if 'type' not in df_submit: df_submit['type'] = np.nan
     df_submit['ls10_photo'] = (~df_submit['mag_r'].isna()).astype(int)
     df_submit['zml'] = df_submit['zml'].fillna(-9.99)
     df_submit['odds'] = df_submit['odds'].fillna(-9.99)
