@@ -48,13 +48,13 @@ def add_xray_flag(df: pd.DataFrame, threshold: float = 1):
 def _log_clusters(df_clusters):
   for _, cluster in df_clusters.iterrows():
     cls_id = cluster['clsid']
-    cls_name = cluster['name']
+    cls_name: str = cluster['name']
     clusters_path = configs.SUBMIT_FOLDER / 'clusters'
     table_path = clusters_path / f'cluster_{str(cls_id).zfill(4)}.dat'
     df = Table.read(table_path, format='ascii').to_pandas()
     flag_count = ''.join([f'{k} ({v})' for k, v in df['zspec-flag'].value_counts(dropna=False).items()])
     print(
-      f'{cls_name}: z_min: {df.zspec.min():.2f}, z_max: {df.zspec.max():.2f}, '
+      f'{cls_name:18s}: z_min: {df.zspec.min():.2f}, z_max: {df.zspec.max():.2f}, '
       f'z_null: {len(df[df.zspec.isna()])}, z_neg: {len(df[df.zspec < -1])}, '
       f'zerr_min: {df["zspec-err"].min():.2f}, zerr_max: {df["zspec-err"].max():.2f}, '
       f'zerr_null: {len(df[df["zspec-err"].isna()])}, zerr_neg: {len(df[df["zspec-err"] < -1])}, '
