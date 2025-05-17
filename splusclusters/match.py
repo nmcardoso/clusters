@@ -275,6 +275,8 @@ class PhotozSpeczLegacyMatchStage(PipelineStage):
     print('Spec-z objects:', len(df_spec))
     print('Legacy objects:', len(df_legacy))
     
+    print('\n\n>>>> KEEP 1:', len(df_spec[df_spec.f_z.str.contains('KEEP')]), '\n\n')
+    if 'f_z' in df_r.columns: print('\n\n>>>> KEEP 2:', len(df_r[df_r.f_z.str.contains('KEEP')]), '\n\n')
     
     df = None
     t = Timming()
@@ -293,6 +295,7 @@ class PhotozSpeczLegacyMatchStage(PipelineStage):
         dec2='dec_photo',
         join='all1'
       )
+      if 'f_z' in df.columns: print('\n\n>>>> KEEP 3:', len(df[df.f_z.str.contains('KEEP')]), '\n\n')
       
       df = concat_tables([df, df_photo])
       if df_r is not None:
@@ -374,6 +377,7 @@ class PhotozSpeczLegacyMatchStage(PipelineStage):
         # df['dec_final'] = df['dec_final'].fillna(df['dec_legacy'])
         del df['ra_legacy']
         del df['dec_legacy']
+        if 'f_z' in df.columns: print('\n\n>>>> KEEP 4:', len(df[df.f_z.str.contains('KEEP')]), '\n\n')
       else:
         df['type'] = np.nan
         df['mag_r'] = np.nan
@@ -445,6 +449,7 @@ class PhotozSpeczLegacyMatchStage(PipelineStage):
         print(f'\nCrossmatch 3 finished. Duration: {t.end()}')
         print('Inserted redshifts:', len(df[~df.z.isna()]) - n_redshift)
         print('Number of objects:', len(df))
+        if 'f_z' in df.columns: print('\n\n>>>> KEEP 5:', len(df[df.f_z.str.contains('KEEP')]), '\n\n')
     
     
     # fill flag_member
@@ -466,6 +471,7 @@ class PhotozSpeczLegacyMatchStage(PipelineStage):
       
       print('Lost Objects:')
       print(df_lost)
+      if 'f_z' in df_lost.columns: print('\n\n>>>> KEEP 6:', len(df_lost[df_lost.f_z.str.contains('KEEP')]), '\n\n')
       
       if df_lost is not None and len(df_lost) > 0:
         if len(df_photo) > 0:
@@ -557,6 +563,7 @@ class PhotozSpeczLegacyMatchStage(PipelineStage):
           find='all',
         )
         print('\nLost objects (check):', len(df_lost))
+        if 'f_z' in df_lost.columns: print('\n\n>>>> KEEP 7:', len(df_lost[df_lost.f_z.str.contains('KEEP')]), '\n\n')
       
       
     # compute radius_deg for all objects
@@ -617,6 +624,7 @@ class PhotozSpeczLegacyMatchStage(PipelineStage):
     df = crossmatch(df, filter_df, radius=1*u.arcsec, join='1not2', find='all')
     print('Number of objects before filter:', l)
     print('Number of objects after filter:', len(df))
+    if 'f_z' in df.columns: print('\n\n>>>> KEEP 8:', len(df[df.f_z.str.contains('KEEP')]), '\n\n')
     
     
     # Flag: remove_z
@@ -733,6 +741,7 @@ class PhotozSpeczLegacyMatchStage(PipelineStage):
     
     
     df = df[(df.remove_star != 1) & (df.remove_z != 1) & (df.remove_neighbours != 1) & (df.remove_radius != 1)]
+    if 'f_z' in df.columns: print('\n\n>>>> KEEP 9:', len(df[df.f_z.str.contains('KEEP')]), '\n\n')
     del df['remove_star']
     del df['remove_z']
     del df['remove_neighbours']
