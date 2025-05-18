@@ -375,13 +375,14 @@ class PhotozSpeczLegacyMatchStage(PipelineStage):
 
     
     if df_r is not None:
+      print(df_r.columns)
       df_lost = crossmatch(
         table1=df_r, 
         table2=df, 
         ra1='ra_r', 
         dec1='dec_r', 
-        ra2='ra_final', 
-        dec2='dec_final', 
+        ra2='ra', 
+        dec2='dec', 
         join='1not2',
         find='all',
       )
@@ -390,7 +391,7 @@ class PhotozSpeczLegacyMatchStage(PipelineStage):
       print(df_lost)
     
     # compute radius_deg for all objects
-    coords = SkyCoord(ra=df['ra_final'].values, dec=df['dec_final'].values, unit=u.deg)
+    coords = SkyCoord(ra=df['ra'].values, dec=df['dec'].values, unit=u.deg)
     df['radius_deg_computed'] = coords.separation(center).deg
     df['radius_deg'] = df['radius_deg'].fillna(df['radius_deg_computed'])
     del df['radius_deg_computed']
