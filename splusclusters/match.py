@@ -286,12 +286,12 @@ class PhotozSpeczLegacyMatchStage(PipelineStage):
       )
       if df_result is not None:
         df = df_result
-        df['ra'] = df['ra_photo'].fillna(df['ra_spec'])
-        df['dec'] = df['dec_photo'].fillna(df['dec_spec'])
+        df.insert(0, 'ra', df['ra_photo'].fillna(df['ra_spec']))
+        df.insert(1, 'dec', df['dec_photo'].fillna(df['dec_spec']))
     else:
       df = df_spec.copy()
-      df['ra'] = df['ra_spec']
-      df['dec'] = df['dec_spec']
+      df.insert(0, 'ra', df['ra_spec'])
+      df.insert(1, 'dec', df['dec_spec'])
     
     df['f_z'] = df['f_z'].fillna('')
     if 'f_z' in df.columns: print('\n\n>>>> KEEP 3:', len(df[df.f_z.str.contains('KEEP')]), '\n\n')
