@@ -409,6 +409,9 @@ class PhotozSpeczLegacyMatchStage(PipelineStage):
       df['original_class_spec'] = df['original_class_spec'].astype('str')
       del df['ra_spec_all']
       del df['dec_spec_all']
+      
+  
+    if 'f_z' in df.columns: print('\n\n>>>> KEEP 6:', len(df[df.f_z.str.contains('KEEP')]), '\n\n')
 
     
     if df_r is not None:
@@ -459,8 +462,11 @@ class PhotozSpeczLegacyMatchStage(PipelineStage):
     print('Number of objects before filter:', l)
     print('Number of objects after filter:', len(df))
     
+    
+    
     df['f_z'] = df['f_z'].fillna('')
     if 'f_z' in df.columns: print('\n\n>>>> KEEP 8:', len(df[df.f_z.str.contains('KEEP')]), '\n\n')
+    
     
     
     # Flag: remove_z
