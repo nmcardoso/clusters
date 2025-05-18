@@ -282,7 +282,7 @@ class PhotozSpeczLegacyMatchStage(PipelineStage):
         dec2='dec_spec',
         radius=1*u.arcsec,
         join='1or2',
-        find='best',
+        find='best1',
       )
       if df_result is not None:
         df = df_result
@@ -384,7 +384,7 @@ class PhotozSpeczLegacyMatchStage(PipelineStage):
         ra2='ra', 
         dec2='dec', 
         join='1not2',
-        find='all',
+        find='best1',
       )
       
       print('Lost Objects:')
