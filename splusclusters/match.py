@@ -290,7 +290,7 @@ class PhotozSpeczLegacyMatchStage(PipelineStage):
       df['ra'] = df['ra_spec']
       df['dec'] = df['dec_spec']
     
-    
+    df['f_z'] = df['f_z'].fillna('')
     if 'f_z' in df.columns: print('\n\n>>>> KEEP 3:', len(df[df.f_z.str.contains('KEEP')]), '\n\n')
     
     
@@ -308,8 +308,9 @@ class PhotozSpeczLegacyMatchStage(PipelineStage):
       )
       del df['ra_r']
       del df['dec_r']
-      
     
+    
+    df['f_z'] = df['f_z'].fillna('')
     if 'f_z' in df.columns: print('\n\n>>>> KEEP 4:', len(df[df.f_z.str.contains('KEEP')]), '\n\n')
     
     
@@ -329,6 +330,7 @@ class PhotozSpeczLegacyMatchStage(PipelineStage):
       del df['dec_legacy']
       
     
+    df['f_z'] = df['f_z'].fillna('')
     if 'f_z' in df.columns: print('\n\n>>>> KEEP 5:', len(df[df.f_z.str.contains('KEEP')]), '\n\n')
     
     
@@ -406,6 +408,8 @@ class PhotozSpeczLegacyMatchStage(PipelineStage):
     df = crossmatch(df, filter_df, radius=1*u.arcsec, join='1not2', find='all')
     print('Number of objects before filter:', l)
     print('Number of objects after filter:', len(df))
+    
+    df['f_z'] = df['f_z'].fillna('')
     if 'f_z' in df.columns: print('\n\n>>>> KEEP 8:', len(df[df.f_z.str.contains('KEEP')]), '\n\n')
     
     
@@ -523,6 +527,7 @@ class PhotozSpeczLegacyMatchStage(PipelineStage):
     
     
     df = df[(df.remove_star != 1) & (df.remove_z != 1) & (df.remove_neighbours != 1) & (df.remove_radius != 1)]
+    df['f_z'] = df['f_z'].fillna('')
     if 'f_z' in df.columns: print('\n\n>>>> KEEP 9:', len(df[df.f_z.str.contains('KEEP')]), '\n\n')
     del df['remove_star']
     del df['remove_z']
