@@ -352,6 +352,8 @@ class PhotozSpeczLegacyMatchStage(PipelineStage):
       radius=1*u.arcsec,
       join='all1',
       find='best1',
+      suffix1='_final',
+      suffix2='_spec_all'
     )
     if df_result is not None:
       df = df_result
