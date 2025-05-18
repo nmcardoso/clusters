@@ -249,30 +249,31 @@ class PhotozSpeczLegacyMatchStage(PipelineStage):
       else:
         ra, dec = guess_coords_columns(df_spec)
       df_spec = df_spec.rename(columns={ra: 'ra_spec', dec: 'dec_spec'})
+      print('Spec-z objects:', len(df_spec))
     if len(df_photo) > 0:
       ra, dec = guess_coords_columns(df_photo)
       df_photo = df_photo.rename(columns={ra: 'ra_photo', dec: 'dec_photo'})
+      print('Photo-z objects:', len(df_photo))
     if len(df_legacy) > 0:
       ra, dec = guess_coords_columns(df_legacy)
       df_legacy = df_legacy.rename(columns={ra: 'ra_legacy', dec: 'dec_legacy'})
+      print('Legacy objects:', len(df_legacy))
     if df_r is not None and len(df_r) > 0:
       ra, dec = guess_coords_columns(df_r)
       df_r = df_r[['v', 'v_err', 'radius_deg', 'radius_Mpc', 'v_offset', 'flag_member']]
       df_r = df_r.rename(columns={ra: 'ra_r', dec: 'dec_r'})
+      print('Return objects:', len(df_r))
     
     df_spec['f_z'] = df_spec['f_z'].astype('str')
     df_spec['original_class_spec'] = df_spec['original_class_spec'].astype('str')
     
-    print('Photo-z objects:', len(df_photo))
-    print('Spec-z objects:', len(df_spec))
-    print('Legacy objects:', len(df_legacy))
-    
+
     print('\n\n>>>> KEEP 1:', len(df_spec[df_spec.f_z.str.contains('KEEP')]), '\n\n')
     if 'f_z' in df_r.columns: print('\n\n>>>> KEEP 2:', len(df_r[df_r.f_z.str.contains('KEEP')]), '\n\n')
     
     
     if df_photo is not None and len(df_photo) > 0:
-      df = crossmatch(
+      df_result = crossmatch(
         table1=df_photo,
         table2=df_spec,
         ra1='ra_photo',
@@ -283,8 +284,10 @@ class PhotozSpeczLegacyMatchStage(PipelineStage):
         join='1or2',
         find='best',
       )
-      df['ra'] = df['ra_photo'].fillna(df['ra_spec'])
-      df['dec'] = df['dec_photo'].fillna(df['dec_spec'])
+      if df_result is not None:
+        df = df_result
+        df['ra'] = df['ra_photo'].fillna(df['ra_spec'])
+        df['dec'] = df['dec_photo'].fillna(df['dec_spec'])
     else:
       df = df_spec.copy()
       df['ra'] = df['ra_spec']
@@ -295,7 +298,7 @@ class PhotozSpeczLegacyMatchStage(PipelineStage):
     
     
     if df_r is not None and len(df_r) > 0:
-      df = crossmatch(
+      df_result = crossmatch(
         table1=df,
         table2=df_r,
         ra1='ra',
@@ -306,8 +309,10 @@ class PhotozSpeczLegacyMatchStage(PipelineStage):
         join='all1',
         find='best1',
       )
-      del df['ra_r']
-      del df['dec_r']
+      if df_result is not None:
+        df = df_result
+        del df['ra_r']
+        del df['dec_r']
     
     
     df['f_z'] = df['f_z'].fillna('')
@@ -315,7 +320,7 @@ class PhotozSpeczLegacyMatchStage(PipelineStage):
     
     
     if df_legacy is not None and len(df_legacy) > 0:
-      df = crossmatch(
+      df_result = crossmatch(
         table1=df,
         table2=df_legacy,
         ra1='ra',
@@ -326,8 +331,10 @@ class PhotozSpeczLegacyMatchStage(PipelineStage):
         join='all1',
         find='best1',
       )
-      del df['ra_legacy']
-      del df['dec_legacy']
+      if df_result is not None:
+        df = df_result
+        del df['ra_legacy']
+        del df['dec_legacy']
       
     
     df['f_z'] = df['f_z'].fillna('')
@@ -335,7 +342,7 @@ class PhotozSpeczLegacyMatchStage(PipelineStage):
     
     
     df_spec_all = self.get_data('df_spec')
-    df = crossmatch(
+    df_result = crossmatch(
       table1=df,
       table2=df_spec_all,
       ra1='ra',
@@ -346,21 +353,23 @@ class PhotozSpeczLegacyMatchStage(PipelineStage):
       join='all1',
       find='best1',
     )
-    cols = [
-      'z', 'e_z', 'f_z', 'class_spec',
-      'original_class_spec', 'source'
-    ]
-    for col in cols:
-      if f'{col}_final' in df.columns:
-        df[f'{col}_final'] = df[f'{col}_final'].replace(r'^\s*$', np.nan, regex=True)
-        df[f'{col}_final'] = df[f'{col}_final'].fillna(df[f'{col}_spec_all'])
-        df = df.rename(columns={f'{col}_final': col})
-      if f'{col}_spec_all' in df.columns:
-        del df[f'{col}_spec_all']
-    df['f_z'] = df['f_z'].astype('str')
-    df['original_class_spec'] = df['original_class_spec'].astype('str')
-    del df['ra_spec_all']
-    del df['dec_spec_all']
+    if df_result is not None:
+      df = df_result
+      cols = [
+        'z', 'e_z', 'f_z', 'class_spec',
+        'original_class_spec', 'source'
+      ]
+      for col in cols:
+        if f'{col}_final' in df.columns:
+          df[f'{col}_final'] = df[f'{col}_final'].replace(r'^\s*$', np.nan, regex=True)
+          df[f'{col}_final'] = df[f'{col}_final'].fillna(df[f'{col}_spec_all'])
+          df = df.rename(columns={f'{col}_final': col})
+        if f'{col}_spec_all' in df.columns:
+          del df[f'{col}_spec_all']
+      df['f_z'] = df['f_z'].astype('str')
+      df['original_class_spec'] = df['original_class_spec'].astype('str')
+      del df['ra_spec_all']
+      del df['dec_spec_all']
 
     
     if df_r is not None:
