@@ -298,10 +298,10 @@ class PhotozSpeczLegacyMatchStage(PipelineStage):
       df_lost_sp = crossmatch(
         table1=df_lost_p, 
         table2=df_lost_s, 
-        ra1='ra_photo', 
-        dec1='dec_photo', 
-        ra2='ra_spec', 
-        dec2='dec_spec', 
+        ra1='ra_r', 
+        dec1='dec_r', 
+        ra2='ra_r', 
+        dec2='dec_r', 
         join='1and2',
         find='all',
       )
