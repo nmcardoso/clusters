@@ -261,7 +261,7 @@ class PhotozSpeczLegacyMatchStage(PipelineStage):
       print('Legacy objects:', len(df_legacy))
     if df_r is not None and len(df_r) > 0:
       ra, dec = guess_coords_columns(df_r)
-      df_r = df_r[[ra, dec, 'v', 'v_err', 'radius_deg', 'radius_Mpc', 'v_offset', 'flag_member']]
+      df_r = df_r[[ra, dec, 'z', 'v', 'v_err', 'radius_deg', 'radius_Mpc', 'v_offset', 'flag_member']]
       df_r = df_r.rename(columns={ra: 'ra_r', dec: 'dec_r'})
       print('Return objects:', len(df_r))
     
