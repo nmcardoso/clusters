@@ -281,7 +281,7 @@ class PhotozSpeczLegacyMatchStage(PipelineStage):
         ra2='ra_photo', 
         dec2='dec_photo', 
         join='1not2',
-        find='best1',
+        find='all',
       )
       print('Lost photo:', len(df_lost_p))
       df_lost_s = crossmatch(
@@ -292,7 +292,7 @@ class PhotozSpeczLegacyMatchStage(PipelineStage):
         ra2='ra_spec', 
         dec2='dec_spec', 
         join='1not2',
-        find='best1',
+        find='all',
       )
       print('Lost spec:', len(df_lost_s))
       df_lost_sp = crossmatch(
@@ -303,7 +303,7 @@ class PhotozSpeczLegacyMatchStage(PipelineStage):
         ra2='ra_spec', 
         dec2='dec_spec', 
         join='1and2',
-        find='best1',
+        find='all',
       )
       if df_lost_sp is not None:
         print('Lost photo and spec:', len(df_lost_sp))
@@ -319,7 +319,7 @@ class PhotozSpeczLegacyMatchStage(PipelineStage):
         dec2='dec_spec',
         radius=1*u.arcsec,
         join='1or2',
-        find='best1',
+        find='best',
       )
       if df_result is not None:
         df = df_result
@@ -344,7 +344,7 @@ class PhotozSpeczLegacyMatchStage(PipelineStage):
         dec2='dec_r',
         radius=1*u.arcsec,
         join='all1',
-        find='best1',
+        find='best',
       )
       if df_result is not None:
         df = df_result
@@ -366,7 +366,7 @@ class PhotozSpeczLegacyMatchStage(PipelineStage):
         dec2='dec_legacy',
         radius=1*u.arcsec,
         join='all1',
-        find='best1',
+        find='best',
       )
       if df_result is not None:
         df = df_result
@@ -388,7 +388,7 @@ class PhotozSpeczLegacyMatchStage(PipelineStage):
       dec2='dec_spec_all',
       radius=1*u.arcsec,
       join='all1',
-      find='best1',
+      find='best',
       suffix1='_final',
       suffix2='_spec_all'
     )
@@ -421,7 +421,7 @@ class PhotozSpeczLegacyMatchStage(PipelineStage):
         ra2='ra', 
         dec2='dec', 
         join='1not2',
-        find='best1',
+        find='all',
       )
       
       print('Lost Objects:')
