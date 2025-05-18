@@ -305,7 +305,8 @@ class PhotozSpeczLegacyMatchStage(PipelineStage):
         join='1and2',
         find='best1',
       )
-      print('Lost photo and spec:', len(df_lost_sp))
+      if df_lost_sp is not None:
+        print('Lost photo and spec:', len(df_lost_sp))
     
     
     if df_photo is not None and len(df_photo) > 0:
