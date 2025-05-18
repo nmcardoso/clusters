@@ -286,6 +286,7 @@ class PhotozSpeczLegacyMatchStage(PipelineStage):
       )
       print('df_r:', len(df_r), 'df_r not in df_spec_all:', len(df_x))
       print(df_x[['ra_r', 'dec_r', 'z']].to_csv(index=False))
+      del df_r['z']
       
       df_lost_p = crossmatch(
         table1=df_r, 
