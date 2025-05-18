@@ -217,9 +217,326 @@ class PhotozSpeczLegacyMatchStage(PipelineStage):
       'ra', 'dec', 'z', 'z_err', 'v', 'v_err', 'radius_deg', 
       'radius_Mpc', 'v_offset', 'flag_member'
     ]
-    
   
   def run(
+    self, 
+    cls_name: str, 
+    cls_ra: float,
+    cls_dec: float,
+    df_specz_radial: pd.DataFrame,
+    df_photoz_radial: pd.DataFrame, 
+    df_legacy_radial: pd.DataFrame,
+    df_ret: pd.DataFrame | None,
+  ):
+    out_path = configs.PHOTOZ_SPECZ_LEG_FOLDER / f'{cls_name}.parquet'
+    out_flags_path = configs.PHOTOZ_SPECZ_LEG_FOLDER / f'{cls_name}+flags.parquet'
+    out_recovered_path = configs.PHOTOZ_SPECZ_LEG_FOLDER / f'{cls_name}+recovered.parquet'
+    out_removed_path = configs.PHOTOZ_SPECZ_LEG_FOLDER / f'{cls_name}+removed.parquet'
+    out_removed_vi_path = configs.PHOTOZ_SPECZ_LEG_FOLDER / f'{cls_name}+removed_vi.parquet'
+    
+    if out_path.exists() and not self.overwrite:
+      return
+    
+    center = SkyCoord(ra=cls_ra, dec=cls_dec, unit=u.deg)
+    df_spec = df_specz_radial.copy()
+    df_photo = df_photoz_radial.copy()
+    df_legacy = df_legacy_radial.copy()
+    df_r = df_ret.copy() if df_ret is not None else None
+    
+    if len(df_spec) > 0:
+      if 'ra_spec_all' in df_spec.columns and 'dec_spec_all' in df_spec.columns:
+        ra, dec = 'ra_spec_all', 'dec_spec_all'
+      else:
+        ra, dec = guess_coords_columns(df_spec)
+      df_spec = df_spec.rename(columns={ra: 'ra_spec', dec: 'dec_spec'})
+    if len(df_photo) > 0:
+      ra, dec = guess_coords_columns(df_photo)
+      df_photo = df_photo.rename(columns={ra: 'ra_photo', dec: 'dec_photo'})
+    if len(df_legacy) > 0:
+      ra, dec = guess_coords_columns(df_legacy)
+      df_legacy = df_legacy.rename(columns={ra: 'ra_legacy', dec: 'dec_legacy'})
+    if df_r is not None and len(df_r) > 0:
+      ra, dec = guess_coords_columns(df_r)
+      df_r = df_r[['v', 'v_err', 'radius_deg', 'radius_Mpc', 'v_offset', 'flag_member']]
+      df_r = df_r.rename(columns={ra: 'ra_r', dec: 'dec_r'})
+    
+    df_spec['f_z'] = df_spec['f_z'].astype('str')
+    df_spec['original_class_spec'] = df_spec['original_class_spec'].astype('str')
+    
+    print('Photo-z objects:', len(df_photo))
+    print('Spec-z objects:', len(df_spec))
+    print('Legacy objects:', len(df_legacy))
+    
+    print('\n\n>>>> KEEP 1:', len(df_spec[df_spec.f_z.str.contains('KEEP')]), '\n\n')
+    if 'f_z' in df_r.columns: print('\n\n>>>> KEEP 2:', len(df_r[df_r.f_z.str.contains('KEEP')]), '\n\n')
+    
+    
+    if df_photo is not None and len(df_photo) > 0:
+      df = crossmatch(
+        table1=df_photo,
+        table2=df_spec,
+        ra1='ra_photo',
+        dec1='dec_photo',
+        ra2='ra_spec',
+        dec2='dec_spec',
+        radius=1*u.arcsec,
+        join='1or2',
+        find='best',
+      )
+      df['ra'] = df['ra_photo'].fillna(df['ra_spec'])
+      df['dec'] = df['dec_photo'].fillna(df['dec_spec'])
+    else:
+      df = df_spec.copy()
+      df['ra'] = df['ra_spec']
+      df['dec'] = df['dec_spec']
+    
+    
+    if 'f_z' in df.columns: print('\n\n>>>> KEEP 3:', len(df[df.f_z.str.contains('KEEP')]), '\n\n')
+    
+    
+    if df_r is not None and len(df_r) > 0:
+      df = crossmatch(
+        table1=df,
+        table2=df_r,
+        ra1='ra',
+        dec1='dec',
+        ra2='ra_r',
+        dec2='dec_r',
+        radius=1*u.arcsec,
+        join='all1',
+        find='best1',
+      )
+      del df['ra_r']
+      del df['dec_r']
+      
+    
+    if 'f_z' in df.columns: print('\n\n>>>> KEEP 4:', len(df[df.f_z.str.contains('KEEP')]), '\n\n')
+    
+    
+    if df_legacy is not None and len(df_legacy) > 0:
+      df = crossmatch(
+        table1=df,
+        table2=df_legacy,
+        ra1='ra',
+        dec1='dec',
+        ra2='ra_legacy',
+        dec2='dec_legacy',
+        radius=1*u.arcsec,
+        join='all1',
+        find='best1',
+      )
+      del df['ra_legacy']
+      del df['dec_legacy']
+      
+    
+    if 'f_z' in df.columns: print('\n\n>>>> KEEP 5:', len(df[df.f_z.str.contains('KEEP')]), '\n\n')
+    
+    
+    df_spec_all = self.get_data('df_spec')
+    df = crossmatch(
+      table1=df,
+      table2=df_spec_all,
+      ra1='ra',
+      dec1='dec',
+      ra2='ra_spec_all',
+      dec2='dec_spec_all',
+      radius=1*u.arcsec,
+      join='all1',
+      find='best1',
+    )
+    cols = [
+      'z', 'e_z', 'f_z', 'class_spec',
+      'original_class_spec', 'source'
+    ]
+    for col in cols:
+      if f'{col}_final' in df.columns:
+        df[f'{col}_final'] = df[f'{col}_final'].replace(r'^\s*$', np.nan, regex=True)
+        df[f'{col}_final'] = df[f'{col}_final'].fillna(df[f'{col}_spec_all'])
+        df = df.rename(columns={f'{col}_final': col})
+      if f'{col}_spec_all' in df.columns:
+        del df[f'{col}_spec_all']
+    df['f_z'] = df['f_z'].astype('str')
+    df['original_class_spec'] = df['original_class_spec'].astype('str')
+    del df['ra_spec_all']
+    del df['dec_spec_all']
+
+    
+    if df_r is not None:
+      df_lost = crossmatch(
+        table1=df_r, 
+        table2=df, 
+        ra1='ra_r', 
+        dec1='dec_r', 
+        ra2='ra_final', 
+        dec2='dec_final', 
+        join='1not2',
+        find='all',
+      )
+      
+      print('Lost Objects:')
+      print(df_lost)
+    
+    # compute radius_deg for all objects
+    coords = SkyCoord(ra=df['ra_final'].values, dec=df['dec_final'].values, unit=u.deg)
+    df['radius_deg_computed'] = coords.separation(center).deg
+    df['radius_deg'] = df['radius_deg'].fillna(df['radius_deg_computed'])
+    del df['radius_deg_computed']
+
+    if 'xmatch_sep' in df.columns:
+      del df['xmatch_sep']
+    if 'xmatch_sep_1' in df.columns:
+      del df['xmatch_sep_1']
+    if 'xmatch_sep_2' in df.columns:
+      del df['xmatch_sep_2']
+    if 'xmatch_sep_final' in df.columns:
+      del df['xmatch_sep_final']
+    if 'xmatch_sep_finala' in df.columns:
+      del df['xmatch_sep_finala']
+    
+    
+    # Filter bad objects after visual inspection
+    print('\nRemoving bad objects classified by visual inspection')
+    l = len(df)
+    filter_df = read_table(configs.ROOT / 'tables' / 'objects_to_exclude.csv', comment='#')
+    df_rem = crossmatch(df, filter_df, radius=1*u.arcsec, join='1and2', suffix1='', suffix2='_rem')
+    if df_rem is not None and len(df_rem) > 0:
+      del df_rem['ra_rem']
+      del df_rem['dec_rem']
+    write_table(df_rem, out_removed_vi_path)
+    df = crossmatch(df, filter_df, radius=1*u.arcsec, join='1not2', find='all')
+    print('Number of objects before filter:', l)
+    print('Number of objects after filter:', len(df))
+    if 'f_z' in df.columns: print('\n\n>>>> KEEP 8:', len(df[df.f_z.str.contains('KEEP')]), '\n\n')
+    
+    
+    # Flag: remove_z
+    df['remove_z'] = 0
+    mask = (
+      df.original_class_spec.isin(['GClstr', 'GGroup', 'GPair', 'GTrpl', 'PofG']) |
+      ((df['f_z'] == 'KEEP(    )') & (df['e_z'] == 3.33E-4))
+    )
+    df.loc[mask, 'remove_z'] = 1
+    df['remove_z'] = df['remove_z'].astype('int32')
+    
+    
+    # Flag: remove_star
+    df['remove_star'] = 0
+    if 'Field' in df.columns and 'r_auto' in df.columns and 'PROB_GAL_GAIA' in df.columns:
+      prob_thresh = {
+        'stripe82': [0.98, 0.98, 0.92, 0.52, 0.32, 0.16],
+        'splus-s': [0.80, 0.50, 0.90, 0.70, 0.64, 0.42],
+        'splus-n': [0.90, 0.64, 0.92, 0.72, 0.58, 0.30],
+        'hydra': [0.90, 0.64, 0.92, 0.72, 0.58, 0.30],
+      }
+      r_range = [(0, 16), (16, 17), (17, 18), (18, 19), (19, 20), (20, 99)]
+      
+      for tile, probs in prob_thresh.items():
+        for r_auto, prob in zip(r_range, probs):
+          mask = (
+            df.Field.str.lower().str.startswith(tile) & 
+            df.r_auto.between(*r_auto) &
+            (df.PROB_GAL_GAIA < prob) &
+            (df.class_spec != 'GALAXY')
+          )
+          df.loc[mask, 'remove_star'] = 1
+    df['remove_star'] = df['remove_star'].astype('int32')
+    
+    
+    # Flag: remove_radius
+    df['remove_radius'] = 0
+    if 'PETRO_RADIUS' in df.columns and 'mag_r' in df.columns and 'A' in df.columns and 'B' in df.columns:
+      df.loc[(df.PETRO_RADIUS == 0) & df.mag_r.isna() & df.z.isna(), 'remove_radius'] = 1
+      df.loc[(df.PETRO_RADIUS == df.PETRO_RADIUS.max()) & df.mag_r.isna() & df.z.isna(), 'remove_radius'] = 1
+      df.loc[((df.A < 1.5e-4) | (df.B < 1.5e-4)) & df.mag_r.isna() & df.z.isna(), 'remove_radius'] = 1
+    df['remove_radius'] = df['remove_radius'].astype('int32')
+    
+    
+    # Flag: remove_neighbours
+    df['remove_neighbours'] = 0
+    if 'mag_r' in df.columns and 'source' in df.columns and 'z' in df.columns:
+      df_no_flags = df[(df['remove_z'] != 1) & (df['remove_star'] != 1) & (df['remove_radius'] != 1)]
+      df = selfmatch(df_no_flags, 10*u.arcsec, 'identify')
+      
+      if 'GroupID' in df.columns:
+        gids = df['GroupID'].unique()
+        gids = gids[gids > 0]
+        for group_id in gids:
+          group_df = df[(df['GroupID'] == group_id)]
+          
+          if len(group_df[group_df.flag_member.isin([0, 1])]) > 0:
+            z_mask = ~group_df.flag_member.isin([0, 1])
+          
+          elif len(group_df[~group_df.z.isna()]) == 1:
+            z_mask = group_df.z.isna()
+              
+          elif len(group_df[~group_df.z.isna()]) > 1:
+            sdss_mask = (
+              group_df.source.str.upper().str.contains('SDSSDR18_SDSS').astype(np.bool) |
+              group_df.source.str.upper().str.contains('DESI').astype(np.bool)
+            )
+            if len(group_df[sdss_mask]) == 1:
+              z_mask = ~sdss_mask
+            elif len(group_df[sdss_mask]) > 1:
+              if len(group_df[~group_df.mag_r.isna()]) > 0:
+                z_mask = (
+                  group_df.mag_r != group_df[sdss_mask].mag_r.min()
+                )
+              else:
+                if len(~group_df.e_z.isna()) > 0:
+                  z_mask = (
+                    group_df.e_z != group_df[sdss_mask].e_z.min()
+                  )
+                else:
+                  z_mask = np.zeros(shape=(len(group_df),), dtype=np.bool)
+            else:
+              if len(group_df[~group_df.mag_r.isna()]) > 0:
+                z_mask = group_df.mag_r.isna() | (group_df.mag_r != group_df.mag_r.min())
+              else:
+                if len(~group_df.e_z.isna()) > 0:
+                  z_mask = (group_df.e_z != group_df.e_z.min())
+                else:
+                  z_mask = np.zeros(shape=(len(group_df),), dtype=np.bool)
+          
+          else:
+            if len(group_df[~group_df.mag_r.isna()]) > 0:
+              z_mask = group_df.mag_r != group_df.mag_r.min()
+            else:
+              z_mask = np.ones(shape=(len(group_df),), dtype=np.bool)
+              # if len(group_df[(~group_df.r_auto.isna()) & (group_df.r_auto < 99)]) > 0:
+              #   z_mask = group_df.r_auto != group_df.r_auto.min()
+              # else:
+              #   z_mask = np.ones(shape=(len(group_df),), dtype=np.bool)
+              #   z_mask[0] = False
+
+          df.loc[group_df[z_mask].index, 'remove_neighbours'] = 1
+    df['remove_neighbours'] = df['remove_neighbours'].astype('int32')
+    
+    
+    print('\nFinal columns:')
+    print(*df.columns, sep=', ')
+    
+    write_table(df, out_flags_path)
+    
+    
+    df_rem = df[(df.remove_star == 1) | (df.remove_z == 1) | (df.remove_neighbours == 1) | (df.remove_radius == 1)]
+    write_table(df_rem, out_removed_path)
+    
+    
+    df = df[(df.remove_star != 1) & (df.remove_z != 1) & (df.remove_neighbours != 1) & (df.remove_radius != 1)]
+    if 'f_z' in df.columns: print('\n\n>>>> KEEP 9:', len(df[df.f_z.str.contains('KEEP')]), '\n\n')
+    del df['remove_star']
+    del df['remove_z']
+    del df['remove_neighbours']
+    del df['remove_radius']
+    if 'GroupID' in df.columns:
+      del df['GroupID']  
+    if 'GroupSize' in df.columns:
+      del df['GroupSize']
+    write_table(df, out_path)
+    
+    
+  
+  def _run(
     self, 
     cls_name: str, 
     cls_ra: float,
