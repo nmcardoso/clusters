@@ -238,6 +238,7 @@ class PhotozSpeczLegacyMatchStage(PipelineStage):
       return
     
     center = SkyCoord(ra=cls_ra, dec=cls_dec, unit=u.deg)
+    df_spec_all = self.get_data('df_spec')
     df_spec = df_specz_radial.copy()
     df_photo = df_photoz_radial.copy()
     df_legacy = df_legacy_radial.copy()
@@ -273,6 +274,19 @@ class PhotozSpeczLegacyMatchStage(PipelineStage):
     
     
     if df_r is not None and len(df_r) > 0:
+      df_x = crossmatch(
+        table1=df_r, 
+        table2=df_spec_all, 
+        ra1='ra_r', 
+        dec1='dec_r', 
+        ra2='ra_spec_all', 
+        dec2='dec_spec_all', 
+        join='1not2',
+        find='all',
+      )
+      print('df_r:', len(df_r), 'df_r not in df_spec_all:', len(df_x))
+      print(df_x[['ra_r', 'dec_r']].to_csv())
+      
       df_lost_p = crossmatch(
         table1=df_r, 
         table2=df_photo, 
@@ -378,7 +392,6 @@ class PhotozSpeczLegacyMatchStage(PipelineStage):
     if 'f_z' in df.columns: print('\n\n>>>> KEEP 5:', len(df[df.f_z.str.contains('KEEP')]), '\n\n')
     
     
-    df_spec_all = self.get_data('df_spec')
     df_result = crossmatch(
       table1=df,
       table2=df_spec_all,
