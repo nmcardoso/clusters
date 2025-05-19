@@ -265,16 +265,15 @@ def create_zip():
 
 def concat_lost_table():
   paths = list(configs.PHOTOZ_SPECZ_LEG_FOLDER.glob('*lost.csv'))
-  print(paths)
   write_table(concat_tables(paths), configs.OUT_PATH / 'lost.parquet')
 
 
 
 
 if __name__ == "__main__":
-  # config_dask()
-  # clusters_v6_pipeline()
-  # clusters_v5_remake_pipeline()
-  # hydra_neighbours_pipeline()
+  config_dask()
+  clusters_v6_pipeline()
+  clusters_v5_remake_pipeline()
+  hydra_neighbours_pipeline()
   concat_lost_table()
   create_zip()
