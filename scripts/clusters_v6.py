@@ -9,7 +9,7 @@ from shutil import make_archive, rmtree
 
 from astromodule.io import merge_pdf, read_table, write_table
 from astromodule.pipeline import Pipeline, PipelineStorage
-from astromodule.table import guess_coords_columns
+from astromodule.table import concat_tables, guess_coords_columns
 from astropy import units as u
 from astropy.coordinates import SkyCoord, match_coordinates_sky
 from astropy.table import Table
@@ -259,7 +259,13 @@ def create_zip():
     root_dir=configs.OUT_PATH / 'submit',
     base_dir=configs.OUT_PATH / 'submit',
   )
+  
 
+
+
+def concat_lost_table():
+  paths = list(configs.PHOTOZ_SPECZ_LEG_FOLDER.glob('*lost.csv'))
+  write_table(concat_tables(paths), configs.OUT_PATH / 'lost.parquet')
 
 
 
@@ -269,4 +275,5 @@ if __name__ == "__main__":
   clusters_v6_pipeline()
   clusters_v5_remake_pipeline()
   hydra_neighbours_pipeline()
+  concat_lost_table()
   create_zip()

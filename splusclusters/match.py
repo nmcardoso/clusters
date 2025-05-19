@@ -172,7 +172,10 @@ class StarsRemovalStage(PipelineStage):
     df_legacy_gal = df_legacy_radial[df_legacy_radial.type != 'PSF']
     df = fast_crossmatch(df_photoz_radial, df_legacy_gal, include_sep=False)
     return {'df_photoz_radial': df}
-  
+
+
+
+
   
 
 class PhotozSpeczLegacyMatchStage(PipelineStage):
@@ -233,6 +236,7 @@ class PhotozSpeczLegacyMatchStage(PipelineStage):
     out_recovered_path = configs.PHOTOZ_SPECZ_LEG_FOLDER / f'{cls_name}+recovered.parquet'
     out_removed_path = configs.PHOTOZ_SPECZ_LEG_FOLDER / f'{cls_name}+removed.parquet'
     out_removed_vi_path = configs.PHOTOZ_SPECZ_LEG_FOLDER / f'{cls_name}+removed_vi.parquet'
+    out_lost = configs.PHOTOZ_SPECZ_LEG_FOLDER / f'{cls_name}+lost.csv'
     
     if out_path.exists() and not self.overwrite:
       return
@@ -274,7 +278,7 @@ class PhotozSpeczLegacyMatchStage(PipelineStage):
     
     
     if df_r is not None and len(df_r) > 0:
-      df_x = crossmatch(
+      df_lost = crossmatch(
         table1=df_r, 
         table2=df_spec_all, 
         ra1='ra_r', 
@@ -284,45 +288,12 @@ class PhotozSpeczLegacyMatchStage(PipelineStage):
         join='1not2',
         find='all',
       )
-      print('df_r:', len(df_r), 'df_r not in df_spec_all:', len(df_x))
-      print(df_x[['ra_r', 'dec_r', 'z']].to_csv(index=False))
+      print('df_r:', len(df_r), 'df_r not in df_spec_all:', len(df_lost))
+      df_lost = df_lost.rename(columns={'ra_r': 'ra', 'dec_r': 'dec'})
+      df_lost['cluster'] = cls_name
+      write_table(df_lost, out_lost)
       del df_r['z']
-      
-      df_lost_p = crossmatch(
-        table1=df_r, 
-        table2=df_photo, 
-        ra1='ra_r', 
-        dec1='dec_r', 
-        ra2='ra_photo', 
-        dec2='dec_photo', 
-        join='1not2',
-        find='all',
-      )
-      print('Lost photo:', len(df_lost_p))
-      df_lost_s = crossmatch(
-        table1=df_r, 
-        table2=df_spec, 
-        ra1='ra_r', 
-        dec1='dec_r', 
-        ra2='ra_spec', 
-        dec2='dec_spec', 
-        join='1not2',
-        find='all',
-      )
-      print('Lost spec:', len(df_lost_s))
-      df_lost_sp = crossmatch(
-        table1=df_lost_p, 
-        table2=df_lost_s, 
-        ra1='ra_r', 
-        dec1='dec_r', 
-        ra2='ra_r', 
-        dec2='dec_r', 
-        join='1and2',
-        find='all',
-      )
-      if df_lost_sp is not None:
-        print('Lost photo and spec:', len(df_lost_sp))
-    
+    return
     
     if df_photo is not None and len(df_photo) > 0:
       df_result = crossmatch(
