@@ -247,8 +247,10 @@ class PhotozSpeczLegacyMatchStage(PipelineStage):
     )
     
     if df_rem is not None and len(df_rem) > 0:
-      del df_rem['ra_rem']
-      del df_rem['dec_rem']
+      if 'ra_rem' in df_rem.columns:
+        del df_rem['ra_rem']
+      if 'dec_rem' in df_rem.columns:
+        del df_rem['dec_rem']
     
     df_match = crossmatch(
       df, 
