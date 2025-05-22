@@ -236,12 +236,12 @@ class PhotozSpeczLegacyMatchStage(PipelineStage):
     df_rem = crossmatch(
       df, 
       filter_df,
+      radius=1*u.arcsec, 
+      join='1and2', 
       ra1=ra,
       dec1=dec,
       ra2='ra',
       dec2='dec',
-      radius=1*u.arcsec, 
-      join='1and2', 
       suffix1='', 
       suffix2='_rem'
     )
@@ -257,7 +257,11 @@ class PhotozSpeczLegacyMatchStage(PipelineStage):
       filter_df, 
       radius=1*u.arcsec, 
       join='1not2', 
-      find='best'
+      find='best',
+      ra1=ra,
+      dec1=dec,
+      ra2='ra',
+      dec2='dec',
     )
     
     print('Number of objects before visual inspection filter:', l)
