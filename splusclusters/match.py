@@ -220,208 +220,85 @@ class PhotozSpeczLegacyMatchStage(PipelineStage):
       'ra', 'dec', 'z', 'z_err', 'v', 'v_err', 'radius_deg', 
       'radius_Mpc', 'v_offset', 'flag_member'
     ]
+    
   
-  def run(
+  def _filter_by_visual_inspection(
     self, 
-    cls_name: str, 
-    cls_ra: float,
-    cls_dec: float,
-    df_specz_radial: pd.DataFrame,
-    df_photoz_radial: pd.DataFrame, 
-    df_legacy_radial: pd.DataFrame,
-    df_ret: pd.DataFrame | None,
-  ):
-    out_path = configs.PHOTOZ_SPECZ_LEG_FOLDER / f'{cls_name}.parquet'
-    out_flags_path = configs.PHOTOZ_SPECZ_LEG_FOLDER / f'{cls_name}+flags.parquet'
-    out_recovered_path = configs.PHOTOZ_SPECZ_LEG_FOLDER / f'{cls_name}+recovered.parquet'
-    out_removed_path = configs.PHOTOZ_SPECZ_LEG_FOLDER / f'{cls_name}+removed.parquet'
-    out_removed_vi_path = configs.PHOTOZ_SPECZ_LEG_FOLDER / f'{cls_name}+removed_vi.parquet'
-    out_lost = configs.PHOTOZ_SPECZ_LEG_FOLDER / f'{cls_name}+lost.csv'
-    
-    if out_path.exists() and not self.overwrite:
-      return
-    
-    center = SkyCoord(ra=cls_ra, dec=cls_dec, unit=u.deg)
-    df_spec_all = self.get_data('df_spec')
-    df_spec = df_specz_radial.copy()
-    df_photo = df_photoz_radial.copy()
-    df_legacy = df_legacy_radial.copy()
-    df_r = df_ret.copy() if df_ret is not None else None
-    
-    if len(df_spec) > 0:
-      if 'ra_spec_all' in df_spec.columns and 'dec_spec_all' in df_spec.columns:
-        ra, dec = 'ra_spec_all', 'dec_spec_all'
-      else:
-        ra, dec = guess_coords_columns(df_spec)
-      df_spec = df_spec.rename(columns={ra: 'ra_spec', dec: 'dec_spec'})
-      print('Spec-z objects:', len(df_spec))
-    if len(df_photo) > 0:
-      ra, dec = guess_coords_columns(df_photo)
-      df_photo = df_photo.rename(columns={ra: 'ra_photo', dec: 'dec_photo'})
-      print('Photo-z objects:', len(df_photo))
-    if len(df_legacy) > 0:
-      ra, dec = guess_coords_columns(df_legacy)
-      df_legacy = df_legacy.rename(columns={ra: 'ra_legacy', dec: 'dec_legacy'})
-      print('Legacy objects:', len(df_legacy))
-    if df_r is not None and len(df_r) > 0:
-      ra, dec = guess_coords_columns(df_r)
-      df_r = df_r[[ra, dec, 'z', 'v', 'v_err', 'radius_deg', 'radius_Mpc', 'v_offset', 'flag_member']]
-      df_r = df_r.rename(columns={ra: 'ra_r', dec: 'dec_r'})
-      print('Return objects:', len(df_r))
-    
-    df_spec['f_z'] = df_spec['f_z'].astype('str')
-    df_spec['original_class_spec'] = df_spec['original_class_spec'].astype('str')
-    
-
-    print('\n\n>>>> KEEP 1:', len(df_spec[df_spec.f_z.str.contains('KEEP')]), '\n\n')
-    if 'f_z' in df_r.columns: print('\n\n>>>> KEEP 2:', len(df_r[df_r.f_z.str.contains('KEEP')]), '\n\n')
-    
-    
-    if df_r is not None and len(df_r) > 0:
-      df_lost = crossmatch(
-        table1=df_r, 
-        table2=df_spec_all, 
-        ra1='ra_r', 
-        dec1='dec_r', 
-        ra2='ra_spec_all', 
-        dec2='dec_spec_all', 
-        join='1not2',
-        find='all',
-      )
-      print('df_r:', len(df_r), 'df_r not in df_spec_all:', len(df_lost))
-      df_lost = df_lost.rename(columns={'ra_r': 'ra', 'dec_r': 'dec'})
-      df_lost['cluster'] = cls_name
-      write_table(df_lost, out_lost)
-      del df_r['z']
-    return
-    
-    if df_photo is not None and len(df_photo) > 0:
-      df_result = crossmatch(
-        table1=df_photo,
-        table2=df_spec,
-        ra1='ra_photo',
-        dec1='dec_photo',
-        ra2='ra_spec',
-        dec2='dec_spec',
-        radius=1*u.arcsec,
-        join='1or2',
-        find='best',
-      )
-      if df_result is not None:
-        df = df_result
-        df.insert(0, 'ra', df['ra_photo'].fillna(df['ra_spec']))
-        df.insert(1, 'dec', df['dec_photo'].fillna(df['dec_spec']))
-    else:
-      df = df_spec.copy()
-      df.insert(0, 'ra', df['ra_spec'])
-      df.insert(1, 'dec', df['dec_spec'])
-    
-    df['f_z'] = df['f_z'].fillna('')
-    if 'f_z' in df.columns: print('\n\n>>>> KEEP 3:', len(df[df.f_z.str.contains('KEEP')]), '\n\n')
-    
-    
-    if df_r is not None and len(df_r) > 0:
-      df_result = crossmatch(
-        table1=df,
-        table2=df_r,
-        ra1='ra',
-        dec1='dec',
-        ra2='ra_r',
-        dec2='dec_r',
-        radius=1*u.arcsec,
-        join='all1',
-        find='best',
-      )
-      if df_result is not None:
-        df = df_result
-        del df['ra_r']
-        del df['dec_r']
-    
-    
-    df['f_z'] = df['f_z'].fillna('')
-    if 'f_z' in df.columns: print('\n\n>>>> KEEP 4:', len(df[df.f_z.str.contains('KEEP')]), '\n\n')
-    
-    
-    if df_legacy is not None and len(df_legacy) > 0:
-      df_result = crossmatch(
-        table1=df,
-        table2=df_legacy,
-        ra1='ra',
-        dec1='dec',
-        ra2='ra_legacy',
-        dec2='dec_legacy',
-        radius=1*u.arcsec,
-        join='all1',
-        find='best',
-      )
-      if df_result is not None:
-        df = df_result
-        del df['ra_legacy']
-        del df['dec_legacy']
-      
-    
-    df['f_z'] = df['f_z'].fillna('')
-    if 'f_z' in df.columns: print('\n\n>>>> KEEP 5:', len(df[df.f_z.str.contains('KEEP')]), '\n\n')
-    
-    
-    df_result = crossmatch(
-      table1=df,
-      table2=df_spec_all,
-      ra1='ra',
-      dec1='dec',
-      ra2='ra_spec_all',
-      dec2='dec_spec_all',
-      radius=1*u.arcsec,
-      join='all1',
-      find='best',
-      suffix1='_final',
-      suffix2='_spec_all'
+    df: pd.DataFrame, 
+    ra: str = None, 
+    dec: str = None
+  ) -> Tuple[pd.DataFrame, pd.DataFrame]:
+    print('\nRemoving bad objects classified by visual inspection')
+    l = len(df)
+    filter_df = read_table(
+      configs.ROOT / 'tables' / 'objects_to_exclude.csv', comment='#'
     )
-    if df_result is not None:
-      df = df_result
-      cols = [
-        'z', 'e_z', 'f_z', 'class_spec',
-        'original_class_spec', 'source'
-      ]
-      for col in cols:
-        if f'{col}_final' in df.columns:
-          df[f'{col}_final'] = df[f'{col}_final'].replace(r'^\s*$', np.nan, regex=True)
-          df[f'{col}_final'] = df[f'{col}_final'].fillna(df[f'{col}_spec_all'])
-          df = df.rename(columns={f'{col}_final': col})
-        if f'{col}_spec_all' in df.columns:
-          del df[f'{col}_spec_all']
-      df['f_z'] = df['f_z'].astype('str')
-      df['original_class_spec'] = df['original_class_spec'].astype('str')
-      del df['ra_spec_all']
-      del df['dec_spec_all']
+    df_rem = crossmatch(
+      df, 
+      filter_df,
+      ra1=ra,
+      dec1=dec,
+      ra2='ra',
+      dec2='dec',
+      radius=1*u.arcsec, 
+      join='1and2', 
+      suffix1='', 
+      suffix2='_rem'
+    )
+    
+    if df_rem is not None and len(df_rem) > 0:
+      del df_rem['ra_rem']
+      del df_rem['dec_rem']
+    
+    df_match = crossmatch(
+      df, 
+      filter_df, 
+      radius=1*u.arcsec, 
+      join='1not2', 
+      find='best'
+    )
+    
+    print('Number of objects before visual inspection filter:', l)
+    print('Number of objects after visual inspection filter:', len(df))
+    return df_match, df_rem
+
+
+  def _fix_coordinates(self, df: pd.DataFrame) -> pd.DataFrame:
+    df = df.copy()
+    
+    options = [
+      ('ra', 'dec'), ('ra_r', 'dec_r'), ('ra_spec', 'dec_spec'), 
+      ('ra_photo', 'dec_photo'), ('ra_legacy', 'dec_legacy'), 
+      ('ra_spec_all', 'dec_spec_all')
+    ]
+    
+    for ra_col, dec_col in options:
+      if ra_col in df.columns and dec_col in df.columns:
+        break
+    
+    df['ra_aux'] = df[ra_col]
+    df['dec_aux'] = df[dec_col]
       
+    for ra_col, dec_col in options:
+      if ra_col in df.columns and dec_col in df.columns:
+        df['ra_aux'] = df.ra_aux.fillna(df[ra_col])
+        df['dec_aux'] = df.dec_aux.fillna(df[dec_col]) 
+    
+    if 'ra' in df.columns:
+      del df['ra']
+    if 'dec' in df.columns:
+      del df['dec']
+    
+    df.insert(0, 'ra', df.ra_aux)
+    df.insert(1, 'dec', df.dec_aux)
+    del df['ra_aux']
+    del df['dec_aux']
+    
+    return df
   
-    if 'f_z' in df.columns: print('\n\n>>>> KEEP 6:', len(df[df.f_z.str.contains('KEEP')]), '\n\n')
-
-    
-    if df_r is not None:
-      print(df_r.columns)
-      df_lost = crossmatch(
-        table1=df_r, 
-        table2=df, 
-        ra1='ra_r', 
-        dec1='dec_r', 
-        ra2='ra', 
-        dec2='dec', 
-        join='1not2',
-        find='all',
-      )
-      
-      print('Lost Objects:')
-      print(df_lost)
-    
-    # compute radius_deg for all objects
-    coords = SkyCoord(ra=df['ra'].values, dec=df['dec'].values, unit=u.deg)
-    df['radius_deg_computed'] = coords.separation(center).deg
-    if not 'radius_deg' in df.columns: df['radius_deg'] = np.nan
-    df['radius_deg'] = df['radius_deg'].fillna(df['radius_deg_computed'])
-    del df['radius_deg_computed']
-
+  
+  def _remove_separation_columns(self, df: pd.DataFrame) -> pd.DataFrame:
+    df = df.copy()
     if 'xmatch_sep' in df.columns:
       del df['xmatch_sep']
     if 'xmatch_sep_1' in df.columns:
@@ -432,29 +309,29 @@ class PhotozSpeczLegacyMatchStage(PipelineStage):
       del df['xmatch_sep_final']
     if 'xmatch_sep_finala' in df.columns:
       del df['xmatch_sep_finala']
-    
-    
-    # Filter bad objects after visual inspection
-    print('\nRemoving bad objects classified by visual inspection')
-    l = len(df)
-    filter_df = read_table(configs.ROOT / 'tables' / 'objects_to_exclude.csv', comment='#')
-    df_rem = crossmatch(df, filter_df, radius=1*u.arcsec, join='1and2', suffix1='', suffix2='_rem')
-    if df_rem is not None and len(df_rem) > 0:
-      del df_rem['ra_rem']
-      del df_rem['dec_rem']
-    write_table(df_rem, out_removed_vi_path)
-    df = crossmatch(df, filter_df, radius=1*u.arcsec, join='1not2', find='all')
-    print('Number of objects before filter:', l)
-    print('Number of objects after filter:', len(df))
-    
-    
-    
-    df['f_z'] = df['f_z'].fillna('')
-    if 'f_z' in df.columns: print('\n\n>>>> KEEP 8:', len(df[df.f_z.str.contains('KEEP')]), '\n\n')
-    
-    
-    
-    # Flag: remove_z
+    return df
+  
+  
+  def _compute_angular_distance(
+    self, 
+    df: pd.DataFrame, 
+    cluster_center: SkyCoord
+  ) -> pd.DataFrame:
+    df = df.copy()
+    coords = SkyCoord(ra=df['ra'].values, dec=df['dec'].values, unit=u.deg)
+    df['radius_deg_computed'] = coords.separation(cluster_center).deg
+    if not 'radius_deg' in df.columns: df['radius_deg'] = np.nan
+    df['radius_deg'] = df['radius_deg'].fillna(df['radius_deg_computed'])
+    del df['radius_deg_computed']
+    return df
+  
+  
+  def _compute_cleanup_flags(
+    self, 
+    df: pd.DataFrame,
+    out_flags_path: Path,
+    out_removed_path: Path,
+  ) -> pd.DataFrame:
     df['remove_z'] = 0
     mask = (
       df.original_class_spec.isin(['GClstr', 'GGroup', 'GPair', 'GTrpl', 'PofG']) |
@@ -517,6 +394,7 @@ class PhotozSpeczLegacyMatchStage(PipelineStage):
           elif len(group_df[~group_df.z.isna()]) > 1:
             sdss_mask = (
               group_df.source.str.upper().str.contains('SDSSDR18_SDSS').astype(np.bool) |
+              group_df.source.str.upper().str.contains('2016SDSS').astype(np.bool) |
               group_df.source.str.upper().str.contains('DESI').astype(np.bool)
             )
             if len(group_df[sdss_mask]) == 1:
@@ -578,6 +456,265 @@ class PhotozSpeczLegacyMatchStage(PipelineStage):
       del df['GroupID']  
     if 'GroupSize' in df.columns:
       del df['GroupSize']
+  
+  
+  def _log_columns(self, df: pd.DataFrame, tab: int = 0):
+    cols = ', '.join(df.columns)
+    print(' ' * tab, '- Current columns: ', cols, sep='')
+  
+  
+  def _match_all(
+    self,
+    df_r: pd.DataFrame,
+    df_spec: pd.DataFrame,
+    df_photo: pd.DataFrame,
+    df_legacy: pd.DataFrame,
+    cls_name: str,
+    out_lost: Path,
+  ) -> pd.DataFrame:
+    if len(df_spec) > 0:
+      if 'ra_spec_all' in df_spec.columns and 'dec_spec_all' in df_spec.columns:
+        ra, dec = 'ra_spec_all', 'dec_spec_all'
+      else:
+        ra, dec = guess_coords_columns(df_spec)
+      df_spec = df_spec.rename(columns={ra: 'ra_spec', dec: 'dec_spec'})
+      print('Spec-z objects:', len(df_spec))
+    
+    if len(df_photo) > 0:
+      ra, dec = guess_coords_columns(df_photo)
+      df_photo = df_photo.rename(columns={ra: 'ra_photo', dec: 'dec_photo'})
+      print('Photo-z objects:', len(df_photo))
+    
+    if len(df_legacy) > 0:
+      ra, dec = guess_coords_columns(df_legacy)
+      df_legacy = df_legacy.rename(columns={ra: 'ra_legacy', dec: 'dec_legacy'})
+      print('Legacy objects:', len(df_legacy))
+    
+    if df_r is not None and len(df_r) > 0:
+      ra, dec = guess_coords_columns(df_r)
+      df_r = df_r[[ra, dec, 'z', 'z_err', 'v', 'v_err', 'radius_deg', 'radius_Mpc', 'v_offset', 'flag_member']]
+      df_r = df_r.rename(columns={ra: 'ra_r', dec: 'dec_r'})
+      print('Return objects:', len(df_r))
+    
+    df_spec_all = self.get_data('df_spec')
+    
+    df_spec['f_z'] = df_spec['f_z'].astype('str')
+    df_spec['original_class_spec'] = df_spec['original_class_spec'].astype('str')
+    
+    print()
+    print('>> Step 1: combine previous spec and members determinations and current spec table')
+    if df_r is not None and len(df_r) > 0 and df_spec is not None and len(df_spec) > 0:
+      df_r, df_r_rem = self._filter_by_visual_inspection(df_r, 'ra_r', 'dec_r')
+      df_spec, df_spec_rem = self._filter_by_visual_inspection(df_spec, 'ra_spec', 'dec_spec')
+      if df_r is None and df_spec is not None:
+        df = self._fix_coordinates(df_spec)
+        print('   - Previous members determinations not found: using only current spec table')
+        print(f'   - Spec objects: {len(df)}')
+      elif df_spec is None and df_r is not None:
+        df = self._fix_coordinates(df_r)
+        print('   - Current spec table not found: using only previous members determinations')
+        print(f'   - Determinations objects: {len(df)}')
+      else:
+        print('   - Previous determinations AND spec table found: combining objects')
+        print(f'   - Determinations objects: {len(df_r)}, spec objects: {len(df_spec)}')
+        df_missing = crossmatch(
+          table1=df_r,
+          table2=df_spec,
+          ra1='ra_r',
+          dec1='dec_r',
+          ra2='ra_spec',
+          dec2='dec_spec',
+          radius=1*u.arcsec,
+          join='1not2',
+          find='best',
+        )
+        if df_missing is not None:
+          print(f'   - Determinations objects without spec-z table correspondence: {len(df_missing)}')
+          df = concat_tables([df_spec, df_missing])
+          print(f'   - Combining spec-z table and missing determinations, objects: {len(df)}')
+          df = self._fix_coordinates(df_missing)
+        
+        print('   - Including determination information for all ojects')
+        df_result = crossmatch(
+          table1=df,
+          table2=df_r,
+          ra1='ra',
+          dec1='dec',
+          ra2='ra_r',
+          dec2='dec_r',
+          radius=1*u.arcsec,
+          join='all1',
+          find='best',
+        )
+        
+        if df_result is not None:
+          df = df_result
+          print(f'    - Determination object combination done successfully, objects: {len(df)}')
+    self._log_columns(df, 3)
+    
+    
+    print('\n')
+    print('>> Step 2: add S-PLUS catalog information')
+    if df_photo is not None and len(df_photo) > 0:
+      print(f'   - S-PLUS catalog found, objects: {len(df_photo)}')
+      if df is not None and len(df) > 0:
+        df_result = crossmatch(
+          table1=df_photo,
+          table2=df,
+          ra1='ra_photo',
+          dec1='dec_photo',
+          ra2='ra',
+          dec2='dec',
+          radius=1*u.arcsec,
+          join='1or2',
+          find='best',
+        )
+        if df_result is not None:
+          print(f'   - Crossmatch against S-PLUS done successfully, objects: {len(df_result)}')
+          df = self._fix_coordinates(df_result)
+      else:
+        print('   - Crossmatch against S-PLUS returned a None object!')
+        df = self._fix_coordinates(df_photo)
+    else:
+      print('   - S-PLUS catalog not found: skiping')
+    self._log_columns(df, 3)
+    
+    
+    print('\n')
+    print('>> Step 3: add Legacy catalog information')
+    if df_legacy is not None and len(df_legacy) > 0:
+      print(f'   - Legacy catalog found, objects: {len(df_legacy)}')
+      if df is not None and len(df) > 0:
+        df_result = crossmatch(
+          table1=df,
+          table2=df_legacy,
+          ra1='ra',
+          dec1='dec',
+          ra2='ra_legacy',
+          dec2='dec_legacy',
+          radius=1*u.arcsec,
+          join='all1',
+          find='best',
+        )
+        if df_result is not None:
+          print(f'   - Crossmatch against Legacy done successfully, objects: {len(df_result)}')
+          df = self._fix_coordinates(df_result)
+    self._log_columns(df, 3)
+    
+    
+    print('\n')
+    print('>> Step 4: add redshift information for objects outside z-spec range')
+    if df_spec_all is not None and len(df_spec_all) > 0:
+      if df is not None and len(df) > 0:
+        df_result = crossmatch(
+          table1=df,
+          table2=df_spec_all,
+          ra1='ra',
+          dec1='dec',
+          ra2='ra_spec_all',
+          dec2='dec_spec_all',
+          radius=1*u.arcsec,
+          join='all1',
+          find='best',
+        )
+        if df_result is not None:
+          print(f'   - Crossmatch against complete spec-z catalog done successfully, objects: {len(df_result)}')
+          df = self._fix_coordinates(df_result)
+          cols = [
+            'z', 'e_z', 'f_z', 'class_spec',
+            'original_class_spec', 'source'
+          ]
+          for col in cols:
+            if f'{col}_final' in df.columns:
+              df[f'{col}_final'] = df[f'{col}_final'].replace(r'^\s*$', np.nan, regex=True)
+              df[f'{col}_final'] = df[f'{col}_final'].fillna(df[f'{col}_spec_all'])
+              df = df.rename(columns={f'{col}_final': col})
+            if f'{col}_spec_all' in df.columns:
+              del df[f'{col}_spec_all']
+          df['f_z'] = df['f_z'].astype('str').fillna('')
+          df['original_class_spec'] = df['original_class_spec'].astype('str')
+          del df['ra_spec_all']
+          del df['dec_spec_all']
+    self._log_columns(df, 3)
+    
+    
+    print('\n')
+    print('>> Step 5: Check for lost objects')
+    if df_r is not None and len(df_r) > 0:
+      print(f'   - Determinations catalog found, objects: {len(df_r)}')
+      df_r_filt, _ = self._filter_by_visual_inspection(df_r, 'ra_r', 'dec_r')
+      print(f'   - Number of objects of determinations catalog after VI filter: {len(df_r_filt)}')
+      if df_r_filt is not None:
+        df_lost = crossmatch(
+          table1=df_r_filt, 
+          table2=df, 
+          ra1='ra_r', 
+          dec1='dec_r', 
+          ra2='ra', 
+          dec2='dec', 
+          join='1not2',
+          find='best',
+        )
+        if df_lost is not None:
+          df_lost = df_lost.rename(columns={'ra_r': 'ra', 'dec_r': 'dec'})
+          df_lost['cluster'] = cls_name
+          write_table(df_lost, out_lost)
+          print('   - Number of lost objects: ', len(df_lost))
+        else:
+          if out_lost.exists():
+            out_lost.unlink()
+          print('   - Number of lost objects: None')
+    else:
+      print('   - Determinations catalog not found: skiping')
+    self._log_columns(df, 3)
+    
+    return df
+      
+    
+  
+  def run(
+    self, 
+    cls_name: str, 
+    cls_ra: float,
+    cls_dec: float,
+    df_specz_radial: pd.DataFrame,
+    df_photoz_radial: pd.DataFrame, 
+    df_legacy_radial: pd.DataFrame,
+    df_ret: pd.DataFrame | None,
+  ):
+    out_path = configs.PHOTOZ_SPECZ_LEG_FOLDER / f'{cls_name}.parquet'
+    out_flags_path = configs.PHOTOZ_SPECZ_LEG_FOLDER / f'{cls_name}+flags.parquet'
+    out_removed_path = configs.PHOTOZ_SPECZ_LEG_FOLDER / f'{cls_name}+removed.parquet'
+    out_removed_vi_path = configs.PHOTOZ_SPECZ_LEG_FOLDER / f'{cls_name}+removed_vi.parquet'
+    out_lost = configs.PHOTOZ_SPECZ_LEG_FOLDER / f'{cls_name}+lost.csv'
+    
+    if out_path.exists() and not self.overwrite:
+      return
+    
+    cluster_center = SkyCoord(ra=cls_ra, dec=cls_dec, unit=u.deg)
+    df_spec = df_specz_radial.copy()
+    df_photo = df_photoz_radial.copy()
+    df_legacy = df_legacy_radial.copy()
+    df_r = df_ret.copy() if df_ret is not None else None
+
+    print('\n\n>>>> KEEP 1:', len(df_spec[df_spec.f_z.str.contains('KEEP')]), '\n\n')
+    if 'f_z' in df_r.columns: print('\n\n>>>> KEEP 2:', len(df_r[df_r.f_z.str.contains('KEEP')]), '\n\n')
+    
+    # match all catalogs
+    df = self._match_all(df_r, df_spec, df_photo, df_legacy, cls_name, out_lost)
+
+    # remove crossmatch separation columns
+    df = self._remove_separation_columns(df)
+    
+    # compute radius_deg for all objects
+    df = self._compute_angular_distance(df, cluster_center)
+    
+    # Filter bad objects after visual inspection
+    df, _ = self._filter_by_visual_inspection(df)
+    
+    # compute cleanup flags
+    df = self._compute_cleanup_flags(df, out_flags_path, out_removed_path)
+    
     write_table(df, out_path)
     
     
@@ -984,7 +1121,7 @@ class PhotozSpeczLegacyMatchStage(PipelineStage):
       del df_rem['ra_rem']
       del df_rem['dec_rem']
     write_table(df_rem, out_removed_vi_path)
-    df = crossmatch(df, filter_df, radius=1*u.arcsec, join='1not2', find='all')
+    df = crossmatch(df, filter_df, radius=1*u.arcsec, join='1not2', find='best')
     print('Number of objects before filter:', l)
     print('Number of objects after filter:', len(df))
     if 'f_z' in df.columns: print('\n\n>>>> KEEP 8:', len(df[df.f_z.str.contains('KEEP')]), '\n\n')
