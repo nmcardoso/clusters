@@ -47,7 +47,7 @@ def add_xray_flag(df: pd.DataFrame, threshold: float = 1):
   return df
 
 
-def _log_clusters(df_clusters, suffix: str = ''):
+def _log_clusters(df_clusters):
   data = {
     'cluster': [], 'total': [], 'z_min': [], 'z_max': [], 'z_null': [],
     'z_neg': [], 'z_pos': [], 'zerr_min': [], 'zerr_max': [], 'zerr_null': [],
@@ -74,12 +74,11 @@ def _log_clusters(df_clusters, suffix: str = ''):
     data['zerr_pos'] += [len(df[df["zspec-err"] > 0])]
     data['z_flag'] += [flag_count]
   
-  path = configs.SUBMIT_FOLDER / f'stats{suffix}.csv'
+  path = configs.SUBMIT_FOLDER / f'summary.csv'
   df = pd.DataFrame(data)
   if path.exists():
     df = concat_tables([read_table(path), df])
   write_table(df, path)
-  df.to_csv(path, index=False)
   print(df)
   
 
@@ -139,7 +138,7 @@ def clusters_v5_remake_pipeline(clear: bool = False):
     df_clusters[['clsid', 'name', 'RA', 'DEC', 'zspec', 'xray-flag']]
   ).write(configs.SUBMIT_FOLDER / 'index.dat', format='ascii', overwrite=True)
   
-  _log_clusters(df_clusters, '_antigos')
+  _log_clusters(df_clusters)
 
 
 
@@ -200,7 +199,7 @@ def hydra_neighbours_pipeline(clear: bool = False):
     df_clusters[['clsid', 'name', 'RA', 'DEC', 'zspec', 'xray-flag']]
   ).write(configs.SUBMIT_FOLDER / 'index.dat', format='ascii', overwrite=True)
 
-  _log_clusters(df_clusters, '_hydra')
+  _log_clusters(df_clusters)
 
 
 
@@ -259,7 +258,7 @@ def clusters_v6_pipeline(clear: bool = False):
     df_clusters[['clsid', 'name', 'RA', 'DEC', 'zspec', 'xray-flag']]
   ).write(configs.SUBMIT_FOLDER / 'index.dat', format='ascii', overwrite=True)
   
-  _log_clusters(df_clusters, '_novos')
+  _log_clusters(df_clusters)
   
     
 
