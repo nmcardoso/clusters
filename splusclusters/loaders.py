@@ -674,9 +674,9 @@ class PrepareCatalogToSubmitStage(PipelineStage):
     }
     df_submit = df_submit.rename(columns=col_names)
     df_submit = df_submit[[c for c in col_names.values() if c in df_submit.columns]]
-    objects_before = len(df_submit)
-    df_submit = remove_bad_objects(df_submit)
-    print('Inspection filter:', objects_before, '->', len(df_submit))
+    # objects_before = len(df_submit)
+    # df_submit = remove_bad_objects(df_submit)
+    # print('Inspection filter:', objects_before, '->', len(df_submit))
     Table.from_pandas(df_submit).write(out_path, format='ascii', overwrite=True)
     # write_table(df_submit, out_path)
 
