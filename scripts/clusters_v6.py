@@ -288,6 +288,9 @@ def clear_comparison_path():
   path = configs.SUBMIT_FOLDER / 'comparison.csv'
   if path.exists():
     path.unlink()
+  for p in (configs.SUBMIT_FOLDER / 'stats*.csv').glob():
+    if p.exists():
+      p.unlink()
 
 
 
