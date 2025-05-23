@@ -564,7 +564,7 @@ class PhotozSpeczLegacyMatchStage(PipelineStage):
     
     
     print('\n')
-    print('>> Step 2: add S-PLUS catalog information')
+    print('>> Step 2: add photo-z objects')
     if df_photo is not None and len(df_photo) > 0:
       print(f'   - S-PLUS catalog found, objects: {len(df_photo)}')
       if df is not None and len(df) > 0:
