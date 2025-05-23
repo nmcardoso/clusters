@@ -629,6 +629,8 @@ class PhotozSpeczLegacyMatchStage(PipelineStage):
           radius=1*u.arcsec,
           join='all1',
           find='best',
+          suffix1='_final',
+          suffix2='_spec_all'
         )
         if df_result is not None:
           print(f'   - Crossmatch against complete spec-z catalog done successfully, objects: {len(df_result)}')
@@ -636,6 +638,7 @@ class PhotozSpeczLegacyMatchStage(PipelineStage):
           cols = [
             'z', 'e_z', 'f_z', 'class_spec', 'original_class_spec', 'source'
           ]
+    
           for col in cols:
             if f'{col}_final' in df.columns:
               df[f'{col}_final'] = df[f'{col}_final'].replace(r'^\s*$', np.nan, regex=True)
@@ -643,16 +646,16 @@ class PhotozSpeczLegacyMatchStage(PipelineStage):
               df = df.rename(columns={f'{col}_final': col})
             if f'{col}_spec_all' in df.columns:
               del df[f'{col}_spec_all']
+              
           df['f_z'] = df['f_z'].astype('str').fillna('')
           df['original_class_spec'] = df['original_class_spec'].astype('str')
+          
+          if 'z_err' in df.columns:
+            df['e_z'] = df.e_z.fillna(df.z_err)
+          
           del df['ra_spec_all']
           del df['dec_spec_all']
-          if 'z_1' in df.columns and 'z_2' in df.columns:
-            df['z'] = df.z_1.fillna(df.z_2) # z_1: df_r, z_2: df_spec_all
-            df['e_z'] = df.e_z.fillna(df.z_err) # e_z: df_spec_all, z_err: df_r
-          del df['z_1']
-          del df['z_2']
-          del df['z_err']
+          
     self._log_columns(df, 3)
     
     
