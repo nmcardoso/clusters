@@ -309,7 +309,7 @@ class PhotozSpeczLegacyMatchStage(PipelineStage):
     
     suffixes = ('r', 'spec', 'photo', 'legacy', 'spec_all')
     for suffix in suffixes:
-      ra_col, dec_col = f'ra_{suffix}', f'dec_suffix'
+      ra_col, dec_col = f'ra_{suffix}', f'dec_{suffix}'
       if ra_col in df.columns: del df[ra_col]
       if dec_col in df.columns: del df[dec_col]
     return df
