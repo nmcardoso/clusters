@@ -463,7 +463,7 @@ class PhotozSpeczLegacyMatchStage(PipelineStage):
   
   def _log_columns(self, df: pd.DataFrame, tab: int = 0):
     cols = ', '.join(df.columns)
-    print(' ' * tab, '- Current columns: ', cols, '. Objects: ', len(df), sep='')
+    print(' ' * tab, '- Current columns: ', cols, ' (objects: ', len(df), ')', sep='')
   
   
   def _match_all(
