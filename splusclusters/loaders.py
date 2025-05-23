@@ -694,7 +694,7 @@ class PrepareCatalogToSubmitStage(PipelineStage):
         t = read_table(path, dtype='astropy')
         t.add_row([cls_name, len(df_ret), len(df_submit)])
       else:
-        t = Table({'cluster': [cls_name,], 'nobj_60': [len(df_ret),], 'nobj_61': [len(df_submit),]})
+        t = Table({'cluster': [cls_name], 'nobj_60': [len(df_ret)], 'nobj_61': [len(df_submit)]})
       write_table(t, path)
 
 
