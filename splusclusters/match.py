@@ -510,8 +510,8 @@ class PhotozSpeczLegacyMatchStage(PipelineStage):
     print()
     print('>> Step 1: combine previous spec and members determinations and current spec table')
     if df_r is not None and len(df_r) > 0 and df_spec is not None and len(df_spec) > 0:
-      df_r, df_r_rem = self._filter_by_visual_inspection(df_r, 'ra_r', 'dec_r')
-      df_spec, df_spec_rem = self._filter_by_visual_inspection(df_spec, 'ra_spec', 'dec_spec')
+      # df_r, df_r_rem = self._filter_by_visual_inspection(df_r, 'ra_r', 'dec_r')
+      # df_spec, df_spec_rem = self._filter_by_visual_inspection(df_spec, 'ra_spec', 'dec_spec')
       if df_r is None and df_spec is not None:
         df = self._fix_coordinates(df_spec)
         print('   - Previous members determinations not found: using only current spec table')
@@ -633,8 +633,7 @@ class PhotozSpeczLegacyMatchStage(PipelineStage):
           print(f'   - Crossmatch against complete spec-z catalog done successfully, objects: {len(df_result)}')
           df = self._fix_coordinates(df_result)
           cols = [
-            'z', 'e_z', 'f_z', 'class_spec',
-            'original_class_spec', 'source'
+            'z', 'e_z', 'f_z', 'class_spec', 'original_class_spec', 'source'
           ]
           for col in cols:
             if f'{col}_final' in df.columns:
@@ -647,6 +646,12 @@ class PhotozSpeczLegacyMatchStage(PipelineStage):
           df['original_class_spec'] = df['original_class_spec'].astype('str')
           del df['ra_spec_all']
           del df['dec_spec_all']
+          if 'z_1' in df.columns and 'z_2' in df.columns:
+            df['z'] = df.z_1.fillna(df.z_2) # z_1: df_r, z_2: df_spec_all
+            df['e_z'] = df.e_z.fillna(df.z_err) # e_z: df_spec_all, z_err: df_r
+          del df['z_1']
+          del df['z_2']
+          del df['z_err']
     self._log_columns(df, 3)
     
     
@@ -728,8 +733,8 @@ class PhotozSpeczLegacyMatchStage(PipelineStage):
     df = self._compute_cleanup_flags(df, out_flags_path, out_removed_path)
     
     write_table(df, out_path)
-    
-    
+
+
   
   def _run(
     self, 
