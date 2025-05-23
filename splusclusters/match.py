@@ -338,6 +338,7 @@ class PhotozSpeczLegacyMatchStage(PipelineStage):
     out_flags_path: Path,
     out_removed_path: Path,
   ) -> pd.DataFrame:
+    df = df.copy()
     df['remove_z'] = 0
     mask = (
       df.original_class_spec.isin(['GClstr', 'GGroup', 'GPair', 'GTrpl', 'PofG']) |
@@ -458,10 +459,9 @@ class PhotozSpeczLegacyMatchStage(PipelineStage):
     del df['remove_z']
     del df['remove_neighbours']
     del df['remove_radius']
-    if 'GroupID' in df.columns:
-      del df['GroupID']  
-    if 'GroupSize' in df.columns:
-      del df['GroupSize']
+    if 'GroupID' in df.columns: del df['GroupID']  
+    if 'GroupSize' in df.columns: del df['GroupSize']
+    return df
   
   
   def _log_columns(self, df: pd.DataFrame, tab: int = 0):
