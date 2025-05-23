@@ -691,11 +691,9 @@ class PrepareCatalogToSubmitStage(PipelineStage):
     if df_ret is not None:
       path = configs.SUBMIT_FOLDER / 'comparison.csv'
       data = {'cluster': [cls_name], 'nobj_60': [len(df_ret)], 'nobj_61': [len(df_submit)]}
+      t = pd.DataFrame(data)
       if path.exists():
-        t = read_table(path)
-        t = concat_tables(t, pd.DataFrame(data))
-      else:
-        t = pd.DataFrame(data)
+        t = concat_tables([read_table(path), t])
       write_table(t, path)
 
 
