@@ -536,7 +536,7 @@ class PhotozSpeczLegacyMatchStage(PipelineStage):
           df = concat_tables([df_spec, df_missing])
           df = self._fix_coordinates(df_missing)
           print(f'   - Determinations objects without spec-z table correspondence: {len(df_missing)}')
-          print(f'   - Number of objects after spec-z table and missing determinations merge: {len(df)}')
+          print(f'   - Number of objects after spec-z and missing determinations merge: {len(df)}')
         
         print('   - Including determination information for all ojects')
         df_result = crossmatch(
