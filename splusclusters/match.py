@@ -439,8 +439,9 @@ class PhotozSpeczLegacyMatchStage(PipelineStage):
     df['remove_neighbours'] = df['remove_neighbours'].astype('int32')
     
     
-    print('\nFinal columns:')
-    print(*df.columns, sep=', ')
+    print('\nFinal columns: ', end='')
+    print(*df.columns, sep=', ', end='')
+    print(f' (objects: {len(df)})')
     
     write_table(df, out_flags_path)
     
@@ -725,12 +726,15 @@ class PhotozSpeczLegacyMatchStage(PipelineStage):
     df = self._remove_separation_columns(df)
     
     # compute radius_deg for all objects
+    print('\n>> Computing angular distances')
     df = self._compute_angular_distance(df, cluster_center)
     
     # Filter bad objects after visual inspection
+    print('\n>> Visual inspection filter: main catalog')
     df, _ = self._filter_by_visual_inspection(df)
     
     # compute cleanup flags
+    print('\n>> Computing cleanup flags')
     df = self._compute_cleanup_flags(df, out_flags_path, out_removed_path)
     
     write_table(df, out_path)
