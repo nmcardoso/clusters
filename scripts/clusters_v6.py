@@ -275,7 +275,7 @@ def concat_lost_table():
 
 def clear_comparison_path():
   path = configs.SUBMIT_FOLDER / 'comparison.csv'
-  if path.exists:
+  if path.exists():
     path.unlink()
 
 
