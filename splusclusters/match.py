@@ -511,6 +511,8 @@ class PhotozSpeczLegacyMatchStage(PipelineStage):
     # df_spec, df_spec_rem = self._filter_by_visual_inspection(df_spec, 'ra_spec', 'dec_spec')
     if df_r is None and df_spec is not None:
       df = self._fix_coordinates(df_spec)
+      df['flag_member'] = np.nan
+      df['radius_deg'] = np.nan
       print('   - Previous members determinations not found: using only current spec table')
       print(f'   - Spec objects: {len(df)}')
     elif df_spec is None and df_r is not None:
@@ -609,6 +611,9 @@ class PhotozSpeczLegacyMatchStage(PipelineStage):
         if df_result is not None:
           print(f'   - Crossmatch against Legacy done successfully, objects: {len(df_result)}')
           df = self._fix_coordinates(df_result)
+    else:
+      print('   - Legacy catalog not found')
+      df['mag_r'] = np.nan
     self._log_columns(df, 3)
     
     
@@ -735,6 +740,14 @@ class PhotozSpeczLegacyMatchStage(PipelineStage):
     # compute cleanup flags
     print('\n>> Computing cleanup flags')
     df = self._compute_cleanup_flags(df, out_flags_path, out_removed_path)
+    
+    for col in df.columns:
+      if df[col].dtype == 'int64' or df[col].dtype == 'int64[pyarrow]':
+        df[col] = df[col].replace(r'^\s*$', np.nan, regex=True).astype('int32')
+      if df[col].dtype == 'float64' or df[col].dtype == 'float64[pyarrow]' or df[col].dtype == 'float[pyarrow]' or df[col].dtype == 'double[pyarrow]':
+        df[col] = df[col].replace(r'^\s*$', np.nan, regex=True).astype('float64')
+        
+    df['flag_member'] = df.flag_member.fillna(-1)
     
     write_table(df, out_path)
 
