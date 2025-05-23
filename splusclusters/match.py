@@ -536,8 +536,9 @@ class PhotozSpeczLegacyMatchStage(PipelineStage):
         )
         if df_missing is not None:
           print(f'   - Determinations objects without spec-z table correspondence: {len(df_missing)}')
+          df_missing['f_z'] = 'KEEP'
           df = concat_tables([df_spec, df_missing])
-          print(f'   - Combining spec-z table and missing determinations, objects: {len(df)}')
+          print(f'   - Number of objects after spec-z table and missing determinations merge: {len(df)}')
           df = self._fix_coordinates(df_missing)
         
         print('   - Including determination information for all ojects')
@@ -561,7 +562,7 @@ class PhotozSpeczLegacyMatchStage(PipelineStage):
               df[col] = df[col1].fillna(df[col2])
               del df[col1]
               del df[col2]
-          print(f'    - Determination object combination done successfully, objects: {len(df)}')
+          print(f'   - Determination object combination done successfully, objects: {len(df)}')
     self._log_columns(df, 3)
     
     
