@@ -4,7 +4,7 @@ from typing import Tuple
 import numpy as np
 import pandas as pd
 from astromodule.distance import mpc2arcsec
-from astromodule.io import merge_pdf, read_table, write_table
+from astromodule.io import merge_pdf
 from astromodule.pipeline import Pipeline, PipelineStage, PipelineStorage
 from astromodule.table import (concat_tables, crossmatch, fast_crossmatch,
                                guess_coords_columns, radial_search, selfmatch)
@@ -12,6 +12,7 @@ from astropy import units as u
 from astropy.coordinates import SkyCoord
 from astropy.cosmology import LambdaCDM
 from astropy.table import Table
+from pylegs.io import read_table, write_table
 
 from splusclusters.configs import configs
 from splusclusters.utils import Timming
@@ -621,7 +622,14 @@ class PrepareCatalogToSubmitStage(PipelineStage):
     super().__init__()
     self.overwrite = overwrite
     
-  def run(self, cls_id: int, df_all_radial: pd.DataFrame, z_spec_range: Tuple[float, float]):
+  def run(
+    self, 
+    cls_id: int, 
+    cls_name: str,
+    df_all_radial: pd.DataFrame, 
+    df_ret: pd.DataFrame,
+    z_spec_range: Tuple[float, float], 
+  ):
     clusters_path = configs.SUBMIT_FOLDER / 'clusters'
     clusters_path.mkdir(parents=True, exist_ok=True)
     out_path = clusters_path / f'cluster_{str(cls_id).zfill(4)}.dat'
@@ -679,7 +687,15 @@ class PrepareCatalogToSubmitStage(PipelineStage):
     # print('Inspection filter:', objects_before, '->', len(df_submit))
     Table.from_pandas(df_submit).write(out_path, format='ascii', overwrite=True)
     # write_table(df_submit, out_path)
-
+    
+    if df_ret is not None:
+      path = configs.SUBMIT_FOLDER / 'comparison.csv'
+      if path.exists():
+        t = read_table(path, dtype='astropy')
+        t.add_row([cls_name, len(df_ret), len(df_submit)])
+      else:
+        t = Table({'cluster': cls_name, 'nobj_60': len(df_ret), 'nobj_61': len(df_submit)})
+      write_table(t, path)
 
 
 

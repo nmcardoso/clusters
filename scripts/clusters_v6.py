@@ -32,6 +32,8 @@ from splusclusters.match import (PhotoZRadialSearchStage,
 from splusclusters.plots import ClusterPlotStage
 from splusclusters.utils import config_dask
 
+OVERWRITE_PHOTOZ_SPECZ_LEGACY_MATCH = False
+
 
 def add_xray_flag(df: pd.DataFrame, threshold: float = 1):
   df_xray = load_xray()
@@ -95,7 +97,7 @@ def clusters_v5_remake_pipeline(clear: bool = False):
     LoadPhotozRadialStage(),
     LoadSpeczRadialStage(),
     LoadLegacyRadialStage(),
-    PhotozSpeczLegacyMatchStage(overwrite=True),
+    PhotozSpeczLegacyMatchStage(overwrite=OVERWRITE_PHOTOZ_SPECZ_LEGACY_MATCH),
     LoadAllRadialStage(),
     ClusterPlotStage(overwrite=False, splus_only=False),
     PrepareCatalogToSubmitStage(overwrite=True),
@@ -156,7 +158,7 @@ def hydra_neighbours_pipeline(clear: bool = False):
     LoadPhotozRadialStage(),
     LoadSpeczRadialStage(),
     LoadLegacyRadialStage(),
-    PhotozSpeczLegacyMatchStage(overwrite=True),
+    PhotozSpeczLegacyMatchStage(overwrite=OVERWRITE_PHOTOZ_SPECZ_LEGACY_MATCH),
     LoadAllRadialStage(),
     ClusterPlotStage(overwrite=False, splus_only=False),
     PrepareCatalogToSubmitStage(overwrite=True),
@@ -215,7 +217,7 @@ def clusters_v6_pipeline(clear: bool = False):
     LoadPhotozRadialStage(),
     LoadSpeczRadialStage(),
     LoadLegacyRadialStage(),
-    PhotozSpeczLegacyMatchStage(overwrite=True),
+    PhotozSpeczLegacyMatchStage(overwrite=OVERWRITE_PHOTOZ_SPECZ_LEGACY_MATCH),
     LoadAllRadialStage(),
     ClusterPlotStage(overwrite=False, splus_only=False),
     PrepareCatalogToSubmitStage(overwrite=True),
@@ -270,8 +272,18 @@ def concat_lost_table():
 
 
 
+
+def clear_comparison_path():
+  path = configs.SUBMIT_FOLDER / 'comparison.csv'
+  if path.exists:
+    path.unlink()
+
+
+
+
 if __name__ == "__main__":
   config_dask()
+  clear_comparison_path()
   clusters_v6_pipeline()
   clusters_v5_remake_pipeline()
   hydra_neighbours_pipeline()
