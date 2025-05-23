@@ -47,12 +47,12 @@ def add_xray_flag(df: pd.DataFrame, threshold: float = 1):
   return df
 
 
-def _log_clusters(df_clusters):
-  print(
-    f'{"Cluster":17s} {"total":5s} {"z_min":5s} {"z_max":5s} {"z_null":6s} '
-    f'{"z_neg":5s} {"z_pos":5s} {"zerr_min":8s} {"zerr_max":8s} {"zerr_null":9s} '
-    f'{"zerr_neg":8s} {"zerr_pos":8s} {"z_flag"}'
-  )
+def _log_clusters(df_clusters, suffix: str = ''):
+  data = {
+    'cluster': [], 'total': [], 'z_min': [], 'z_max': [], 'z_null': [],
+    'z_neg': [], 'z_pos': [], 'zerr_min': [], 'zerr_max': [], 'zerr_null': [],
+    'zerr_neg': [], 'zerr_pos': [], 'z_flag': [],
+  }
   for _, cluster in df_clusters.iterrows():
     cls_id = cluster['clsid']
     cls_name: str = cluster['name']
@@ -60,16 +60,27 @@ def _log_clusters(df_clusters):
     table_path = clusters_path / f'cluster_{str(cls_id).zfill(4)}.dat'
     df = Table.read(table_path, format='ascii').to_pandas()
     flag_count = ''.join([f'{k} ({v})' for k, v in df['zspec-flag'].value_counts(dropna=False).items()])
-    print(
-      f'{cls_name:17s} {len(df):5d} {df.zspec.min():5.2f} {df.zspec.max():5.2f} '
-      f'{len(df[df.zspec.isna()]):6d} {len(df[df.zspec < 0]):5d} '
-      f'{len(df[df.zspec > 0]):5d} '
-      f'{df["zspec-err"].min():8.2f} {df["zspec-err"].max():8.3f} '
-      f'{len(df[df["zspec-err"].isna()]):9d} {len(df[df["zspec-err"] < 0]):8d} '
-      f'{len(df[df["zspec-err"] > 0]):8d} {flag_count} '
-    )
-  print()
-  print()
+    data['cluster'] += [cls_name]
+    data['total'] += [len(df)]
+    data['z_min'] += [df.zspec.min()]
+    data['z_max'] += [df.zspec.max()]
+    data['z_null'] += [len(df[df.zspec.isna()])]
+    data['z_neg'] += [len(df[df.zspec < 0])]
+    data['z_pos'] += [len(df[df.zspec > 0])]
+    data['zerr_min'] += [df["zspec-err"].min()]
+    data['zerr_max'] += [df["zspec-err"].max()]
+    data['zerr_null'] += [len(df[df["zspec-err"].isna()])]
+    data['zerr_neg'] += [len(df[df["zspec-err"] < 0])]
+    data['zerr_pos'] += [len(df[df["zspec-err"] > 0])]
+    data['z_flag'] += flag_count
+  
+  path = configs.SUBMIT_FOLDER / f'stats{suffix}.csv'
+  df = pd.DataFrame(data)
+  if path.exists():
+    df = concat_tables([read_table(path), df])
+  write_table(df, path)
+  print(df)
+  
 
 
 def clusters_v5_remake_pipeline(clear: bool = False):
@@ -127,7 +138,7 @@ def clusters_v5_remake_pipeline(clear: bool = False):
     df_clusters[['clsid', 'name', 'RA', 'DEC', 'zspec', 'xray-flag']]
   ).write(configs.SUBMIT_FOLDER / 'index.dat', format='ascii', overwrite=True)
   
-  _log_clusters(df_clusters)
+  _log_clusters(df_clusters, '_antigos')
 
 
 
@@ -188,7 +199,7 @@ def hydra_neighbours_pipeline(clear: bool = False):
     df_clusters[['clsid', 'name', 'RA', 'DEC', 'zspec', 'xray-flag']]
   ).write(configs.SUBMIT_FOLDER / 'index.dat', format='ascii', overwrite=True)
 
-  _log_clusters(df_clusters)
+  _log_clusters(df_clusters, '_hydra')
 
 
 
@@ -247,7 +258,7 @@ def clusters_v6_pipeline(clear: bool = False):
     df_clusters[['clsid', 'name', 'RA', 'DEC', 'zspec', 'xray-flag']]
   ).write(configs.SUBMIT_FOLDER / 'index.dat', format='ascii', overwrite=True)
   
-  _log_clusters(df_clusters)
+  _log_clusters(df_clusters, '_novos')
   
     
 
