@@ -452,7 +452,7 @@ class PhotozSpeczLegacyMatchStage(PipelineStage):
     
     df = df[(df.remove_star != 1) & (df.remove_z != 1) & (df.remove_neighbours != 1) & (df.remove_radius != 1)]
     df['f_z'] = df['f_z'].fillna('')
-    if 'f_z' in df.columns: print('\n\n>>>> KEEP 9:', len(df[df.f_z.str.contains('KEEP')]), '\n\n')
+    if df is not None and 'f_z' in df.columns: print('\n\n>>>> KEEP 9:', len(df[df.f_z.str.contains('KEEP')]), '\n\n')
     del df['remove_star']
     del df['remove_z']
     del df['remove_neighbours']
@@ -717,7 +717,7 @@ class PhotozSpeczLegacyMatchStage(PipelineStage):
     df_r = df_ret.copy() if df_ret is not None else None
 
     print('\n\n>>>> KEEP 1:', len(df_spec[df_spec.f_z.str.contains('KEEP')]), '\n\n')
-    if 'f_z' in df_r.columns: print('\n\n>>>> KEEP 2:', len(df_r[df_r.f_z.str.contains('KEEP')]), '\n\n')
+    if df_r is not None and 'f_z' in df_r.columns: print('\n\n>>>> KEEP 2:', len(df_r[df_r.f_z.str.contains('KEEP')]), '\n\n')
     
     # match all catalogs
     df = self._match_all(df_r, df_spec, df_photo, df_legacy, cls_name, out_lost)
