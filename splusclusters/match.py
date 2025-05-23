@@ -238,6 +238,7 @@ class PhotozSpeczLegacyMatchStage(PipelineStage):
       filter_df,
       radius=1*u.arcsec, 
       join='1and2', 
+      find='best',
       ra1=ra,
       dec1=dec,
       ra2='ra',
@@ -278,12 +279,8 @@ class PhotozSpeczLegacyMatchStage(PipelineStage):
       ('ra_spec_all', 'dec_spec_all')
     ]
     
-    for ra_col, dec_col in options:
-      if ra_col in df.columns and dec_col in df.columns:
-        break
-    
-    df['ra_aux'] = df[ra_col]
-    df['dec_aux'] = df[dec_col]
+    df['ra_aux'] = np.nan
+    df['dec_aux'] = np.nan
       
     for ra_col, dec_col in options:
       if ra_col in df.columns and dec_col in df.columns:
