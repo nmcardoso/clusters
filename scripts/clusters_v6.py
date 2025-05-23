@@ -72,7 +72,7 @@ def _log_clusters(df_clusters, suffix: str = ''):
     data['zerr_null'] += [len(df[df["zspec-err"].isna()])]
     data['zerr_neg'] += [len(df[df["zspec-err"] < 0])]
     data['zerr_pos'] += [len(df[df["zspec-err"] > 0])]
-    data['z_flag'] += flag_count
+    data['z_flag'] += [flag_count]
   
   path = configs.SUBMIT_FOLDER / f'stats{suffix}.csv'
   df = pd.DataFrame(data)
