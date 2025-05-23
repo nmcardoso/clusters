@@ -551,10 +551,16 @@ class PhotozSpeczLegacyMatchStage(PipelineStage):
           radius=1*u.arcsec,
           join='all1',
           find='best',
-        )
+        ) 
         
         if df_result is not None:
           df = df_result
+          for col in df_r.columns:
+            col1, col2 = f'{col}_1', f'{col}_2'
+            if col1 in df.columns and col2 in df.columns:
+              df[col] = df[col1].fillna(df[col2])
+              del df[col1]
+              del df[col2]
           print(f'    - Determination object combination done successfully, objects: {len(df)}')
     self._log_columns(df, 3)
     
