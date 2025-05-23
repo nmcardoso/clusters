@@ -79,6 +79,7 @@ def _log_clusters(df_clusters, suffix: str = ''):
   if path.exists():
     df = concat_tables([read_table(path), df])
   write_table(df, path)
+  df.to_csv(path, index=False)
   print(df)
   
 

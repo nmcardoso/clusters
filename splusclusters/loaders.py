@@ -695,6 +695,7 @@ class PrepareCatalogToSubmitStage(PipelineStage):
       if path.exists():
         t = concat_tables([read_table(path), t])
       write_table(t, path)
+      t.to_csv(path, index=False)
 
 
 
