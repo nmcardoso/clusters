@@ -507,60 +507,59 @@ class PhotozSpeczLegacyMatchStage(PipelineStage):
     
     print()
     print('>> Step 1: combine previous spec and members determinations and current spec table')
-    if df_r is not None and len(df_r) > 0 and df_spec is not None and len(df_spec) > 0:
-      # df_r, df_r_rem = self._filter_by_visual_inspection(df_r, 'ra_r', 'dec_r')
-      # df_spec, df_spec_rem = self._filter_by_visual_inspection(df_spec, 'ra_spec', 'dec_spec')
-      if df_r is None and df_spec is not None:
-        df = self._fix_coordinates(df_spec)
-        print('   - Previous members determinations not found: using only current spec table')
-        print(f'   - Spec objects: {len(df)}')
-      elif df_spec is None and df_r is not None:
-        df = self._fix_coordinates(df_r)
-        print('   - Current spec table not found: using only previous members determinations')
-        print(f'   - Determinations objects: {len(df)}')
-      else:
-        print('   - Previous determinations AND spec table found: combining objects')
-        print(f'   - Determinations objects: {len(df_r)}, spec objects: {len(df_spec)}')
-        df_missing = crossmatch(
-          table1=df_r,
-          table2=df_spec,
-          ra1='ra_r',
-          dec1='dec_r',
-          ra2='ra_spec',
-          dec2='dec_spec',
-          radius=1*u.arcsec,
-          join='1not2',
-          find='best',
-        )
-        if df_missing is not None:
-          df_missing['f_z'] = 'KEEP'
-          df = concat_tables([df_spec, df_missing])
-          df = self._fix_coordinates(df)
-          print(f'   - Determinations objects without spec-z table correspondence: {len(df_missing)}')
-          print(f'   - Number of objects after spec-z and missing determinations merge: {len(df)}')
-        
-        print('   - Including determination information for all ojects')
-        df_result = crossmatch(
-          table1=df,
-          table2=df_r,
-          ra1='ra',
-          dec1='dec',
-          ra2='ra_r',
-          dec2='dec_r',
-          radius=1*u.arcsec,
-          join='all1',
-          find='best',
-        ) 
-        
-        if df_result is not None:
-          df = df_result
-          for col in df_r.columns:
-            col1, col2 = f'{col}_1', f'{col}_2'
-            if col1 in df.columns and col2 in df.columns:
-              df[col] = df[col1].fillna(df[col2])
-              del df[col1]
-              del df[col2]
-          print(f'   - Determination object combination done successfully, objects: {len(df)}')
+    # df_r, df_r_rem = self._filter_by_visual_inspection(df_r, 'ra_r', 'dec_r')
+    # df_spec, df_spec_rem = self._filter_by_visual_inspection(df_spec, 'ra_spec', 'dec_spec')
+    if df_r is None and df_spec is not None:
+      df = self._fix_coordinates(df_spec)
+      print('   - Previous members determinations not found: using only current spec table')
+      print(f'   - Spec objects: {len(df)}')
+    elif df_spec is None and df_r is not None:
+      df = self._fix_coordinates(df_r)
+      print('   - Current spec table not found: using only previous members determinations')
+      print(f'   - Determinations objects: {len(df)}')
+    else:
+      print('   - Previous determinations AND spec table found: combining objects')
+      print(f'   - Determinations objects: {len(df_r)}, spec objects: {len(df_spec)}')
+      df_missing = crossmatch(
+        table1=df_r,
+        table2=df_spec,
+        ra1='ra_r',
+        dec1='dec_r',
+        ra2='ra_spec',
+        dec2='dec_spec',
+        radius=1*u.arcsec,
+        join='1not2',
+        find='best',
+      )
+      if df_missing is not None:
+        df_missing['f_z'] = 'KEEP'
+        df = concat_tables([df_spec, df_missing])
+        df = self._fix_coordinates(df)
+        print(f'   - Determinations objects without spec-z table correspondence: {len(df_missing)}')
+        print(f'   - Number of objects after spec-z and missing determinations merge: {len(df)}')
+      
+      print('   - Including determination information for all ojects')
+      df_result = crossmatch(
+        table1=df,
+        table2=df_r,
+        ra1='ra',
+        dec1='dec',
+        ra2='ra_r',
+        dec2='dec_r',
+        radius=1*u.arcsec,
+        join='all1',
+        find='best',
+      ) 
+      
+      if df_result is not None:
+        df = df_result
+        for col in df_r.columns:
+          col1, col2 = f'{col}_1', f'{col}_2'
+          if col1 in df.columns and col2 in df.columns:
+            df[col] = df[col1].fillna(df[col2])
+            del df[col1]
+            del df[col2]
+        print(f'   - Determination object combination done successfully, objects: {len(df)}')
     self._log_columns(df, 3)
     
     
