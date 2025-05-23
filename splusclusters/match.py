@@ -302,16 +302,16 @@ class PhotozSpeczLegacyMatchStage(PipelineStage):
   
   def _remove_separation_columns(self, df: pd.DataFrame) -> pd.DataFrame:
     df = df.copy()
-    if 'xmatch_sep' in df.columns:
-      del df['xmatch_sep']
-    if 'xmatch_sep_1' in df.columns:
-      del df['xmatch_sep_1']
-    if 'xmatch_sep_2' in df.columns:
-      del df['xmatch_sep_2']
-    if 'xmatch_sep_final' in df.columns:
-      del df['xmatch_sep_final']
-    if 'xmatch_sep_finala' in df.columns:
-      del df['xmatch_sep_finala']
+    suffixes = ('', '_1', '_2', '_final', '_finala')
+    for suffix in suffixes:
+      col = f'xmatch_sep{suffix}'
+      if col in df.columns: del df[col]
+    
+    suffixes = ('r', 'spec', 'photo', 'legacy', 'spec_all')
+    for suffix in suffixes:
+      ra_col, dec_col = f'ra_{suffix}', f'dec_suffix'
+      if ra_col in df.columns: del df[ra_col]
+      if dec_col in df.columns: del df[dec_col]
     return df
   
   
