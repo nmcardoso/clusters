@@ -289,10 +289,10 @@ def concat_lost_table():
 
 
 def clear_comparison_path():
-  path = configs.SUBMIT_FOLDER / 'comparison.csv'
-  if path.exists():
-    path.unlink()
-  for p in configs.SUBMIT_FOLDER.glob('stats*.csv'):
+  for p in configs.SUBMIT_FOLDER.glob('**/comparison.csv'):
+    if p.exists():
+      p.unlink()
+  for p in configs.SUBMIT_FOLDER.glob('**/stats*.csv'):
     if p.exists():
       p.unlink()
 
