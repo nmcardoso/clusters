@@ -300,7 +300,7 @@ def clear_comparison_path():
 
 
 if __name__ == "__main__":
-  config_dask()
+  # config_dask()
   clear_comparison_path()
   clusters_v6_pipeline()
   clusters_v5_remake_pipeline()
