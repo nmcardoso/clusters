@@ -32,7 +32,7 @@ from splusclusters.match import (PhotoZRadialSearchStage,
 from splusclusters.plots import ClusterPlotStage
 from splusclusters.utils import config_dask
 
-OVERWRITE_PHOTOZ_SPECZ_LEGACY_MATCH = False
+OVERWRITE_PHOTOZ_SPECZ_LEGACY_MATCH = True
 
 
 def add_xray_flag(df: pd.DataFrame, threshold: float = 1):
