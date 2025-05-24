@@ -332,6 +332,7 @@ class PhotozSpeczLegacyMatchStage(PipelineStage):
   def _compute_cleanup_flags(
     self, 
     df: pd.DataFrame,
+    cls_z: float,
     out_flags_path: Path,
     out_removed_path: Path,
   ) -> pd.DataFrame:
@@ -339,7 +340,8 @@ class PhotozSpeczLegacyMatchStage(PipelineStage):
     df['remove_z'] = 0
     mask = (
       df.original_class_spec.isin(['GClstr', 'GGroup', 'GPair', 'GTrpl', 'PofG']) |
-      ((df['f_z'] == 'KEEP(    )') & (df['e_z'] == 3.33E-4))
+      ((df['f_z'] == 'KEEP(    )') & (df['e_z'] == 3.33E-4)) | 
+      ((cls_z > 0.02) & (df.z < 0.002)) | (df.z <= 0)
     )
     df.loc[mask, 'remove_z'] = 1
     df['remove_z'] = df['remove_z'].astype('int32')
@@ -700,6 +702,7 @@ class PhotozSpeczLegacyMatchStage(PipelineStage):
     cls_name: str, 
     cls_ra: float,
     cls_dec: float,
+    cls_z: float,
     df_specz_radial: pd.DataFrame,
     df_photoz_radial: pd.DataFrame, 
     df_legacy_radial: pd.DataFrame,
@@ -739,7 +742,7 @@ class PhotozSpeczLegacyMatchStage(PipelineStage):
     
     # compute cleanup flags
     print('\n>> Computing cleanup flags')
-    df = self._compute_cleanup_flags(df, out_flags_path, out_removed_path)
+    df = self._compute_cleanup_flags(df, cls_z, out_flags_path, out_removed_path)
     
     for col in df.columns:
       if df[col].dtype == 'int64' or df[col].dtype == 'int64[pyarrow]':
