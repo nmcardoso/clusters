@@ -337,10 +337,12 @@ class PhotozSpeczLegacyMatchStage(PipelineStage):
     out_removed_path: Path,
   ) -> pd.DataFrame:
     df = df.copy()
+    
+    # Flag: redshift
     df['remove_z'] = 0
     mask = (
       df.original_class_spec.isin(['GClstr', 'GGroup', 'GPair', 'GTrpl', 'PofG']) |
-      ((df['f_z'] == 'KEEP(    )') & (df['e_z'] == 3.33E-4)) | 
+      ((df.f_z == 'KEEP(    )') & (df.e_z == 3.33e-4)) | 
       ((cls_z > 0.02) & (df.z < 0.002)) | (df.z <= 0)
     )
     df.loc[mask, 'remove_z'] = 1
@@ -448,13 +450,18 @@ class PhotozSpeczLegacyMatchStage(PipelineStage):
     write_table(df, out_flags_path)
     
     
-    df_rem = df[(df.remove_star == 1) | (df.remove_z == 1) | (df.remove_neighbours == 1) | (df.remove_radius == 1)]
-    write_table(df_rem, out_removed_path)
+    flag_mask = (
+      (df.remove_star == 1) | (df.remove_z == 1) | 
+      (df.remove_neighbours == 1) | (df.remove_radius == 1)
+    )
+    write_table(df[flag_mask], out_removed_path)
     
+    df = df[~flag_mask]
     
-    df = df[(df.remove_star != 1) & (df.remove_z != 1) & (df.remove_neighbours != 1) & (df.remove_radius != 1)]
     df['f_z'] = df['f_z'].fillna('')
-    if df is not None and 'f_z' in df.columns: print('\n\n>>>> KEEP 9:', len(df[df.f_z.str.contains('KEEP')]), '\n\n')
+    if df is not None and 'f_z' in df.columns: 
+      print('\n\n>>>> KEEP 9:', len(df[df.f_z.str.contains('KEEP')]), '\n\n')
+      
     del df['remove_star']
     del df['remove_z']
     del df['remove_neighbours']
