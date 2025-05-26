@@ -11,6 +11,7 @@ from splusclusters.loaders import load_catalog_v6_old, load_clusters, load_spec
 def main():
   df_clusters = load_catalog_v6_old()
   df_spec = load_spec(coords=False)
+  df_lost = read_table(configs.OUT_PATH / 'lost.parquet')
   
   configs.Z_SPEC_DELTA = 0.02
   configs.SUBMIT_FOLDER = configs.OUT_PATH / 'submit' / 'antigos'
@@ -19,7 +20,7 @@ def main():
   df = None
   
   m1 = crossmatch(
-    table1=str((configs.OUT_PATH / 'lost.parquet').absolute()),
+    table1=df_lost,
     table2=df_spec,
     ra1='ra',
     dec1='dec',
