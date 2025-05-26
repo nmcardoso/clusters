@@ -19,7 +19,7 @@ def main():
   df = None
   
   m1 = crossmatch(
-    table1=configs.OUT_PATH / 'lost.parquet',
+    table1=str((configs.OUT_PATH / 'lost.parquet').absolute()),
     table2=df_spec,
     ra1='ra',
     dec1='dec',
