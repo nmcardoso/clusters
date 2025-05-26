@@ -30,9 +30,9 @@ def main():
   )
   
   for _, cluster in tqdm(df_clusters.iterrows(), total=len(df_clusters)):
-    cls_name = cluster['name'].values[0]
+    cls_name = cluster['name']
     df_class = load_clusters()
-    cls_id = df_class[df_class.name == cls_name].clsid.values[0]
+    cls_id = df_class[df_class.name == cls_name].clsid
     ret_path = configs.MEMBERS_V5_FOLDER / f'cluster.gals.sel.shiftgap.iter.{str(cls_id).zfill(5)}'
 
     if ret_path.exists():
