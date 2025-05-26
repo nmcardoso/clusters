@@ -1,4 +1,4 @@
-import __main__
+import __init__
 from astromodule.table import concat_tables, crossmatch, fast_crossmatch
 from astropy.table import Table
 from pylegs.io import *
