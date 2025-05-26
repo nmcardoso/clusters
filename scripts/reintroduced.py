@@ -27,6 +27,7 @@ def m(df_clusters, df, m1):
       m2 = m2.rename(columns={'ra_1': 'ra', 'dec_1': 'dec'})
       del m2['ra_2']
       del m2['dec_2']
+      m2['cluster'] = cls_name
       
       if df is None:
         df = m2
