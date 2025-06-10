@@ -9,6 +9,7 @@ from astromodule.table import (concat_tables, crossmatch, fast_crossmatch,
 from astropy import units as u
 from astropy.coordinates import SkyCoord
 from prefect import flow, task
+from prefect.utilities.annotations import quote
 
 from splusclusters._info import ClusterInfo
 from splusclusters.configs import configs
@@ -605,13 +606,13 @@ def make_cluster_catalog(
       print('\n\n>>>> KEEP 2:', len(df_r[df_r.f_z.str.contains('KEEP')]), '\n\n')
     
     # match all catalogs
-    df = match_all(df_r, df_spec, df_photo, df_legacy, info.name, out_lost)
+    df = match_all(quote(df_r), quote(df_spec), quote(df_photo), quote(df_legacy), info.name, out_lost)
 
     # compute radius_deg for all objects
-    df = compute_angular_distance(df, info)
+    df = compute_angular_distance(quote(df), info)
     
     # Filter bad objects after visual inspection
-    df, _ = filter_by_visual_inspection(df, info)
+    df, _ = filter_by_visual_inspection(quote(df), ra='ra', dec='dec', info=info)
     
     # compute cleanup flags
     df = compute_cleanup_flags(df, info, out_flags_path, out_removed_path)

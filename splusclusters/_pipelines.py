@@ -2,6 +2,7 @@ import pandas as pd
 from astropy.coordinates import SkyCoord
 from astropy.io.misc.yaml import AstropyDumper
 from prefect import flow
+from prefect.utilities.annotations import quote
 
 from splusclusters._extraction import download_xray, make_cones
 from splusclusters._info import cluster_params
@@ -32,12 +33,12 @@ def single_cluster_pipeline(
   splus_only: bool = False,
   fmt: str = 'png',
 ):
-  info = cluster_params(df_clusters=df_clusters, cls_name=cls_name)
+  info = cluster_params(df_clusters=quote(df_clusters), cls_name=cls_name)
   
   if not skip_cones:
     make_cones(
       info=info, 
-      specz_df=specz_df, 
+      specz_df=quote(specz_df), 
       specz_skycoord=specz_coords, 
       overwrite=overwrite, 
       workers=7,
@@ -47,22 +48,22 @@ def single_cluster_pipeline(
   
   df_all = make_cluster_catalog(
     info=info, 
-    df_specz_radial=cones.specz,
-    df_photoz_radial=cones.photoz, 
-    df_legacy_radial=cones.legacy,
-    df_ret=cones.shiftgap,
+    df_specz_radial=quote(cones.specz),
+    df_photoz_radial=quote(cones.photoz), 
+    df_legacy_radial=quote(cones.legacy),
+    df_ret=quote(cones.shiftgap),
     overwrite=overwrite,
   )
   
   if not skip_plots:
     make_plots(
       info=info,
-      df_photoz_radial=cones.photoz,
-      df_specz_radial=cones.specz,
-      df_all_radial=df_all,
-      df_members=cones.members,
-      df_interlopers=cones.interlopers,
-      df_legacy_radial=cones.legacy,
+      df_photoz_radial=quote(cones.photoz),
+      df_specz_radial=quote(cones.specz),
+      df_all_radial=quote(df_all),
+      df_members=quote(cones.members),
+      df_interlopers=quote(cones.interlopers),
+      df_legacy_radial=quote(cones.legacy),
       version=version,
       photoz_odds=photoz_odds,
       separated=separated,
@@ -77,8 +78,8 @@ def single_cluster_pipeline(
     build_cluster_page(
       info=info,
       version=version,
-      df_photoz_radial=cones.photoz,
-      df_members=cones.members,
+      df_photoz_radial=quote(cones.photoz),
+      df_members=quote(cones.members),
       df_clusters_prev=df_clusters_prev,
     )
   
@@ -123,9 +124,9 @@ def all_clusters_pipeline(
   for cluster in df_clusters.name.values:
     single_cluster_pipeline(
       cls_name=cluster,
-      df_clusters=df_clusters,
+      df_clusters=quote(df_clusters),
       df_clusters_prev=df_clusters_prev,
-      specz_df=specz_df,
+      specz_df=quote(specz_df),
       specz_coords=specz_coords,
       version=version,
       skip_cones=skip_cones,
@@ -139,5 +140,5 @@ def all_clusters_pipeline(
     )
   
   if not skip_website:
-    make_zoffset_page(df_clusters, df_clusters_prev, version)
-    make_index(df_clusters, df_clusters_prev, version)
+    make_zoffset_page(quote(df_clusters), df_clusters_prev, version)
+    make_index(quote(df_clusters), df_clusters_prev, version)

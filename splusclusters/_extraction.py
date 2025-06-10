@@ -25,6 +25,7 @@ from astropy.io.misc.yaml import AstropyDumper
 from astropy.units import Quantity
 from prefect import flow, task
 from prefect.futures import wait
+from prefect.utilities.annotations import quote
 from prefect_dask.task_runners import DaskTaskRunner
 from pylegs.archive import RadialMatcher
 from pylegs.utils import Timer
@@ -36,7 +37,7 @@ from splusclusters.loaders import remove_bad_objects
 from splusclusters.utils import Timming, cond_overwrite, config_dask
 
 
-@task(task_run_name='specz-cone-search-{info.name}', version='1.0', persist_result=False)
+@task(task_run_name='specz-cone-search-{info.name}', version='1.1', persist_result=False)
 def specz_cone_search(
   specz_df: pd.DataFrame,
   specz_skycoord: SkyCoord | None,
@@ -391,7 +392,7 @@ def download_splus_photoz(
 
 
 
-@flow(flow_run_name='make-cones-{info.name}', version='1.0', persist_result=False, validate_parameters=False, task_runner=DaskTaskRunner(cluster_kwargs={'n_workers': 3}))
+@flow(flow_run_name='make-cones-{info.name}', version='1.1', persist_result=False, validate_parameters=False, task_runner=DaskTaskRunner(cluster_kwargs={'n_workers': 3}))
 def make_cones(
   info: ClusterInfo,
   specz_df: pd.DataFrame,
@@ -406,7 +407,7 @@ def make_cones(
   ]
   
   cone_params = [
-    dict(specz_df=specz_df, specz_skycoord=specz_skycoord, info=info, overwrite=overwrite),
+    dict(specz_df=quote(specz_df), specz_skycoord=specz_skycoord, info=info, overwrite=overwrite),
     dict(info=info, overwrite=overwrite),
     dict(info=info, workers=workers, overwrite=overwrite),
   ]

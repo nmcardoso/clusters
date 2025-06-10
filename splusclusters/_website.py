@@ -9,6 +9,7 @@ from astromodule.table import crossmatch, radial_search
 from astropy import units as u
 from astropy.coordinates import SkyCoord
 from prefect import flow, task
+from prefect.utilities.annotations import quote
 from pylegs.io import read_table
 
 from splusclusters._info import ClusterInfo
@@ -526,12 +527,12 @@ def build_cluster_page(
 ):
   make_cluster_page(
     info=info, 
-    df_clusters=df_clusters, 
+    df_clusters=quote(df_clusters), 
     df_clusters_prev=df_clusters_prev,
     version=version
   )
   
-  make_splus_fields_tables(info=info, df=df_photoz_radial)
+  make_splus_fields_tables(info=info, df=quote(df_photoz_radial))
   
   if df_members is not None:
     folder_path = _get_cluster_folder(version) / info.name
