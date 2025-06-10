@@ -18,7 +18,7 @@ def main(args):
     skip_website=args.skip_website,
     overwrite=args.overwrite,
     photoz_odds=args.photoz_odds,
-    separated=args.separated,
+    separated=not args.merged,
     splus_only=args.splus_only,
     fmt=args.fmt,
     two=args.two,
@@ -31,7 +31,7 @@ if __name__ == '__main__':
   parser.add_argument('--skip-cones', action='store_true')
   parser.add_argument('--skip-plots', action='store_true')
   parser.add_argument('--skip-website', action='store_true')
-  parser.add_argument('--separated', action='store_true', help='separated plots')
+  parser.add_argument('--merged', action='store_true', help='merged plots')
   parser.add_argument('--splus-only', action='store_true', help='only render plots with splus data')
   parser.add_argument('--two', action='store_true', help='process only A168 and MKW4')
   parser.add_argument('--odds', action='store', type=float, default=0.9, help='photoz odds, default: 0.9')
