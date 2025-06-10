@@ -392,7 +392,7 @@ def download_splus_photoz(
 
 
 
-@flow(flow_run_name='make-cones-{info.name}', version='1.1', persist_result=False, validate_parameters=False, task_runner=DaskTaskRunner(cluster_kwargs={'n_workers': 3}))
+@flow(flow_run_name='make-cones-{info.name}', version='1.1', persist_result=False, validate_parameters=False)
 def make_cones(
   info: ClusterInfo,
   specz_df: pd.DataFrame,
