@@ -21,7 +21,7 @@ def single_cluster_pipeline(
   df_clusters: pd.DataFrame,
   df_clusters_prev: pd.DataFrame,
   specz_df: pd.DataFrame,
-  specz_coords: SkyCoord,
+  specz_coords: SkyCoord | None,
   version: int, 
   skip_cones: bool = False,
   skip_plots: bool = False,
@@ -92,7 +92,7 @@ def single_cluster_pipeline(
 @flow(
   flow_run_name='all-clusters-pipeline-v{version}', 
   version='1.0', persist_result=False, log_prints=True,
-  result_serializer='pickle'
+  validate_parameters=False,
 )
 def all_clusters_pipeline(
   version: int,
