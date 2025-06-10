@@ -510,8 +510,8 @@ def make_cluster_page(
   index_path = folder_path / 'index.html'
   index_path.parent.mkdir(parents=True, exist_ok=True)
   index_path.write_text(page)
-  
-  
+
+
 
 
 

@@ -6,9 +6,11 @@ sys.path.insert(0, str(Path(__file__).parent.parent.absolute()))
 from argparse import ArgumentParser
 
 from splusclusters._pipelines import all_clusters_pipeline
+from splusclusters.configs import configs
 
 
 def main(args):
+  configs.VERSION = args.version
   all_clusters_pipeline(
     version=args.version,
     skip_cones=args.skip_cones,
