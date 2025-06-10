@@ -14,6 +14,7 @@ from astropy.coordinates import SkyCoord
 from astropy.cosmology import LambdaCDM
 from astropy.table import Table
 from prefect import flow, task
+from prefect.logging import get_run_logger
 from pylegs.io import read_table, write_table
 
 from splusclusters._info import ClusterInfo
@@ -218,8 +219,12 @@ def load_xray():
 
 
 def _load_cluster_product(info: ClusterInfo, base_path: Path):
+  path = base_path / f'{info.name}.parquet'
+  if not path.exists(): 
+    get_run_logger().warning(f'Table {path} not found!')
+    return None
   t = Timming()
-  df = read_table(base_path / f'{info.name}.parquet')
+  df = read_table(path)
   if 'z' in df.columns:
     z_delta1 = info.z - df.z.min()
     z_delta2 = df.z.max() - info.z
