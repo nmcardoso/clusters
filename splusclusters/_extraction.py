@@ -34,10 +34,10 @@ from splusclusters.loaders import remove_bad_objects
 from splusclusters.utils import Timming, cond_overwrite, config_dask
 
 
-@task(task_run_name='specz-cone-search-{info.name}', version='1.0')
+@task(task_run_name='specz-cone-search-{info.name}', version='1.0', persist_result=False)
 def specz_cone_search(
   specz_df: pd.DataFrame,
-  specz_skycoord: SkyCoord,
+  specz_skycoord: SkyCoord | None,
   info: ClusterInfo,
   overwrite: bool = False,
 ):
@@ -66,7 +66,7 @@ def specz_cone_search(
 
 
 
-@task(task_run_name='photoz-cone-search-{info.name}', version='1.0')
+@task(task_run_name='photoz-cone-search-{info.name}', version='1.0', persist_result=False)
 def photoz_cone_search(
   photoz_df: pd.DataFrame,
   photoz_skycoord: SkyCoord,
@@ -92,7 +92,7 @@ def photoz_cone_search(
 
 
 
-@task(task_run_name='legacy-cone-search-{info.name}', version='1.0')
+@task(task_run_name='legacy-cone-search-{info.name}', version='1.0', persist_result=False)
 def legacy_cone_search(
   legacy_df: pd.DataFrame,
   legacy_skycoord: SkyCoord,
@@ -115,7 +115,7 @@ def legacy_cone_search(
 
 
 
-@task(task_run_name='download-legacy-catalog-{info.name}', version='1.0')
+@task(task_run_name='download-legacy-catalog-{info.name}', version='1.0', persist_result=False)
 def download_legacy_catalog(
   info: ClusterInfo, 
   workers: int = 3, 
@@ -178,7 +178,7 @@ def download_xray(
 
 
 
-@task(task_run_name='splus-members-match-{cls_name}', version='1.0')
+@task(task_run_name='splus-members-match-{cls_name}', version='1.0', persist_result=False)
 def splus_members_match(
   cls_name: str, 
   version: int,  
@@ -222,7 +222,7 @@ def splus_members_match(
 
 
 
-@task(task_run_name='download-splus-photoz-{info.name}', version='1.0', retries=6, timeout_seconds=720)
+@task(task_run_name='download-splus-photoz-{info.name}', version='1.0', retries=6, timeout_seconds=720, persist_result=False)
 def download_splus_photoz(
   info: ClusterInfo, 
   workers: int = 10, 
@@ -389,11 +389,11 @@ def download_splus_photoz(
 
 
 
-@flow(flow_run_name='make-cones-{info.name}', version='1.0')
+@flow(flow_run_name='make-cones-{info.name}', version='1.0', persist_result=False, validate_parameters=False)
 def make_cones(
   info: ClusterInfo,
   specz_df: pd.DataFrame,
-  specz_skycoord: SkyCoord,
+  specz_skycoord: SkyCoord | None,
   overwrite: bool = False,
   workers: int = 5,
 ):
