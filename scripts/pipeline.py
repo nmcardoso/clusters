@@ -21,6 +21,7 @@ def main(args):
     separated=args.separated,
     splus_only=args.splus_only,
     fmt=args.fmt,
+    two=args.two,
   )
 
 
@@ -32,6 +33,7 @@ if __name__ == '__main__':
   parser.add_argument('--skip-website', action='store_true')
   parser.add_argument('--separated', action='store_true', help='separated plots')
   parser.add_argument('--splus-only', action='store_true', help='only render plots with splus data')
+  parser.add_argument('--two', action='store_true', help='process only A168 and MKW4')
   parser.add_argument('--odds', action='store', type=float, default=0.9, help='photoz odds, default: 0.9')
   parser.add_argument('--fmt', action='store', choices=['pdf', 'png'], default='png', help='plots format, default: png')
   args = parser.parse_args()

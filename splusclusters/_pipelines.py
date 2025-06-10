@@ -93,9 +93,15 @@ def all_clusters_pipeline(
   separated: bool = True,
   splus_only: bool = False,
   fmt: str = 'png',
+  two: bool = False,
 ):
   df_clusters = load_catalog(version)
   df_clusters_prev = load_catalog(version - 1)
+  
+  if two:
+    df_clusters = df_clusters[df_clusters.name.isin(['A168', 'MKW4'])]
+    if df_clusters_prev is not None:
+      df_clusters_prev = df_clusters_prev[df_clusters_prev.name.isin(['A168', 'MKW4'])]
   
   if not skip_cones:
     config_dask()
