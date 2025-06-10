@@ -285,7 +285,7 @@ def load_shiftgap_tables(cls_name: str, version: int):
 
 
 
-@task(task_run_name='load-spec', version='1.0', persist_result=False)
+@task(task_run_name='load-spec', version='1.1', persist_result=False)
 def load_spec(coords: bool = True):
   df_spec = read_table(configs.SPEC_TABLE_PATH)
   if 'original_f_z' in df_spec.columns:
@@ -305,6 +305,7 @@ def load_spec(coords: bool = True):
   df_spec['source'] = df_spec['source'].fillna('')
   ra, dec = guess_coords_columns(df_spec)
   df_spec = df_spec.rename({ra: 'ra_spec_all', dec: 'dec_spec_all'})
+  print('columns: ', ', '.join(df_spec.columns))
   if coords:
     skycoords = SkyCoord(
       ra=df_spec['ra_spec_all'].values, 
