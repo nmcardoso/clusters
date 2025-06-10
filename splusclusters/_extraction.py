@@ -46,6 +46,7 @@ def specz_cone_search(
 ):
   path = configs.SPECZ_FOLDER / f'{info.name}.parquet'
   with cond_overwrite(path, overwrite, mkdir=True, time=True) as cm:
+    print(*specz_df.columns, sep=', ')
     if specz_skycoord is None:
       specz_skycoord = SkyCoord(ra=specz_df.ra_spec_all.values, dec=specz_df.dec_spec_all.values, unit=u.deg)
     df = radial_search(
