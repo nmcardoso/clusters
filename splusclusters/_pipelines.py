@@ -83,12 +83,16 @@ def single_cluster_pipeline(
     )
   
 
+# class MySerializer(Serializer):
+#   def dumps(self, obj) -> bytes:
+#     AstropyDumper()
+
 
 
 @flow(
   flow_run_name='all-clusters-pipeline-v{version}', 
   version='1.0', persist_result=False, log_prints=True,
-  result_serializer=AstropyDumper
+  result_serializer='json'
 )
 def all_clusters_pipeline(
   version: int,
@@ -113,7 +117,7 @@ def all_clusters_pipeline(
   specz_df, specz_coords = None, None
   if not skip_cones:
     config_dask()
-    specz_df = load_spec(False)
+    specz_df, specz_coords = load_spec()
   
   for cluster in df_clusters.name.values:
     single_cluster_pipeline(
