@@ -52,6 +52,7 @@ def single_cluster_pipeline(
     df_photoz_radial=quote(cones.photoz), 
     df_legacy_radial=quote(cones.legacy),
     df_ret=quote(cones.shiftgap),
+    df_spec_all=quote(specz_df),
     overwrite=overwrite,
   )
   

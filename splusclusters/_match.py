@@ -587,6 +587,7 @@ def make_cluster_catalog(
   df_photoz_radial: pd.DataFrame, 
   df_legacy_radial: pd.DataFrame,
   df_ret: pd.DataFrame | None,
+  df_spec_all: pd.DataFrame,
   overwrite: bool = False,
 ):
   out_path = configs.PHOTOZ_SPECZ_LEG_FOLDER / f'{info.name}.parquet'
@@ -606,7 +607,7 @@ def make_cluster_catalog(
       print('\n\n>>>> KEEP 2:', len(df_r[df_r.f_z.str.contains('KEEP')]), '\n\n')
     
     # match all catalogs
-    df = match_all(quote(df_r), quote(df_spec), quote(df_photo), quote(df_legacy), info.name, out_lost)
+    df = match_all(quote(df_r), quote(df_spec), quote(df_photo), quote(df_legacy), quote(df_spec_all), info.name, out_lost)
 
     # compute radius_deg for all objects
     df = compute_angular_distance(quote(df), info)
