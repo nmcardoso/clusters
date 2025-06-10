@@ -84,7 +84,10 @@ def single_cluster_pipeline(
 
 
 
-@flow(flow_run_name='all-clusters-pipeline-v{version}', version='1.0', persist_result=False)
+@flow(
+  flow_run_name='all-clusters-pipeline-v{version}', 
+  version='1.0', persist_result=False, log_prints=True
+)
 def all_clusters_pipeline(
   version: int,
   skip_cones: bool = False,
