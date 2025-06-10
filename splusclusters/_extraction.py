@@ -24,6 +24,8 @@ from astropy.coordinates import SkyCoord
 from astropy.io.misc.yaml import AstropyDumper
 from astropy.units import Quantity
 from prefect import flow, task
+from prefect.futures import wait
+from prefect_dask.task_runners import DaskTaskRunner
 from pylegs.archive import RadialMatcher
 from pylegs.utils import Timer
 from upath import UPath
@@ -389,7 +391,7 @@ def download_splus_photoz(
 
 
 
-@flow(flow_run_name='make-cones-{info.name}', version='1.0', persist_result=False, validate_parameters=False)
+@flow(flow_run_name='make-cones-{info.name}', version='1.0', persist_result=False, validate_parameters=False, task_runner=DaskTaskRunner(cluster_kwargs={'n_workers': 3}))
 def make_cones(
   info: ClusterInfo,
   specz_df: pd.DataFrame,
@@ -410,6 +412,4 @@ def make_cones(
   ]
   
   futures = [f.submit(**p) for f, p in zip(cone_functions, cone_params)]
-  
-  for f in futures:
-    f.wait()
+  wait(futures)
