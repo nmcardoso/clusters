@@ -92,7 +92,7 @@ def single_cluster_pipeline(
 @flow(
   flow_run_name='all-clusters-pipeline-v{version}', 
   version='1.0', persist_result=False, log_prints=True,
-  result_serializer='json'
+  result_serializer='pickle'
 )
 def all_clusters_pipeline(
   version: int,
