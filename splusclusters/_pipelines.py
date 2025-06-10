@@ -3,6 +3,7 @@ from astropy.coordinates import SkyCoord
 from astropy.io.misc.yaml import AstropyDumper
 from prefect import flow
 from prefect.utilities.annotations import quote
+from prefect_dask import DaskTaskRunner
 
 from splusclusters._extraction import download_xray, make_cones
 from splusclusters._info import cluster_params
@@ -16,7 +17,7 @@ from splusclusters._website import (build_cluster_page, copy_xray, make_index,
 from splusclusters.utils import config_dask
 
 
-@flow(flow_run_name='pipeline-v{version}-{cls_name}', version='1.0', persist_result=False)
+@flow(flow_run_name='pipeline-v{version}-{cls_name}', version='1.0', persist_result=False, task_runner=DaskTaskRunner())
 def single_cluster_pipeline(
   cls_name: str,
   df_clusters: pd.DataFrame,
@@ -94,7 +95,7 @@ def single_cluster_pipeline(
 @flow(
   flow_run_name='all-clusters-pipeline-v{version}', 
   version='1.0', persist_result=False, log_prints=True,
-  validate_parameters=False,
+  validate_parameters=False, task_runner=DaskTaskRunner()
 )
 def all_clusters_pipeline(
   version: int,

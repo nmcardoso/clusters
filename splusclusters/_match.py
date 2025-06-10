@@ -10,6 +10,7 @@ from astropy import units as u
 from astropy.coordinates import SkyCoord
 from prefect import flow, task
 from prefect.utilities.annotations import quote
+from prefect_dask import DaskTaskRunner
 
 from splusclusters._info import ClusterInfo
 from splusclusters.configs import configs
@@ -580,7 +581,7 @@ def match_all(
 
 
 
-@flow(flow_run_name='cluster-catalog-{info.name}', version='1.0', persist_result=False)
+@flow(flow_run_name='cluster-catalog-{info.name}', version='1.0', persist_result=False, task_runner=DaskTaskRunner())
 def make_cluster_catalog(
   info: ClusterInfo,
   df_specz_radial: pd.DataFrame,
