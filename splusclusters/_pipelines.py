@@ -1,4 +1,5 @@
 import pandas as pd
+from astropy.coordinates import SkyCoord
 from prefect import flow
 
 from splusclusters._extraction import download_xray, make_cones
@@ -13,11 +14,13 @@ from splusclusters._website import (build_cluster_page, copy_xray, make_index,
 from splusclusters.utils import config_dask
 
 
-@flow(flow_run_name='pipeline-v{version}-{cls_name}', version='1.0')
+@flow(flow_run_name='pipeline-v{version}-{cls_name}', version='1.0', persist_result=False)
 def single_cluster_pipeline(
   cls_name: str,
   df_clusters: pd.DataFrame,
   df_clusters_prev: pd.DataFrame,
+  specz_df: pd.DataFrame,
+  specz_coords: SkyCoord,
   version: int, 
   skip_cones: bool = False,
   skip_plots: bool = False,
@@ -31,7 +34,6 @@ def single_cluster_pipeline(
   info = cluster_params(df_clusters=df_clusters, cls_name=cls_name)
   
   if not skip_cones:
-    specz_df, specz_coords = load_spec()
     make_cones(
       info=info, 
       specz_df=specz_df, 
@@ -82,7 +84,7 @@ def single_cluster_pipeline(
 
 
 
-@flow(flow_run_name='all-clusters-pipeline-v{version}', version='1.0')
+@flow(flow_run_name='all-clusters-pipeline-v{version}', version='1.0', persist_result=False)
 def all_clusters_pipeline(
   version: int,
   skip_cones: bool = False,
@@ -103,14 +105,18 @@ def all_clusters_pipeline(
     if df_clusters_prev is not None:
       df_clusters_prev = df_clusters_prev[df_clusters_prev.name.isin(['A168', 'MKW4'])]
   
+  specz_df, specz_coords = None, None
   if not skip_cones:
     config_dask()
+    specz_df, specz_coords = load_spec()
   
   for cluster in df_clusters.name.values:
     single_cluster_pipeline(
       cls_name=cluster,
       df_clusters=df_clusters,
       df_clusters_prev=df_clusters_prev,
+      specz_df=specz_df,
+      specz_coords=specz_coords,
       version=version,
       skip_cones=skip_cones,
       skip_plots=skip_plots,

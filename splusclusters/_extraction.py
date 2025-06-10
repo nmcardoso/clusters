@@ -151,7 +151,7 @@ def download_legacy_catalog(
 
 
 
-@task(task_run_name='download-xray-{info.name}', version='1.0')
+@task(task_run_name='download-xray-{info.name}', version='1.0', persist_result=False)
 def download_xray(
   info: ClusterInfo, 
   overwrite: bool = False,

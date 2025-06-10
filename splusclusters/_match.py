@@ -124,7 +124,7 @@ def _sanitize_columns(df: pd.DataFrame):
 
   
   
-@task(task_run_name='visual-inspection-filter-{info.name}', version='1.0')
+@task(task_run_name='visual-inspection-filter-{info.name}', version='1.0', persist_result=False)
 def filter_by_visual_inspection(
   df: pd.DataFrame, 
   ra: str = None, 
@@ -175,7 +175,7 @@ def filter_by_visual_inspection(
 
 
 
-@task(task_run_name='compute-angular-distance-{info.name}', version='1.0')
+@task(task_run_name='compute-angular-distance-{info.name}', version='1.0', persist_result=False)
 def compute_angular_distance(
   df: pd.DataFrame, 
   info: ClusterInfo,
@@ -195,7 +195,7 @@ def compute_angular_distance(
 
 
 
-@task(task_run_name='compute-cleanup-flags-{info.name}', version='1.0')
+@task(task_run_name='compute-cleanup-flags-{info.name}', version='1.0', persist_result=False)
 def compute_cleanup_flags(
   df: pd.DataFrame,
   info: ClusterInfo,
@@ -350,7 +350,7 @@ def compute_cleanup_flags(
 
 
   
-@task(task_run_name='match-all-{cls_name}', version='1.0')
+@task(task_run_name='match-all-{cls_name}', version='1.0', persist_result=False)
 def match_all(
   df_r: pd.DataFrame,
   df_spec: pd.DataFrame,
@@ -579,7 +579,7 @@ def match_all(
 
 
 
-@flow(flow_run_name='cluster-catalog-{info.name}', version='1.0')
+@flow(flow_run_name='cluster-catalog-{info.name}', version='1.0', presist_result=False)
 def make_cluster_catalog(
   info: ClusterInfo,
   df_specz_radial: pd.DataFrame,

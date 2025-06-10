@@ -1025,7 +1025,7 @@ def plot_ra_dec_relative(
   ax.set_title('Relative spatial distribution of spectroscopic members')
 
 
-@task(task_run_name='make-velocity-plots-{info.name}', version='1.0')
+@task(task_run_name='make-velocity-plots-{info.name}', version='1.0', persist_result=False)
 def make_velocity_plots(
   info: ClusterInfo,
   df_members: pd.DataFrame,
@@ -1201,7 +1201,7 @@ def _plot_magdiff_histogram(
 
 
 
-@task(task_run_name='make-magdiff-plots-{info.name}', version='1.0')
+@task(task_run_name='make-magdiff-plots-{info.name}', version='1.0', persist_result=False)
 def make_magdiff_plots(
   info: ClusterInfo,
   df_all_radial: pd.DataFrame, 
@@ -1259,7 +1259,7 @@ def make_magdiff_plots(
 
 
 
-@flow(flow_run_name='make-all-plots-{info.name}', version='1.0')
+@flow(flow_run_name='make-all-plots-{info.name}', version='1.0', persist_result=False)
 def make_plots(
   info: ClusterInfo,
   df_photoz_radial: pd.DataFrame,
