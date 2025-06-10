@@ -1,11 +1,13 @@
 from datetime import datetime, timedelta
 from multiprocessing import Lock
+from pathlib import Path
 
 import matplotlib.pyplot as plt
 import numpy as np
 import seaborn as sns
 from dask import config as dask_config
 from dask.distributed import Client
+from pylegs.io import write_table
 
 
 def config_dask():
@@ -103,3 +105,45 @@ def compute_pdf_peak(a, binrange = None, binwidth = None):
   x_max, y_max = x[np.argmax(y)], np.max(y)
   plt.close()
   return x_max, y_max
+
+
+
+class SkipException(Exception):
+  pass
+
+
+class cond_overwrite(object):
+  def __init__(
+    self, 
+    path: str | Path, 
+    overwrite: bool = False, 
+    mkdir: bool = False,
+    time: bool = False,
+    template: str = 'Elapsed time: {}',
+  ):
+    self.path = Path(path)
+    self.overwrite = overwrite
+    self.mkdir = mkdir
+    self.time = time
+    self.timer = None
+    self.template = template
+    
+  def __enter__(self):
+    if self.path.exists() and not self.overwrite:
+      raise SkipException()
+    else:
+      if self.mkdir:
+        self.path.parent.mkdir(parents=True, exist_ok=True)
+      if self.time:
+        self.timer = Timming()
+    return self
+  
+  def __exit__(self, exc_type, exc_val, exc_tb):
+    if exc_type == SkipException:
+      return True
+    if self.time:
+      print(self.template.format(self.timer.end()))
+    return False
+  
+  def write_table(self, table):
+    write_table(table, self.path)

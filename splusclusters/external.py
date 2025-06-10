@@ -37,7 +37,8 @@ class DownloadLegacyCatalogStage(PipelineStage):
       return
     
     sql = """
-      SELECT t.ra, t.dec, t.type, t.shape_r, t.mag_g, t.mag_r, t.mag_i, t.mag_z, t.mag_w1, t.mag_w2, t.mag_w3, t.mag_w4
+      SELECT t.ra, t.dec, t.type, t.shape_r, t.mag_g, t.mag_r, t.mag_i, t.mag_z, 
+      t.mag_w1, t.mag_w2, t.mag_w3, t.mag_w4
       FROM ls_dr10.tractor AS t
       WHERE (ra BETWEEN {ra_min} AND {ra_max}) AND 
       (dec BETWEEN {dec_min} AND {dec_max}) AND
