@@ -615,7 +615,7 @@ def make_cluster_catalog(
     df, _ = filter_by_visual_inspection(quote(df), ra='ra', dec='dec', info=info)
     
     # compute cleanup flags
-    df = compute_cleanup_flags(df, info, out_flags_path, out_removed_path)
+    df = compute_cleanup_flags(quote(df), info, out_flags_path, out_removed_path)
     
     df = _sanitize_columns(df)
     
