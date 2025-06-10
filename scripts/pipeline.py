@@ -19,7 +19,7 @@ def main(args):
     skip_plots=args.skip_plots,
     skip_website=args.skip_website,
     overwrite=args.overwrite,
-    photoz_odds=args.photoz_odds,
+    photoz_odds=args.odds,
     separated=not args.merged,
     splus_only=args.splus_only,
     fmt=args.fmt,
