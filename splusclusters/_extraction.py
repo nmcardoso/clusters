@@ -21,6 +21,7 @@ from astromodule.table import (concat_tables, crossmatch, fast_crossmatch,
                                guess_coords_columns, radial_search, selfmatch)
 from astropy import units as u
 from astropy.coordinates import SkyCoord
+from astropy.io.misc.yaml import AstropyDumper
 from astropy.units import Quantity
 from prefect import flow, task
 from pylegs.archive import RadialMatcher
