@@ -11,6 +11,8 @@ from splusclusters.configs import configs
 
 def main(args):
   configs.VERSION = args.version
+  configs.Z_SPEC_DELTA = 0.02
+  configs.Z_PHOTO_DELTA = 0.05
   all_clusters_pipeline(
     version=args.version,
     skip_cones=args.skip_cones,
