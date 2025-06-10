@@ -303,11 +303,12 @@ def load_spec(coords: bool = True):
       del df_spec['original_class_spec']
     df_spec = df_spec.rename(columns={'original_class': 'original_class_spec'})
   df_spec['source'] = df_spec['source'].fillna('')
+  ra, dec = guess_coords_columns(df_spec)
+  df_spec = df_spec.rename({ra: 'ra_spec_all', dec: 'dec_spec_all'})
   if coords:
-    ra, dec = guess_coords_columns(df_spec)
     skycoords = SkyCoord(
-      ra=df_spec[ra].values, 
-      dec=df_spec[dec].values, 
+      ra=df_spec['ra_spec_all'].values, 
+      dec=df_spec['dec_spec_all'].values, 
       unit=u.deg, 
       frame='icrs'
     )
