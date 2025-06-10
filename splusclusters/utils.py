@@ -1,3 +1,5 @@
+import sys
+from contextlib import contextmanager
 from datetime import datetime, timedelta
 from multiprocessing import Lock
 from pathlib import Path
@@ -130,7 +132,9 @@ class cond_overwrite(object):
     
   def __enter__(self):
     if self.path.exists() and not self.overwrite:
-      raise SkipException()
+      sys.settrace(lambda *args, **keys: None)
+      frame = sys._getframe(1)
+      frame.f_trace = self.trace
     else:
       if self.mkdir:
         self.path.parent.mkdir(parents=True, exist_ok=True)
@@ -139,11 +143,23 @@ class cond_overwrite(object):
     return self
   
   def __exit__(self, exc_type, exc_val, exc_tb):
-    if exc_type == SkipException:
+    if exc_type is None:
+      return
+    if issubclass(exc_type, SkipException):
       return True
     if self.time:
       print(self.template.format(self.timer.end()))
     return False
+
+  def trace(self, *args, **kwargs):
+    raise SkipException()
   
   def write_table(self, table):
     write_table(table, self.path)
+
+
+
+
+if __name__ == '__main__':
+  with cond_overwrite(Path(__file__), overwrite=False):
+    print('teste')
