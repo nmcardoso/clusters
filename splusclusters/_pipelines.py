@@ -111,7 +111,7 @@ def all_clusters_pipeline(
   specz_df, specz_coords = None, None
   if not skip_cones:
     config_dask()
-    specz_df, specz_coords = load_spec()
+    specz_df = load_spec(False)
   
   for cluster in df_clusters.name.values:
     single_cluster_pipeline(
