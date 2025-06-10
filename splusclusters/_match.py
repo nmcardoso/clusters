@@ -579,7 +579,7 @@ def match_all(
 
 
 
-@flow(flow_run_name='cluster-catalog-{info.name}', version='1.0', presist_result=False)
+@flow(flow_run_name='cluster-catalog-{info.name}', version='1.0', persist_result=False)
 def make_cluster_catalog(
   info: ClusterInfo,
   df_specz_radial: pd.DataFrame,
