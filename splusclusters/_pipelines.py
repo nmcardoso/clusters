@@ -1,3 +1,6 @@
+from typing import List
+
+import dagster as dg
 import pandas as pd
 from astropy.coordinates import SkyCoord
 from astropy.io.misc.yaml import AstropyDumper
@@ -6,11 +9,13 @@ from prefect.utilities.annotations import quote
 from prefect_dask import DaskTaskRunner
 
 import luigi
-from splusclusters._extraction import MakeSpeczCone, download_xray, make_cones
-from splusclusters._info import cluster_params
-from splusclusters._loaders import (load_catalog, load_cones, load_legacy_cone,
-                                    load_photoz_cone, load_shiftgap_tables,
-                                    load_spec, load_specz_cone)
+from splusclusters._extraction import (MakeSpeczCone, dg_make_specz_cone,
+                                       download_xray, make_cones)
+from splusclusters._info import cluster_params, dg_cluster_info
+from splusclusters._loaders import (dg_load_spec, load_catalog, load_cones,
+                                    load_legacy_cone, load_photoz_cone,
+                                    load_shiftgap_tables, load_spec,
+                                    load_specz_cone)
 from splusclusters._match import make_cluster_catalog
 from splusclusters._plots import make_plots
 from splusclusters._website import (build_cluster_page, copy_xray, make_index,
@@ -158,3 +163,23 @@ class MakeAll(luigi.Task):
     for _, cluster in df_clusters.iterrows():
       info = cluster_params(df_clusters, cluster['name'])
       yield MakeSpeczCone(info=info, overwrite=self.overwrite)
+      
+
+
+@dg.op(out=dg.DynamicOut(str))
+def get_all_cluster_names(version: int):
+  df_clusters = load_catalog(version)
+  df_clusters = df_clusters[df_clusters['name'].isin(['A168', 'MKW4'])]
+  for i, cluster in df_clusters.iterrows():
+    yield dg.DynamicOutput(cluster['name'], mapping_key=str(i))
+
+
+@dg.job
+def dg_make_all(version: int = 7, overwrite: bool = True):
+  specz_df, specz_skycoord = dg_load_spec()
+  clusters = get_all_cluster_names(version)
+  clusters.map(lambda val: dg_cluster_info(val, version))\
+          .map(lambda val: dg_make_specz_cone(specz_df, specz_skycoord, val, overwrite))
+
+
+defs = dg.Definitions(jobs=[dg_make_all])

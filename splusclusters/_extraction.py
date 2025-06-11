@@ -7,6 +7,7 @@ from shutil import copy
 from typing import Dict, Literal, Sequence, Tuple
 
 import astropy.units as u
+import dagster as dg
 import lsdb
 import matplotlib.pyplot as plt
 import numpy as np
@@ -431,3 +432,16 @@ class MakeSpeczCone(luigi.Task):
   def run(self):
     specz_df, specz_keycoord = load_spec()
     specz_cone_search(specz_df, specz_keycoord, self.info, self.overwrite)
+
+
+
+@dg.op
+def dg_make_specz_cone(
+  specz_df: pd.DataFrame, 
+  specz_skycoord: SkyCoord, 
+  info: ClusterInfo, 
+  overwrite: bool
+):
+  specz_cone_search(specz_df, specz_skycoord, info, overwrite)
+  path = configs.SPECZ_FOLDER / f'{info.name}.parquet'
+  return read_table(path)

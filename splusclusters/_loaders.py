@@ -2,6 +2,7 @@ from dataclasses import dataclass
 from pathlib import Path
 from typing import Tuple
 
+import dagster as dg
 import numpy as np
 import pandas as pd
 from astromodule.distance import mpc2arcsec
@@ -364,3 +365,15 @@ class LoadClusterCatalog(luigi.Task):
     import pickle
     with self.output().open('w') as f:
       pickle.dump(load_catalog(self.version), f)
+      
+
+
+
+@dg.op
+def dg_load_spec(version: int):
+  return load_spec(version)
+
+
+@dg.op
+def dg_load_cluster_catalog(version: int):
+  return load_catalog(version)
