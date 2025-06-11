@@ -5,7 +5,8 @@ from prefect import flow
 from prefect.utilities.annotations import quote
 from prefect_dask import DaskTaskRunner
 
-from splusclusters._extraction import download_xray, make_cones
+import luigi
+from splusclusters._extraction import MakeSpeczCone, download_xray, make_cones
 from splusclusters._info import cluster_params
 from splusclusters._loaders import (load_catalog, load_cones, load_legacy_cone,
                                     load_photoz_cone, load_shiftgap_tables,
@@ -95,7 +96,7 @@ def single_cluster_pipeline(
 @flow(
   flow_run_name='all-clusters-pipeline-v{version}', 
   version='1.0', persist_result=False, log_prints=True,
-  validate_parameters=False, task_runner=DaskTaskRunner()
+  validate_parameters=False,
 )
 def all_clusters_pipeline(
   version: int,
@@ -119,7 +120,7 @@ def all_clusters_pipeline(
   
   specz_df, specz_coords = None, None
   if not skip_cones:
-    config_dask()
+    # config_dask()
     # specz_df, specz_coords = load_spec()
     specz_df = load_spec(False)
   
@@ -144,3 +145,16 @@ def all_clusters_pipeline(
   if not skip_website:
     make_zoffset_page(quote(df_clusters), df_clusters_prev, version)
     make_index(quote(df_clusters), df_clusters_prev, version)
+    
+
+
+class MakeAll(luigi.Task):
+  version = luigi.IntParameter(7)
+  overwrite = luigi.BoolParameter(False)
+  
+  def requires(self):
+    df_clusters: pd.DataFrame = load_catalog(self.version)
+    df_clusters = df_clusters[df_clusters['name'].isin('A168', 'MKW4')]
+    for _, cluster in df_clusters.iterrows():
+      info = cluster_params(df_clusters, cluster['name'])
+      yield MakeSpeczCone(info=info, overwrite=self.overwrite)

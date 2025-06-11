@@ -581,14 +581,14 @@ def match_all(
 
 
 
-@flow(flow_run_name='cluster-catalog-{info.name}', version='1.0', persist_result=False, task_runner=DaskTaskRunner())
+@flow(flow_run_name='cluster-catalog-{info.name}', version='1.0', persist_result=False,)
 def make_cluster_catalog(
   info: ClusterInfo,
-  df_specz_radial: pd.DataFrame,
-  df_photoz_radial: pd.DataFrame, 
-  df_legacy_radial: pd.DataFrame,
+  df_specz_radial: pd.DataFrame | None,
+  df_photoz_radial: pd.DataFrame | None, 
+  df_legacy_radial: pd.DataFrame | None,
   df_ret: pd.DataFrame | None,
-  df_spec_all: pd.DataFrame,
+  df_spec_all: pd.DataFrame | None,
   overwrite: bool = False,
 ):
   out_path = configs.PHOTOZ_SPECZ_LEG_FOLDER / f'{info.name}.parquet'

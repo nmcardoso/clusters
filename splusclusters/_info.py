@@ -2,6 +2,7 @@ from dataclasses import dataclass
 from pathlib import Path
 from typing import Tuple
 
+import luigi.format
 import numpy as np
 import pandas as pd
 from astromodule.distance import mpc2arcsec
@@ -16,6 +17,8 @@ from astropy.table import Table
 from prefect import flow, task
 from pylegs.io import read_table, write_table
 
+import luigi
+from splusclusters._loaders import LoadClusterCatalog
 from splusclusters.configs import configs
 from splusclusters.utils import Timming
 
@@ -92,3 +95,24 @@ def cluster_params(df_clusters: pd.DataFrame, cls_name: str):
     z_photo_range=(z - configs.Z_PHOTO_DELTA, z + configs.Z_PHOTO_DELTA),
     z_spec_range=(z - configs.Z_SPEC_DELTA, z + configs.Z_SPEC_DELTA),
   )
+
+
+
+class ComputeClusterInfo(luigi.Task):
+  cls_name = luigi.Parameter()
+  version = luigi.IntParameter()
+  
+  def requires(self):
+    return LoadClusterCatalog(version=self.version)
+
+  def output(self):
+    return luigi.LocalTarget(configs.LUIGI_FOLDER / f'info-{self.cls_name}.pckl')
+  
+  def run(self):
+    import pickle
+    with self.input().open() as f:
+      df_clusters = pickle.load(f)
+    print(f'{df_clusters=}')
+    info = cluster_params(df_clusters, self.cls_name)
+    with self.output().open('w') as f:
+      pickle.dump(info, f)

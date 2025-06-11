@@ -31,6 +31,7 @@ class Configs(metaclass=SingletonMeta):
   MEMBERS_V7_PATH = ROOT / 'tables' / 'members_v7'
   MEMBERS_V7_FOLDER = MEMBERS_V7_PATH / 'hold_cls_files'
   XRAY_TABLE_PATH = ROOT / 'tables' / 'catalog_chinese_xray.tsv'
+  WEBSITE_PATH = ROOT / 'docs'
   Z_PHOTO_DELTA = 0.015
   Z_SPEC_DELTA = 0.007
   Z_SPEC_DELTA_PAULO = 0.02
@@ -40,7 +41,6 @@ class Configs(metaclass=SingletonMeta):
     # OUT_PATH = ROOT / 'outputs_v6'
     self.version = 7
     self.STUDY_FOLDER = self.OUT_PATH / 'studies'
-    self.WEBSITE_PATH = self.ROOT / 'docs'
     self.PLOTS_FOLDER = self.OUT_PATH / 'plots'
     self.VELOCITY_PLOTS_FOLDER = self.OUT_PATH / 'velocity_plots'
     self.MAGDIFF_PLOTS_FOLDER = self.OUT_PATH / 'magdiff_plots'
@@ -53,6 +53,7 @@ class Configs(metaclass=SingletonMeta):
     self.PHOTOZ_SPECZ_LEG_FOLDER = self.OUT_PATH / 'photoz+specz+legacy'
     self.MAG_COMP_FOLDER = self.OUT_PATH / 'mag_comp'
     self.SUBMIT_FOLDER = self.OUT_PATH / 'submit'
+    self.LUIGI_FOLDER = self.ROOT / 'luigi'
     self.setup_paths()
   
   @property
@@ -84,7 +85,7 @@ class Configs(metaclass=SingletonMeta):
     return r
   
   def setup_paths(self):
-    for k, v in self.__class__.__dict__.items():
+    for k, v in {**self.__class__.__dict__, **self.__dict__}.items():
       if k.endswith('FOLDER'):
         v.mkdir(exist_ok=True, parents=True)
   

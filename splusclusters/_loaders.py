@@ -17,6 +17,7 @@ from prefect import flow, task
 from prefect.logging import get_run_logger
 from pylegs.io import read_table, write_table
 
+import luigi
 from splusclusters._info import ClusterInfo
 from splusclusters.configs import configs
 from splusclusters.utils import Timming
@@ -350,3 +351,16 @@ def load_cones(info: ClusterInfo, version: int) -> ConesContainer:
     interlopers=df_interlopers,
     members=df_members,
   )
+
+
+
+class LoadClusterCatalog(luigi.Task):
+  version = luigi.IntParameter()
+  
+  def output(self):
+    return luigi.LocalTarget(configs.LUIGI_FOLDER / f'cluster-catalog-v{self.version}.pckl')
+  
+  def run(self):
+    import pickle
+    with self.output().open('w') as f:
+      pickle.dump(load_catalog(self.version), f)

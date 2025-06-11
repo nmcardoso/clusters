@@ -31,7 +31,9 @@ from pylegs.archive import RadialMatcher
 from pylegs.utils import Timer
 from upath import UPath
 
-from splusclusters._info import ClusterInfo
+import luigi
+from splusclusters._info import ClusterInfo, ComputeClusterInfo
+from splusclusters._loaders import load_spec
 from splusclusters.configs import configs
 from splusclusters.loaders import remove_bad_objects
 from splusclusters.utils import Timming, cond_overwrite, config_dask
@@ -415,3 +417,17 @@ def make_cones(
   
   futures = [f.submit(**p) for f, p in zip(cone_functions, cone_params)]
   wait(futures)
+
+
+
+
+class MakeSpeczCone(luigi.Task):
+  overwrite = luigi.BoolParameter(False)
+  info: ClusterInfo = luigi.Parameter()
+  
+  def output(self):
+    return luigi.LocalTarget(configs.SPECZ_FOLDER / f'{self.info.name}.parquet')
+  
+  def run(self):
+    specz_df, specz_keycoord = load_spec()
+    specz_cone_search(specz_df, specz_keycoord, self.info, self.overwrite)
