@@ -11,11 +11,11 @@ from prefect_dask import DaskTaskRunner
 import luigi
 from splusclusters._extraction import (MakeSpeczCone, dg_make_specz_cone,
                                        download_xray, make_cones)
-from splusclusters._info import cluster_params, dg_cluster_info
-from splusclusters._loaders import (dg_load_spec, load_catalog, load_cones,
-                                    load_legacy_cone, load_photoz_cone,
-                                    load_shiftgap_tables, load_spec,
-                                    load_specz_cone)
+from splusclusters._info import cluster_params
+from splusclusters._loaders import (dg_cluster_info, dg_load_spec,
+                                    load_catalog, load_cones, load_legacy_cone,
+                                    load_photoz_cone, load_shiftgap_tables,
+                                    load_spec, load_specz_cone)
 from splusclusters._match import make_cluster_catalog
 from splusclusters._plots import make_plots
 from splusclusters._website import (build_cluster_page, copy_xray, make_index,

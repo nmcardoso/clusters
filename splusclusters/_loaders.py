@@ -19,7 +19,7 @@ from prefect.logging import get_run_logger
 from pylegs.io import read_table, write_table
 
 import luigi
-from splusclusters._info import ClusterInfo
+from splusclusters._info import ClusterInfo, cluster_params
 from splusclusters.configs import configs
 from splusclusters.utils import Timming
 
@@ -377,3 +377,9 @@ def dg_load_spec(version: int):
 @dg.op
 def dg_load_cluster_catalog(version: int):
   return load_catalog(version)
+
+
+@dg.op
+def dg_cluster_info(cls_name: str, version: int):
+  df_clusters = load_catalog(version)
+  return cluster_params(df_clusters, cls_name)

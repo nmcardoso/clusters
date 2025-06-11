@@ -19,7 +19,6 @@ from prefect import flow, task
 from pylegs.io import read_table, write_table
 
 import luigi
-from splusclusters._loaders import load_catalog
 from splusclusters.configs import configs
 from splusclusters.utils import Timming
 
@@ -117,10 +116,3 @@ def cluster_params(df_clusters: pd.DataFrame, cls_name: str):
 #     info = cluster_params(df_clusters, self.cls_name)
 #     with self.output().open('w') as f:
 #       pickle.dump(info, f)
-
-
-
-@dg.op
-def dg_cluster_info(cls_name: str, version: int):
-  df_clusters = load_catalog(version)
-  return cluster_params(df_clusters, cls_name)
