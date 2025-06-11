@@ -32,7 +32,7 @@ from pylegs.utils import Timer
 from upath import UPath
 
 import luigi
-from splusclusters._info import ClusterInfo, ComputeClusterInfo
+from splusclusters._info import ClusterInfo
 from splusclusters._loaders import load_spec
 from splusclusters.configs import configs
 from splusclusters.loaders import remove_bad_objects
