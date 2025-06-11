@@ -174,9 +174,9 @@ def get_all_cluster_names(version: int):
     yield dg.DynamicOutput(cluster['name'], mapping_key=str(i))
 
 
-@dg.job
+@dg.job(input_values={'version': 7, 'overwrite': True})
 def dg_make_all(version: int = 7, overwrite: bool = True):
-  specz_df, specz_skycoord = dg_load_spec()
+  specz_df, specz_skycoord = dg_load_spec(version)
   clusters = get_all_cluster_names(version)
   clusters.map(lambda val: dg_cluster_info(val, version))\
           .map(lambda val: dg_make_specz_cone(specz_df, specz_skycoord, val, overwrite))
