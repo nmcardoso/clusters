@@ -8,9 +8,6 @@ from astromodule.table import (concat_tables, crossmatch, fast_crossmatch,
                                guess_coords_columns, radial_search, selfmatch)
 from astropy import units as u
 from astropy.coordinates import SkyCoord
-from prefect import flow, task
-from prefect.utilities.annotations import quote
-from prefect_dask import DaskTaskRunner
 
 from splusclusters._info import ClusterInfo
 from splusclusters.configs import configs
@@ -126,7 +123,6 @@ def _sanitize_columns(df: pd.DataFrame):
 
   
   
-@task(task_run_name='visual-inspection-filter-{info.name}', version='1.0', persist_result=False)
 def filter_by_visual_inspection(
   df: pd.DataFrame, 
   ra: str = None, 
@@ -177,7 +173,7 @@ def filter_by_visual_inspection(
 
 
 
-@task(task_run_name='compute-angular-distance-{info.name}', version='1.0', persist_result=False)
+
 def compute_angular_distance(
   df: pd.DataFrame, 
   info: ClusterInfo,
@@ -197,7 +193,7 @@ def compute_angular_distance(
 
 
 
-@task(task_run_name='compute-cleanup-flags-{info.name}', version='1.0', persist_result=False)
+
 def compute_cleanup_flags(
   df: pd.DataFrame,
   info: ClusterInfo,
@@ -352,7 +348,7 @@ def compute_cleanup_flags(
 
 
   
-@task(task_run_name='match-all-{cls_name}', version='1.0', persist_result=False)
+
 def match_all(
   df_r: pd.DataFrame,
   df_spec: pd.DataFrame,
@@ -581,7 +577,6 @@ def match_all(
 
 
 
-@flow(flow_run_name='cluster-catalog-{info.name}', version='1.0', persist_result=False,)
 def make_cluster_catalog(
   info: ClusterInfo,
   df_specz_radial: pd.DataFrame | None,
@@ -608,16 +603,16 @@ def make_cluster_catalog(
       print('\n\n>>>> KEEP 2:', len(df_r[df_r.f_z.str.contains('KEEP')]), '\n\n')
     
     # match all catalogs
-    df = match_all(quote(df_r), quote(df_spec), quote(df_photo), quote(df_legacy), quote(df_spec_all), info.name, out_lost)
+    df = match_all(df_r, df_spec, df_photo, df_legacy, df_spec_all, info.name, out_lost)
 
     # compute radius_deg for all objects
-    df = compute_angular_distance(quote(df), info)
+    df = compute_angular_distance(df, info)
     
     # Filter bad objects after visual inspection
-    df, _ = filter_by_visual_inspection(quote(df), ra='ra', dec='dec', info=info)
+    df, _ = filter_by_visual_inspection(df, ra='ra', dec='dec', info=info)
     
     # compute cleanup flags
-    df = compute_cleanup_flags(quote(df), info, out_flags_path, out_removed_path)
+    df = compute_cleanup_flags(df, info, out_flags_path, out_removed_path)
     
     df = _sanitize_columns(df)
     

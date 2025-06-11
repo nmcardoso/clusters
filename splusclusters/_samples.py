@@ -1,5 +1,4 @@
 import pandas as pd
-from prefect import task
 from pylegs.io import write_table
 
 from splusclusters._info import ClusterInfo
@@ -7,7 +6,6 @@ from splusclusters.configs import configs
 from splusclusters.utils import cond_overwrite
 
 
-@task(task_run_name='filter-r200-{info.name}', version='1.0', persist_result=False)
 def filter_r200(
   info: ClusterInfo,
   df_all_radial: pd.DataFrame,

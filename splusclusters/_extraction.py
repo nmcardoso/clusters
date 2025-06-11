@@ -24,15 +24,10 @@ from astropy import units as u
 from astropy.coordinates import SkyCoord
 from astropy.io.misc.yaml import AstropyDumper
 from astropy.units import Quantity
-from prefect import flow, task
-from prefect.futures import wait
-from prefect.utilities.annotations import quote
-from prefect_dask.task_runners import DaskTaskRunner
 from pylegs.archive import RadialMatcher
 from pylegs.utils import Timer
 from upath import UPath
 
-import luigi
 from splusclusters._info import ClusterInfo
 from splusclusters._loaders import load_spec
 from splusclusters.configs import configs
@@ -40,7 +35,6 @@ from splusclusters.loaders import remove_bad_objects
 from splusclusters.utils import Timming, cond_overwrite, config_dask
 
 
-@task(task_run_name='specz-cone-search-{info.name}', version='1.1', persist_result=False)
 def specz_cone_search(
   specz_df: pd.DataFrame,
   specz_skycoord: SkyCoord | None,
@@ -73,7 +67,7 @@ def specz_cone_search(
 
 
 
-@task(task_run_name='photoz-cone-search-{info.name}', version='1.0', persist_result=False)
+
 def photoz_cone_search(
   photoz_df: pd.DataFrame,
   photoz_skycoord: SkyCoord,
@@ -99,7 +93,7 @@ def photoz_cone_search(
 
 
 
-@task(task_run_name='legacy-cone-search-{info.name}', version='1.0', persist_result=False)
+
 def legacy_cone_search(
   legacy_df: pd.DataFrame,
   legacy_skycoord: SkyCoord,
@@ -122,7 +116,7 @@ def legacy_cone_search(
 
 
 
-@task(task_run_name='download-legacy-catalog-{info.name}', version='1.0', persist_result=False)
+
 def download_legacy_catalog(
   info: ClusterInfo, 
   workers: int = 3, 
@@ -161,7 +155,7 @@ def download_legacy_catalog(
 
 
 
-@task(task_run_name='download-xray-{info.name}', version='1.0', persist_result=False)
+
 def download_xray(
   info: ClusterInfo, 
   overwrite: bool = False,
@@ -185,7 +179,7 @@ def download_xray(
 
 
 
-@task(task_run_name='splus-members-match-{cls_name}', version='1.0', persist_result=False)
+
 def splus_members_match(
   cls_name: str, 
   version: int,  
@@ -229,7 +223,7 @@ def splus_members_match(
 
 
 
-@task(task_run_name='download-splus-photoz-{info.name}', version='1.0', retries=6, timeout_seconds=720, persist_result=False)
+
 def download_splus_photoz(
   info: ClusterInfo, 
   workers: int = 10, 
@@ -396,7 +390,7 @@ def download_splus_photoz(
 
 
 
-@flow(flow_run_name='make-cones-{info.name}', version='1.1', persist_result=False, validate_parameters=False)
+
 def make_cones(
   info: ClusterInfo,
   specz_df: pd.DataFrame,
@@ -411,27 +405,14 @@ def make_cones(
   ]
   
   cone_params = [
-    dict(specz_df=quote(specz_df), specz_skycoord=specz_skycoord, info=info, overwrite=overwrite),
+    dict(specz_df=specz_df, specz_skycoord=specz_skycoord, info=info, overwrite=overwrite),
     dict(info=info, overwrite=overwrite),
     dict(info=info, workers=workers, overwrite=overwrite),
   ]
   
   futures = [f.submit(**p) for f, p in zip(cone_functions, cone_params)]
-  wait(futures)
+  # wait(futures)
 
-
-
-
-class MakeSpeczCone(luigi.Task):
-  overwrite = luigi.BoolParameter(False)
-  info: ClusterInfo = luigi.Parameter()
-  
-  def output(self):
-    return luigi.LocalTarget(configs.SPECZ_FOLDER / f'{self.info.name}.parquet')
-  
-  def run(self):
-    specz_df, specz_keycoord = load_spec()
-    specz_cone_search(specz_df, specz_keycoord, self.info, self.overwrite)
 
 
 
@@ -440,7 +421,7 @@ def dg_make_specz_cone(
   specz_df: pd.DataFrame, 
   specz_skycoord: SkyCoord, 
   info: ClusterInfo, 
-  overwrite: bool
+  overwrite: bool,
 ) -> pd.DataFrame:
   specz_cone_search(specz_df, specz_skycoord, info, overwrite)
   path = configs.SPECZ_FOLDER / f'{info.name}.parquet'

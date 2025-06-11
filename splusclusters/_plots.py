@@ -14,7 +14,6 @@ from astropy.visualization.wcsaxes import SphericalCircle
 from astropy.wcs import WCS
 from matplotlib.colors import LinearSegmentedColormap
 from matplotlib.patches import Circle
-from prefect import Flow, flow, task
 from scipy.ndimage.filters import gaussian_filter
 from tqdm import tqdm
 
@@ -283,7 +282,7 @@ def _plot_photoz_specz(
 
 
 
-@task(task_run_name='make-overview-plots-{info.name}', version='1.0')
+
 def make_overview_plots(
   info: ClusterInfo,
   df_photoz_radial: pd.DataFrame,
@@ -535,7 +534,7 @@ def _contour_plot(
 
 
 
-@task(task_run_name='make-contour-plots-{info.name}', version='1.0')
+
 def make_contour_plots(
   info: ClusterInfo,
   df_members: pd.DataFrame,
@@ -748,7 +747,7 @@ def _histogram_plot_all(
 
 
 
-@task(task_run_name='make-histogram-plots-{info.name}', version='1.0')
+
 def make_histogram_plots(
   info: ClusterInfo,
   df_members: pd.DataFrame,
@@ -1025,7 +1024,7 @@ def plot_ra_dec_relative(
   ax.set_title('Relative spatial distribution of spectroscopic members')
 
 
-@task(task_run_name='make-velocity-plots-{info.name}', version='1.0', persist_result=False)
+
 def make_velocity_plots(
   info: ClusterInfo,
   df_members: pd.DataFrame,
@@ -1201,7 +1200,7 @@ def _plot_magdiff_histogram(
 
 
 
-@task(task_run_name='make-magdiff-plots-{info.name}', version='1.0', persist_result=False)
+
 def make_magdiff_plots(
   info: ClusterInfo,
   df_all_radial: pd.DataFrame, 
@@ -1259,7 +1258,7 @@ def make_magdiff_plots(
 
 
 
-@flow(flow_run_name='make-all-plots-{info.name}', version='1.0', persist_result=False)
+
 def make_plots(
   info: ClusterInfo,
   df_photoz_radial: pd.DataFrame,

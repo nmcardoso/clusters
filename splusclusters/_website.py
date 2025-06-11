@@ -8,8 +8,6 @@ from astromodule.pipeline import PipelineStage
 from astromodule.table import crossmatch, radial_search
 from astropy import units as u
 from astropy.coordinates import SkyCoord
-from prefect import flow, task
-from prefect.utilities.annotations import quote
 from pylegs.io import read_table
 
 from splusclusters._info import ClusterInfo
@@ -148,7 +146,7 @@ def _get_version_diff(name: str, df_clusters_prev: pd.DataFrame, version: int):
 
 
 
-@task(task_run_name='make-zoffset-page-v{version}', version='1.0', persist_result=False)
+
 def make_zoffset_page(
   df_clusters: pd.DataFrame, 
   df_clusters_prev: pd.DataFrame, 
@@ -267,7 +265,7 @@ def make_zoffset_page(
 
 
 
-@task(task_run_name='copy-xray-{cls_name}', version='1.0', persist_result=False)
+
 def copy_xray(cls_name: str, version: int, fmt: str = 'png', overwrite: bool = False):
   src = configs.XRAY_PLOTS_FOLDER / f'{cls_name}.{fmt}'
   dst = _get_cluster_folder(version) / cls_name / f'xray.{fmt}'
@@ -276,7 +274,7 @@ def copy_xray(cls_name: str, version: int, fmt: str = 'png', overwrite: bool = F
 
 
 
-@task(task_run_name='make-splus-fields-tables-{info.name}', version='1.0', persist_result=False)
+
 def make_splus_fields_tables(info: ClusterInfo, version: int, df: pd.DataFrame):
   base_path = _get_cluster_folder(version) / info.name
   r200_path = base_path / 'splus_fields_5r200.csv'
@@ -296,7 +294,7 @@ def make_splus_fields_tables(info: ClusterInfo, version: int, df: pd.DataFrame):
     
     
     
-@task(task_run_name='make-index-page-v{version}', version='1.0', persist_result=False)
+
 def make_index(df_clusters: pd.DataFrame, df_clusters_prev: pd.DataFrame, version: int):
   page = f'''<!DOCTYPE html>
   <html>
@@ -316,7 +314,7 @@ def make_index(df_clusters: pd.DataFrame, df_clusters_prev: pd.DataFrame, versio
 
 
 
-@task(task_run_name='make-landing-page', version='1.0', persist_result=False)
+
 def make_landing():
   page = f'<!DOCTYPE html><html><head><meta http-equiv="refresh" content="0; url=clusters_v6"></head></html>'
   index_path = configs.WEBSITE_PATH / 'index.html'
@@ -327,7 +325,7 @@ def make_landing():
 
 
 
-@task(task_run_name='make-cluster-page-{info.name}', version='1.0', persist_result=False)
+
 def make_cluster_page(
   info: ClusterInfo, 
   df_clusters: pd.DataFrame, 
@@ -516,7 +514,7 @@ def make_cluster_page(
 
 
 
-@flow(flow_run_name='build-cluster-page-{info.name}', version='1.0', persist_result=False)
+
 def build_cluster_page(
   info: ClusterInfo,
   version: int,
@@ -527,12 +525,12 @@ def build_cluster_page(
 ):
   make_cluster_page(
     info=info, 
-    df_clusters=quote(df_clusters), 
+    df_clusters=df_clusters, 
     df_clusters_prev=df_clusters_prev,
     version=version
   )
   
-  make_splus_fields_tables(info=info, df=quote(df_photoz_radial))
+  make_splus_fields_tables(info=info, df=df_photoz_radial)
   
   if df_members is not None:
     folder_path = _get_cluster_folder(version) / info.name

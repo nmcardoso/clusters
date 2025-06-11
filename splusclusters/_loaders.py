@@ -14,11 +14,8 @@ from astropy import units as u
 from astropy.coordinates import SkyCoord
 from astropy.cosmology import LambdaCDM
 from astropy.table import Table
-from prefect import flow, task
-from prefect.logging import get_run_logger
 from pylegs.io import read_table, write_table
 
-import luigi
 from splusclusters._info import ClusterInfo, cluster_params
 from splusclusters.configs import configs
 from splusclusters.utils import Timming
@@ -223,7 +220,7 @@ def load_xray():
 def _load_cluster_product(info: ClusterInfo, base_path: Path):
   path = base_path / f'{info.name}.parquet'
   if not path.exists(): 
-    get_run_logger().warning(f'Table {path} not found!')
+    print(f'Table {path} not found!')
     return None
   t = Timming()
   df = read_table(path)
@@ -241,33 +238,33 @@ def _load_cluster_product(info: ClusterInfo, base_path: Path):
   return df
 
 
-@task(task_run_name='load-legacy-cone-{info.name}', version='1.0', persist_result=False)
+
 def load_legacy_cone(info: ClusterInfo):
   return _load_cluster_product(info, configs.LEG_PHOTO_FOLDER)
 
 
-@task(task_run_name='load-photoz-cone-{info.name}', version='1.0', persist_result=False)
+
 def load_photoz_cone(info: ClusterInfo):
   return _load_cluster_product(info, configs.PHOTOZ_FOLDER)
 
 
-@task(task_run_name='load-specz-cone-{info.name}', version='1.0', persist_result=False)
+
 def load_specz_cone(info: ClusterInfo):
   return _load_cluster_product(info, configs.SPECZ_FOLDER)
 
 
-@task(task_run_name='load-all-cone-{info.name}', version='1.0', persist_result=False)
+
 def load_all_cone(info: ClusterInfo):
   return _load_cluster_product(info, configs.PHOTOZ_SPECZ_LEG_FOLDER)
 
 
-@task(task_run_name='load-mag-cone-{info.name}', version='1.0', persist_result=False)
+
 def load_mag_cone(info: ClusterInfo):
   return _load_cluster_product(info, configs.MAG_COMP_FOLDER)
 
 
 
-@task(task_run_name='load-catalog-v{version}', version='1.0', persist_result=False)
+
 def load_catalog(version: int):
   version_map = {
     5: load_clusters_v5,
@@ -278,7 +275,7 @@ def load_catalog(version: int):
 
 
 
-@task(task_run_name='load-shiftgap-v{version}-{cls_name}', version='1.0')
+
 def load_shiftgap_tables(cls_name: str, version: int):
   version_map = {
     5: load_shiftgap_v5,
@@ -292,7 +289,7 @@ def load_shiftgap_tables(cls_name: str, version: int):
 
 
 
-@task(task_run_name='load-spec', version='1.1', persist_result=False)
+
 def load_spec(coords: bool = True):
   df_spec = read_table(configs.SPEC_TABLE_PATH)
   if 'original_f_z' in df_spec.columns:
@@ -334,7 +331,6 @@ class ConesContainer:
   members: pd.DataFrame
 
 
-@flow(flow_run_name='load-all-cones-{info.name}', version='1.0', persist_result=False)
 def load_cones(info: ClusterInfo, version: int) -> ConesContainer:
   df_shiftgap, df_members, df_interlopers = load_shiftgap_tables(
     cls_name=info.name, 
@@ -354,17 +350,6 @@ def load_cones(info: ClusterInfo, version: int) -> ConesContainer:
   )
 
 
-
-class LoadClusterCatalog(luigi.Task):
-  version = luigi.IntParameter()
-  
-  def output(self):
-    return luigi.LocalTarget(configs.LUIGI_FOLDER / f'cluster-catalog-v{self.version}.pckl')
-  
-  def run(self):
-    import pickle
-    with self.output().open('w') as f:
-      pickle.dump(load_catalog(self.version), f)
       
 
 
