@@ -6,8 +6,8 @@ import pandas as pd
 from astropy.coordinates import SkyCoord
 from astropy.io.misc.yaml import AstropyDumper
 
-from splusclusters._extraction import (MakeSpeczCone, dg_make_specz_cone,
-                                       download_xray, make_cones)
+from splusclusters._extraction import (dg_make_specz_cone, download_xray,
+                                       make_cones)
 from splusclusters._info import cluster_params
 from splusclusters._loaders import (dg_cluster_info, dg_load_spec,
                                     load_catalog, load_cones, load_legacy_cone,
