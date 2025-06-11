@@ -441,7 +441,7 @@ def dg_make_specz_cone(
   specz_skycoord: SkyCoord, 
   info: ClusterInfo, 
   overwrite: bool
-):
+) -> pd.DataFrame:
   specz_cone_search(specz_df, specz_skycoord, info, overwrite)
   path = configs.SPECZ_FOLDER / f'{info.name}.parquet'
   return read_table(path)

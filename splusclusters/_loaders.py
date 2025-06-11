@@ -375,11 +375,11 @@ def dg_load_spec(version: int):
 
 
 @dg.op
-def dg_load_cluster_catalog(version: int):
+def dg_load_cluster_catalog(version: int) -> pd.DataFrame:
   return load_catalog(version)
 
 
-@dg.op
-def dg_cluster_info(cls_name: str, version: int):
+@dg.op(out=dg.Out(ClusterInfo))
+def dg_cluster_info(cls_name: str, version: int) -> ClusterInfo:
   df_clusters = load_catalog(version)
   return cluster_params(df_clusters, cls_name)

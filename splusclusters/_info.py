@@ -45,8 +45,8 @@ class ClusterInfo:
 
 
 
-@task(task_run_name='cluster-params-{cls_name}', version='1.0', persist_result=False)
-def cluster_params(df_clusters: pd.DataFrame, cls_name: str):
+# @task(task_run_name='cluster-params-{cls_name}', version='1.0', persist_result=False)
+def cluster_params(df_clusters: pd.DataFrame, cls_name: str) -> ClusterInfo:
   cluster = df_clusters[df_clusters.name == cls_name]
   ra_col, dec_col = guess_coords_columns(cluster)
   ra = cluster[ra_col].values[0]
