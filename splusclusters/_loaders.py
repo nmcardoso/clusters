@@ -369,7 +369,7 @@ class LoadClusterCatalog(luigi.Task):
 
 
 
-@dg.op
+@dg.op(out={'specz_df': dg.Out(pd.DataFrame), 'specz_skycoord': dg.Out(SkyCoord)})
 def dg_load_spec(version: int):
   return load_spec(version)
 
