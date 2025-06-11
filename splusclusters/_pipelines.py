@@ -154,7 +154,7 @@ class MakeAll(luigi.Task):
   
   def requires(self):
     df_clusters: pd.DataFrame = load_catalog(self.version)
-    df_clusters = df_clusters[df_clusters['name'].isin('A168', 'MKW4')]
+    df_clusters = df_clusters[df_clusters['name'].isin(['A168', 'MKW4'])]
     for _, cluster in df_clusters.iterrows():
       info = cluster_params(df_clusters, cluster['name'])
       yield MakeSpeczCone(info=info, overwrite=self.overwrite)
