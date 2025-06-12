@@ -152,8 +152,8 @@ def get_all_cluster_names(version: int):
 def dg_make_all(version: int = 7, overwrite: bool = True):
   specz_df, specz_skycoord = dg_load_spec(version)
   clusters = get_all_cluster_names(version)
-  clusters.map(partial(dg_cluster_info, version=version))\
-          .map(partial(dg_make_specz_cone, specz_df=specz_df, specz_skycoord=specz_skycoord, overwrite=overwrite))
+  clusters.map(lambda val: dg_cluster_info(val, version))\
+          .map(lambda val: dg_make_specz_cone(specz_df, specz_skycoord, val, overwrite))
 
 
 defs = dg.Definitions(jobs=[dg_make_all])
