@@ -363,13 +363,14 @@ def match_all(
     else:
       ra, dec = guess_coords_columns(df_spec)
     df_spec = df_spec.rename(columns={ra: 'ra_spec', dec: 'dec_spec'})
-    print('Spec-z objects:', len(df_spec))
+    print('Spec-z objects (in-range):', len(df_spec))
     
   if df_specz_outrange_radial is not None and len(df_specz_outrange_radial) > 0:
     ra, dec = guess_coords_columns(df_specz_outrange_radial)
     df_specz_outrange_radial = df_specz_outrange_radial.rename(columns={
       ra: 'ra_spec_outrange', dec: 'dec_spec_outrange'
     })
+    print('Spec-z objects (outrange):', len(df_spec))
   
   if df_photo is not None and len(df_photo) > 0:
     ra, dec = guess_coords_columns(df_photo)
@@ -518,7 +519,7 @@ def match_all(
         join='all1',
         find='best',
         suffix1='_final',
-        suffix2='_spec_all'
+        suffix2='_spec_outrange'
       )
       if df_result is not None:
         print(f'   - Crossmatch against outrange spec-z catalog done successfully, objects: {len(df_result)}')
