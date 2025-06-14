@@ -318,7 +318,7 @@ def make_overview_plots(
   
   if separated:
     out = configs.WEBSITE_PATH / f'clusters_v{version}' / info.name / f'specz.{fmt}'
-    with cond_overwrite(out, overwrite):
+    with cond_overwrite(out, overwrite, mkdir=True):
       fig = plt.figure(figsize=(7.5, 7.5), dpi=150)
       ax = fig.add_subplot(projection=wcs)
       _plot_specz(
@@ -332,7 +332,7 @@ def make_overview_plots(
       plt.close(fig)
       
     out = configs.WEBSITE_PATH / f'clusters_v{version}' / info.name / f'photoz.{fmt}'
-    with cond_overwrite(out, overwrite):
+    with cond_overwrite(out, overwrite, mkdir=True):
       fig = plt.figure(figsize=(7.5, 7.5), dpi=150)
       ax = fig.add_subplot(projection=wcs)
       _plot_photoz(
@@ -344,7 +344,7 @@ def make_overview_plots(
       plt.close(fig)
       
     out = configs.WEBSITE_PATH / f'clusters_v{version}' / info.name / f'legacy_coverage.{fmt}'
-    with cond_overwrite(out, overwrite):
+    with cond_overwrite(out, overwrite, mkdir=True):
       fig = plt.figure(figsize=(7.5, 7.5), dpi=150)
       ax = fig.add_subplot(projection=wcs)
       plot_legacy_coverage(
@@ -356,7 +356,7 @@ def make_overview_plots(
       plt.close(fig)
       
     out = configs.WEBSITE_PATH / f'clusters_v{version}' / info.name / f'photoz_specz.{fmt}'
-    with cond_overwrite(out, overwrite):
+    with cond_overwrite(out, overwrite, mkdir=True):
       fig = plt.figure(figsize=(7.5, 7.5), dpi=150)
       ax = fig.add_subplot(projection=wcs)
       _plot_photoz_specz(
@@ -371,7 +371,7 @@ def make_overview_plots(
       plt.close(fig)
   else:
     out_path = configs.PLOTS_FOLDER / f'cls_{info.name}.{fmt}'
-    with cond_overwrite(out_path, overwrite):
+    with cond_overwrite(out_path, overwrite, mkdir=True):
       if splus_only and len(df_photoz_radial) == 0:
         return
       
