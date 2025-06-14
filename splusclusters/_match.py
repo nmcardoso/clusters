@@ -622,4 +622,5 @@ def make_cluster_catalog(
     df = _sanitize_columns(df)
     
     cm.write_table(df)
-  return return_table_if_exists(out_path, df)
+    return return_table_if_exists(out_path, df)
+  return None
