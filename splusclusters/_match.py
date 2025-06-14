@@ -596,6 +596,7 @@ def make_cluster_catalog(
   out_removed_path = configs.PHOTOZ_SPECZ_LEG_FOLDER / f'{info.name}+removed.parquet'
   out_removed_vi_path = configs.PHOTOZ_SPECZ_LEG_FOLDER / f'{info.name}+removed_vi.parquet'
   out_lost = configs.PHOTOZ_SPECZ_LEG_FOLDER / f'{info.name}+lost.csv'
+  df = None
   
   with cond_overwrite(out_path, overwrite) as cm:
     df_spec = df_specz_radial.copy()
@@ -622,5 +623,4 @@ def make_cluster_catalog(
     df = _sanitize_columns(df)
     
     cm.write_table(df)
-    return return_table_if_exists(out_path, df)
-  return None
+  return return_table_if_exists(out_path, df)
