@@ -1,6 +1,7 @@
 from typing import List, Literal, Sequence, Tuple
 
 import astropy.units as u
+import dagster as dg
 import matplotlib.pyplot as plt
 import matplotlib.tri as tri
 import numpy as np
@@ -17,7 +18,7 @@ from matplotlib.patches import Circle
 from scipy.ndimage.filters import gaussian_filter
 from tqdm import tqdm
 
-from splusclusters._info import ClusterInfo
+from splusclusters._loaders import ClusterInfo
 from splusclusters.configs import configs
 from splusclusters.utils import cond_overwrite
 
@@ -26,8 +27,8 @@ def _get_plot_title(info: ClusterInfo):
   return (
     f'Cluster: {info.name} (RA: {info.ra:.5f}, DEC: {info.dec:.5f})\n'
     f'Search Radius: {info.search_radius_Mpc:.2f}Mpc = {info.search_radius_deg:.3f}$^\\circ$ ($z_{{cluster}}={info.z:.4f}$)\n'
-    f'$z_{{spec}}$: $z_{{cluster}} \\pm {configs.Z_SPEC_DELTA}$ = [{info.z_spec_range[0]:.4f}, {info.z_spec_range[1]:.4f}]\n'
-    f'$z_{{photo}}$: $z_{{cluster}} \\pm {configs.Z_PHOTO_DELTA}$ = [{info.z_photo_range[0]:.4f}, {info.z_photo_range[1]:.4f}]\n'
+    f'$z_{{spec}}$: $z_{{cluster}} \\pm {info.z_spec_delta}$ = [{info.z_spec_range[0]:.4f}, {info.z_spec_range[1]:.4f}]\n'
+    f'$z_{{photo}}$: $z_{{cluster}} \\pm {info.z_photo_delta}$ = [{info.z_photo_range[0]:.4f}, {info.z_photo_range[1]:.4f}]\n'
     f'R Mag Range: [13, 22] $\\cdot$ Spec Class = GALAXY*\n'
   )
 
@@ -1258,7 +1259,6 @@ def make_magdiff_plots(
 
 
 
-
 def make_plots(
   info: ClusterInfo,
   df_photoz_radial: pd.DataFrame,
@@ -1274,7 +1274,7 @@ def make_plots(
   splus_only: bool = False,
   fmt: str = 'png',
 ):
-  args = dict(
+  kwargs = dict(
     info=info,
     df_photoz_radial=df_photoz_radial,
     df_specz_radial=df_specz_radial,
@@ -1298,7 +1298,5 @@ def make_plots(
     make_magdiff_plots,
   ]
   
-  futures = [func.submit(**args) for func in plot_functions]
-  
-  for f in futures:
-    f.wait()
+  for f in plot_functions:
+    f(**kwargs)

@@ -1,7 +1,7 @@
 import pandas as pd
 from pylegs.io import write_table
 
-from splusclusters._info import ClusterInfo
+from splusclusters._loaders import ClusterInfo
 from splusclusters.configs import configs
 from splusclusters.utils import cond_overwrite
 

@@ -28,24 +28,32 @@ from pylegs.archive import RadialMatcher
 from pylegs.utils import Timer
 from upath import UPath
 
-from splusclusters._info import ClusterInfo
-from splusclusters._loaders import load_spec
+from splusclusters._loaders import ClusterInfo, load_spec
 from splusclusters.configs import configs
 from splusclusters.loaders import remove_bad_objects
-from splusclusters.utils import Timming, cond_overwrite, config_dask
+from splusclusters.utils import (Timming, cond_overwrite, config_dask,
+                                 return_table_if_exists)
 
 
-def specz_cone_search(
+def specz_cone(
   specz_df: pd.DataFrame,
   specz_skycoord: SkyCoord | None,
   info: ClusterInfo,
   overwrite: bool = False,
-):
-  path = configs.SPECZ_FOLDER / f'{info.name}.parquet'
+  in_range: bool = True,
+) -> pd.DataFrame | None:
+  base_path = configs.SPECZ_FOLDER if in_range else configs.SPECZ_OUTRANGE_FOLDER
+  path = base_path / f'{info.name}.parquet'
+  df = None
+  
   with cond_overwrite(path, overwrite, mkdir=True, time=True) as cm:
     print(*specz_df.columns, sep=', ')
     if specz_skycoord is None:
-      specz_skycoord = SkyCoord(ra=specz_df.ra_spec_all.values, dec=specz_df.dec_spec_all.values, unit=u.deg)
+      specz_skycoord = SkyCoord(
+        ra=specz_df.ra_spec_all.values, 
+        dec=specz_df.dec_spec_all.values, 
+        unit=u.deg
+      )
     df = radial_search(
       position=info.coord, 
       table=specz_df, 
@@ -57,72 +65,28 @@ def specz_cone_search(
     
     df = df.rename(columns={'ra_spec_all': 'ra', 'dec_spec_all': 'dec'})
     
-    df = df[
-      df.z.between(*info.z_spec_range) &
+    mask = (
       df.class_spec.str.upper().str.startswith('GALAXY') &
       df.f_z.str.upper().str.startswith('KEEP')
-    ]
-    
-    cm.write_table(df)
-
-
-
-
-def photoz_cone_search(
-  photoz_df: pd.DataFrame,
-  photoz_skycoord: SkyCoord,
-  info: ClusterInfo,
-  overwrite: bool = False,
-):
-  path = configs.PHOTOZ_FOLDER / f'{info.name}.parquet'
-  with cond_overwrite(path, overwrite, mkdir=True, time=True) as cm:
-    df = radial_search(
-      position=info.coord, 
-      table=photoz_df, 
-      radius=info.search_radius_deg * u.deg,
-      cached_catalog=photoz_skycoord,
     )
+    if in_range:
+      mask &= df.z.between(*info.z_spec_range)
+    else:
+      mask &= ~df.z.between(*info.z_spec_range)
     
-    if 'r_auto' in df.columns:
-      df = df[
-        # df.zml.between(*z_photo_range) &
-        df.r_auto.between(*configs.MAG_RANGE)
-      ]
-    
+    df = df[mask]
     cm.write_table(df)
+  return return_table_if_exists(path, df)
 
 
 
-
-def legacy_cone_search(
-  legacy_df: pd.DataFrame,
-  legacy_skycoord: SkyCoord,
-  info: ClusterInfo,
-  overwrite: bool = False,
-):
-  path = configs.LEG_PHOTO_FOLDER / f'{info.name}.parquet'
-  with cond_overwrite(path, overwrite, mkdir=True, time=True) as cm:
-    df = radial_search(
-      position=info.coord, 
-      table=legacy_df, 
-      radius=info.search_radius_deg * u.deg,
-      cached_catalog=legacy_skycoord,
-      ra='ra',
-      dec='dec',
-    )
-    
-    cm.write_table(df)
-
-
-
-
-
-def download_legacy_catalog(
+def legacy_cone(
   info: ClusterInfo, 
   workers: int = 3, 
   overwrite: bool = False
-):
+) -> pd.DataFrame | None:
   out_path = configs.LEG_PHOTO_FOLDER / f'{info.name}.parquet'
+  
   with cond_overwrite(out_path, overwrite, mkdir=True):
     sql = """
       SELECT t.ra, t.dec, t.type, t.shape_r, t.mag_g, t.mag_r, t.mag_i, t.mag_z, 
@@ -152,84 +116,17 @@ def download_legacy_catalog(
       join_outputs=True, 
       workers=workers
     )
+  return return_table_if_exists(out_path)
 
 
 
-
-def download_xray(
+def photoz_cone(
   info: ClusterInfo, 
-  overwrite: bool = False,
-  fmt: str = 'png',
-):
-  eps_path = configs.XRAY_PLOTS_FOLDER / f'{info.name}.eps'
-  raster_path = configs.XRAY_PLOTS_FOLDER / f'{info.name}.{fmt}'
-  if not eps_path.exists():
-    base_url = 'http://zmtt.bao.ac.cn/galaxy_clusters/dyXimages/image_all/'
-    url = base_url + info.name + '_image.eps'
-    r = requests.get(url)
-    if r.ok:
-      eps_path.write_bytes(r.content)
-  if eps_path.exists() and (not raster_path.exists() or overwrite):
-    # cbpfdown repos/clusters/outputs_v6/xray_plots/*.eps .
-    # for i in *.eps; do convert -density 300 "$i" -trim -rotate 90 "${i%.*}.png"; done
-    subprocess.run([
-      'convert', '-density', '300', str(eps_path.absolute()), 
-      '-trim', '-rotate', '90', str(raster_path.absolute())
-    ])
-
-
-
-
-def splus_members_match(
-  cls_name: str, 
-  version: int,  
-  df_members: pd.DataFrame, 
   overwrite: bool = False
-):
-  out_path = configs.WEBSITE_PATH / f'clusters_v{version}' / cls_name / f'members_ext.csv'
-  with cond_overwrite(out_path, overwrite, mkdir=True):
-    sql = """
-      SELECT photo.RA AS RA_splus, photo.DEC AS DEC_splus, photo.g_auto, 
-      photo.i_auto, photo.J0378_auto, photo.J0395_auto, photo.J0410_auto, 
-      photo.J0430_auto, photo.J0515_auto, photo.J0660_auto, photo.J0861_auto, 
-      photo.r_auto, photo.u_auto, photo.z_auto, photo.e_g_auto, photo.e_i_auto, 
-      photo.e_J0378_auto, photo.e_J0395_auto, photo.e_J0410_auto, 
-      photo.e_J0430_auto, photo.e_J0515_auto, photo.e_J0660_auto, 
-      photo.e_J0861_auto, photo.e_r_auto, photo.e_u_auto, photo.e_z_auto, 
-      photo.THETA, photo.ELLIPTICITY, photo.ELONGATION, photo.A, 
-      photo.PETRO_RADIUS, photo.FLUX_RADIUS_50, photo.FLUX_RADIUS_90, 
-      photo.MU_MAX_g, photo.MU_MAX_r, photo.BACKGROUND_g, photo.BACKGROUND_r, 
-      photo.s2n_g_auto, photo.s2n_r_auto,photoz.zml, photoz.odds
-      FROM idr5.idr5_dual AS photo
-      LEFT JOIN idr5_vacs.idr5_photoz AS photoz ON photo.ID = photoz.ID
-      RIGHT JOIN TAP_UPLOAD.upload AS upl
-      ON 1 = CONTAINS( 
-        POINT('ICRS', photo.RA, photo.DEC), 
-        CIRCLE('ICRS', upl.ra, upl.dec, 0.000277777777778) 
-      )
-    """
-    
-    if df_members is not None and len(df_members) > 0:
-      u, p = os.environ['SPLUS_USER'], os.environ['SPLUS_PASS']
-      service = SplusService(username=u, password=p)
-      service.query(
-        sql=sql,
-        save_path=out_path,
-        table=df_members,
-        scope='private',
-      )
-    else:
-      print('members dataframe not found, skiping')
-
-
-
-
-def download_splus_photoz(
-  info: ClusterInfo, 
-  workers: int = 10, 
-  overwrite: bool = False
-):
+) -> pd.DataFrame | None:
+  result = None
   out_path = configs.PHOTOZ_FOLDER / f'{info.name}.parquet'
+  
   with cond_overwrite(out_path, overwrite) as cm:
     # config_dask()
     conn = splusdata.Core(
@@ -386,7 +283,126 @@ def download_splus_photoz(
     print('\nTable rows:', len(result))
     print(result)
     write_table(result, out_path)
+  return return_table_if_exists(out_path, result)
 
+
+
+def download_xray(
+  info: ClusterInfo, 
+  overwrite: bool = False,
+  fmt: str = 'png',
+):
+  eps_path = configs.XRAY_PLOTS_FOLDER / f'{info.name}.eps'
+  raster_path = configs.XRAY_PLOTS_FOLDER / f'{info.name}.{fmt}'
+  if not eps_path.exists():
+    base_url = 'http://zmtt.bao.ac.cn/galaxy_clusters/dyXimages/image_all/'
+    url = base_url + info.name + '_image.eps'
+    r = requests.get(url)
+    if r.ok:
+      eps_path.write_bytes(r.content)
+  if eps_path.exists() and (not raster_path.exists() or overwrite):
+    # cbpfdown repos/clusters/outputs_v6/xray_plots/*.eps .
+    # for i in *.eps; do convert -density 300 "$i" -trim -rotate 90 "${i%.*}.png"; done
+    subprocess.run([
+      'convert', '-density', '300', str(eps_path.absolute()), 
+      '-trim', '-rotate', '90', str(raster_path.absolute())
+    ])
+
+
+
+def photoz_cone_old(
+  photoz_df: pd.DataFrame,
+  photoz_skycoord: SkyCoord,
+  info: ClusterInfo,
+  overwrite: bool = False,
+):
+  df = None
+  path = configs.PHOTOZ_FOLDER / f'{info.name}.parquet'
+  with cond_overwrite(path, overwrite, mkdir=True, time=True) as cm:
+    df = radial_search(
+      position=info.coord, 
+      table=photoz_df, 
+      radius=info.search_radius_deg * u.deg,
+      cached_catalog=photoz_skycoord,
+    )
+    
+    if 'r_auto' in df.columns:
+      df = df[
+        # df.zml.between(*z_photo_range) &
+        df.r_auto.between(*configs.MAG_RANGE)
+      ]
+    
+    cm.write_table(df)
+  if path.exists() and df is None: df = read_table(path)
+  return df
+
+
+
+def legacy_cone_old(
+  legacy_df: pd.DataFrame,
+  legacy_skycoord: SkyCoord,
+  info: ClusterInfo,
+  overwrite: bool = False,
+):
+  df = None
+  path = configs.LEG_PHOTO_FOLDER / f'{info.name}.parquet'
+  with cond_overwrite(path, overwrite, mkdir=True, time=True) as cm:
+    df = radial_search(
+      position=info.coord, 
+      table=legacy_df, 
+      radius=info.search_radius_deg * u.deg,
+      cached_catalog=legacy_skycoord,
+      ra='ra',
+      dec='dec',
+    )
+    
+    cm.write_table(df)
+  if path.exists() and df is None: df = read_table(path)
+  return df
+
+
+
+
+def splus_members_match_old(
+  cls_name: str, 
+  version: int,  
+  df_members: pd.DataFrame, 
+  overwrite: bool = False
+):
+  out_path = configs.WEBSITE_PATH / f'clusters_v{version}' / cls_name / f'members_ext.csv'
+  with cond_overwrite(out_path, overwrite, mkdir=True):
+    sql = """
+      SELECT photo.RA AS RA_splus, photo.DEC AS DEC_splus, photo.g_auto, 
+      photo.i_auto, photo.J0378_auto, photo.J0395_auto, photo.J0410_auto, 
+      photo.J0430_auto, photo.J0515_auto, photo.J0660_auto, photo.J0861_auto, 
+      photo.r_auto, photo.u_auto, photo.z_auto, photo.e_g_auto, photo.e_i_auto, 
+      photo.e_J0378_auto, photo.e_J0395_auto, photo.e_J0410_auto, 
+      photo.e_J0430_auto, photo.e_J0515_auto, photo.e_J0660_auto, 
+      photo.e_J0861_auto, photo.e_r_auto, photo.e_u_auto, photo.e_z_auto, 
+      photo.THETA, photo.ELLIPTICITY, photo.ELONGATION, photo.A, 
+      photo.PETRO_RADIUS, photo.FLUX_RADIUS_50, photo.FLUX_RADIUS_90, 
+      photo.MU_MAX_g, photo.MU_MAX_r, photo.BACKGROUND_g, photo.BACKGROUND_r, 
+      photo.s2n_g_auto, photo.s2n_r_auto,photoz.zml, photoz.odds
+      FROM idr5.idr5_dual AS photo
+      LEFT JOIN idr5_vacs.idr5_photoz AS photoz ON photo.ID = photoz.ID
+      RIGHT JOIN TAP_UPLOAD.upload AS upl
+      ON 1 = CONTAINS( 
+        POINT('ICRS', photo.RA, photo.DEC), 
+        CIRCLE('ICRS', upl.ra, upl.dec, 0.000277777777778) 
+      )
+    """
+    
+    if df_members is not None and len(df_members) > 0:
+      u, p = os.environ['SPLUS_USER'], os.environ['SPLUS_PASS']
+      service = SplusService(username=u, password=p)
+      service.query(
+        sql=sql,
+        save_path=out_path,
+        table=df_members,
+        scope='private',
+      )
+    else:
+      print('members dataframe not found, skiping')
 
 
 
@@ -399,9 +415,9 @@ def make_cones(
   workers: int = 5,
 ):
   cone_functions = [
-    specz_cone_search,
-    download_splus_photoz,
-    download_legacy_catalog,
+    specz_cone,
+    photoz_cone,
+    legacy_cone,
   ]
   
   cone_params = [
@@ -412,17 +428,3 @@ def make_cones(
   
   futures = [f.submit(**p) for f, p in zip(cone_functions, cone_params)]
   # wait(futures)
-
-
-
-
-@dg.op
-def dg_make_specz_cone(
-  specz_df: pd.DataFrame, 
-  specz_skycoord: SkyCoord, 
-  info: ClusterInfo, 
-  overwrite: bool,
-) -> pd.DataFrame:
-  specz_cone_search(specz_df, specz_skycoord, info, overwrite)
-  path = configs.SPECZ_FOLDER / f'{info.name}.parquet'
-  return read_table(path)

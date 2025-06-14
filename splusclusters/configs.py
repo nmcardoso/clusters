@@ -50,6 +50,7 @@ class Configs(metaclass=SingletonMeta):
     self.LEG_BRICKS_FOLDER = self.OUT_PATH / 'legacy_bricks'
     self.PHOTOZ_FOLDER = self.OUT_PATH / 'photoz'
     self.SPECZ_FOLDER = self.OUT_PATH / 'specz'
+    self.SPECZ_OUTRANGE_FOLDER = self.OUT_PATH / 'specz_outrange'
     self.PHOTOZ_SPECZ_LEG_FOLDER = self.OUT_PATH / 'photoz+specz+legacy'
     self.MAG_COMP_FOLDER = self.OUT_PATH / 'mag_comp'
     self.SUBMIT_FOLDER = self.OUT_PATH / 'submit'

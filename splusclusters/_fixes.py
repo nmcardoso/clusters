@@ -1,6 +1,6 @@
 from pylegs.io import read_table, write_table
 
-from splusclusters._info import ClusterInfo
+from splusclusters._loaders import ClusterInfo
 from splusclusters.configs import configs
 
 

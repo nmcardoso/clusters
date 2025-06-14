@@ -1,6 +1,7 @@
 from pathlib import Path
 from typing import Dict, Literal, Sequence, Tuple
 
+import dagster as dg
 import numpy as np
 import pandas as pd
 from astromodule.io import merge_pdf, read_table, write_table
@@ -9,10 +10,10 @@ from astromodule.table import (concat_tables, crossmatch, fast_crossmatch,
 from astropy import units as u
 from astropy.coordinates import SkyCoord
 
-from splusclusters._info import ClusterInfo
+from splusclusters._loaders import ClusterInfo
 from splusclusters.configs import configs
 from splusclusters.loaders import remove_bad_objects
-from splusclusters.utils import Timming, cond_overwrite
+from splusclusters.utils import Timming, cond_overwrite, return_table_if_exists
 
 PHOTOZ_COLUMNS = [
   'RA', 'DEC', 'A', 'B', 'THETA', 'ELLIPTICITY',
@@ -344,8 +345,6 @@ def compute_cleanup_flags(
   if 'GroupID' in df.columns: del df['GroupID']  
   if 'GroupSize' in df.columns: del df['GroupSize']
   return df
-  
-
 
   
 
@@ -354,24 +353,30 @@ def match_all(
   df_spec: pd.DataFrame,
   df_photo: pd.DataFrame,
   df_legacy: pd.DataFrame,
-  df_spec_all: pd.DataFrame,
+  df_specz_outrange_radial: pd.DataFrame,
   cls_name: str,
   out_lost: Path,
 ) -> pd.DataFrame:
-  if len(df_spec) > 0:
+  if df_spec is not None and len(df_spec) > 0:
     if 'ra_spec_all' in df_spec.columns and 'dec_spec_all' in df_spec.columns:
       ra, dec = 'ra_spec_all', 'dec_spec_all'
     else:
       ra, dec = guess_coords_columns(df_spec)
     df_spec = df_spec.rename(columns={ra: 'ra_spec', dec: 'dec_spec'})
     print('Spec-z objects:', len(df_spec))
+    
+  if df_specz_outrange_radial is not None and len(df_specz_outrange_radial) > 0:
+    ra, dec = guess_coords_columns(df_specz_outrange_radial)
+    df_specz_outrange_radial = df_specz_outrange_radial.rename(columns={
+      ra: 'ra_spec_outrange', dec: 'dec_spec_outrange'
+    })
   
-  if len(df_photo) > 0:
+  if df_photo is not None and len(df_photo) > 0:
     ra, dec = guess_coords_columns(df_photo)
     df_photo = df_photo.rename(columns={ra: 'ra_photo', dec: 'dec_photo'})
     print('Photo-z objects:', len(df_photo))
   
-  if len(df_legacy) > 0:
+  if df_legacy is not None and len(df_legacy) > 0:
     ra, dec = guess_coords_columns(df_legacy)
     df_legacy = df_legacy.rename(columns={ra: 'ra_legacy', dec: 'dec_legacy'})
     print('Legacy objects:', len(df_legacy))
@@ -500,15 +505,15 @@ def match_all(
   
   print('\n')
   print('>> Step 4: add redshift information for objects outside z-spec range')
-  if df_spec_all is not None and len(df_spec_all) > 0:
+  if df_specz_outrange_radial is not None and len(df_specz_outrange_radial) > 0:
     if df is not None and len(df) > 0:
       df_result = crossmatch(
         table1=df,
-        table2=df_spec_all,
+        table2=df_specz_outrange_radial,
         ra1='ra',
         dec1='dec',
-        ra2='ra_spec_all',
-        dec2='dec_spec_all',
+        ra2='ra_spec_outrange',
+        dec2='dec_spec_outrange',
         radius=1*u.arcsec,
         join='all1',
         find='best',
@@ -516,7 +521,7 @@ def match_all(
         suffix2='_spec_all'
       )
       if df_result is not None:
-        print(f'   - Crossmatch against complete spec-z catalog done successfully, objects: {len(df_result)}')
+        print(f'   - Crossmatch against outrange spec-z catalog done successfully, objects: {len(df_result)}')
         df = _fix_coordinates(df_result)
         cols = [
           'z', 'e_z', 'f_z', 'class_spec', 'original_class_spec', 'source'
@@ -525,10 +530,10 @@ def match_all(
         for col in cols:
           if f'{col}_final' in df.columns:
             df[f'{col}_final'] = df[f'{col}_final'].replace(r'^\s*$', np.nan, regex=True)
-            df[f'{col}_final'] = df[f'{col}_final'].fillna(df[f'{col}_spec_all'])
+            df[f'{col}_final'] = df[f'{col}_final'].fillna(df[f'{col}_spec_outrange'])
             df = df.rename(columns={f'{col}_final': col})
-          if f'{col}_spec_all' in df.columns:
-            del df[f'{col}_spec_all']
+          if f'{col}_spec_outrange' in df.columns:
+            del df[f'{col}_spec_outrange']
             
         df['f_z'] = df['f_z'].astype('str').fillna('')
         df['original_class_spec'] = df['original_class_spec'].astype('str')
@@ -536,11 +541,10 @@ def match_all(
         if 'z_err' in df.columns:
           df['e_z'] = df.e_z.fillna(df.z_err)
         
-        del df['ra_spec_all']
-        del df['dec_spec_all']
+        del df['ra_spec_outrange']
+        del df['dec_spec_outrange']
         
   _log_columns(df, 3)
-  
   
   print('\n')
   print('>> Step 5: Check for lost objects')
@@ -583,7 +587,7 @@ def make_cluster_catalog(
   df_photoz_radial: pd.DataFrame | None, 
   df_legacy_radial: pd.DataFrame | None,
   df_ret: pd.DataFrame | None,
-  df_spec_all: pd.DataFrame | None,
+  df_specz_outrange_radial: pd.DataFrame | None,
   overwrite: bool = False,
 ):
   out_path = configs.PHOTOZ_SPECZ_LEG_FOLDER / f'{info.name}.parquet'
@@ -603,7 +607,7 @@ def make_cluster_catalog(
       print('\n\n>>>> KEEP 2:', len(df_r[df_r.f_z.str.contains('KEEP')]), '\n\n')
     
     # match all catalogs
-    df = match_all(df_r, df_spec, df_photo, df_legacy, df_spec_all, info.name, out_lost)
+    df = match_all(df_r, df_spec, df_photo, df_legacy, df_specz_outrange_radial, info.name, out_lost)
 
     # compute radius_deg for all objects
     df = compute_angular_distance(df, info)
@@ -617,5 +621,4 @@ def make_cluster_catalog(
     df = _sanitize_columns(df)
     
     cm.write_table(df)
-    
-    return df
+  return return_table_if_exists(out_path, df)

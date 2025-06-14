@@ -10,7 +10,7 @@ from astropy import units as u
 from astropy.coordinates import SkyCoord
 from pylegs.io import read_table
 
-from splusclusters._info import ClusterInfo
+from splusclusters._loaders import ClusterInfo
 from splusclusters.configs import configs
 from splusclusters.loaders import (load_clusters, load_members_v5,
                                    load_members_v6)

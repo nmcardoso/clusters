@@ -6,12 +6,11 @@ import pandas as pd
 from astropy.coordinates import SkyCoord
 from astropy.io.misc.yaml import AstropyDumper
 
-from splusclusters._extraction import (dg_make_specz_cone, download_xray,
-                                       make_cones)
-from splusclusters._info import cluster_params
-from splusclusters._loaders import (dg_cluster_info, dg_load_spec,
-                                    load_catalog, load_cones, load_legacy_cone,
-                                    load_photoz_cone, load_shiftgap_tables,
+from splusclusters._extraction import (download_xray, legacy_cone, make_cones,
+                                       photoz_cone, specz_cone)
+from splusclusters._loaders import (compute_cluster_info, load_catalog,
+                                    load_cones, load_legacy_cone,
+                                    load_photoz_cone, load_shiftgap_cone,
                                     load_spec, load_specz_cone)
 from splusclusters._match import make_cluster_catalog
 from splusclusters._plots import make_plots
@@ -36,7 +35,7 @@ def single_cluster_pipeline(
   splus_only: bool = False,
   fmt: str = 'png',
 ):
-  info = cluster_params(df_clusters=df_clusters, cls_name=cls_name)
+  info = compute_cluster_info(df_clusters=df_clusters, cls_name=cls_name)
   
   if not skip_cones:
     make_cones(
@@ -136,24 +135,3 @@ def all_clusters_pipeline(
   if not skip_website:
     make_zoffset_page(df_clusters, df_clusters_prev, version)
     make_index(df_clusters, df_clusters_prev, version)
-    
-
-
-
-@dg.op(out=dg.DynamicOut(str))
-def get_all_cluster_names(version: int):
-  df_clusters = load_catalog(version)
-  df_clusters = df_clusters[df_clusters['name'].isin(['A168', 'MKW4'])]
-  for i, cluster in df_clusters.iterrows():
-    yield dg.DynamicOutput(cluster['name'], mapping_key=str(i))
-
-
-@dg.job(input_values={'version': 7, 'overwrite': True})
-def dg_make_all(version: int = 7, overwrite: bool = True):
-  specz_df, specz_skycoord = dg_load_spec(version)
-  clusters = get_all_cluster_names(version)
-  clusters.map(lambda val: dg_cluster_info(val, version))\
-          .map(lambda val: dg_make_specz_cone(specz_df, specz_skycoord, val, overwrite))
-
-
-defs = dg.Definitions(jobs=[dg_make_all])

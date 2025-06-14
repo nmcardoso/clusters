@@ -6,10 +6,11 @@ from pathlib import Path
 
 import matplotlib.pyplot as plt
 import numpy as np
+import pandas as pd
 import seaborn as sns
 from dask import config as dask_config
 from dask.distributed import Client
-from pylegs.io import write_table
+from pylegs.io import read_table, write_table
 
 
 def config_dask():
@@ -107,6 +108,15 @@ def compute_pdf_peak(a, binrange = None, binwidth = None):
   x_max, y_max = x[np.argmax(y)], np.max(y)
   plt.close()
   return x_max, y_max
+
+
+
+def return_table_if_exists(path: Path, default: pd.DataFrame = None):
+  if default is not None:
+    return default
+  if path.exists():
+    return read_table(path)
+  return None
 
 
 

@@ -16,17 +16,112 @@ from astropy.cosmology import LambdaCDM
 from astropy.table import Table
 from pylegs.io import read_table, write_table
 
-from splusclusters._info import ClusterInfo, cluster_params
 from splusclusters.configs import configs
 from splusclusters.utils import Timming
 
 
-def load_shiftgap_index_v5():
+@dataclass
+class ClusterInfo:
+  name: str
+  ra: float
+  dec: float
+  z: float
+  search_radius_Mpc: float = None
+  search_radius_deg: float = None
+  r500_Mpc: float = None
+  r500_deg: float = None
+  r200_Mpc: float = None
+  r200_deg: float = None
+  z_photo_delta: float = 0.05
+  z_spec_delta: float = 0.02
+  z_photo_range: Tuple[float, float] = None
+  z_spec_range: Tuple[float, float] = None
+  
+  @property
+  def coord(self):
+    return SkyCoord(ra=self.ra, dec=self.dec, unit=u.deg)
+
+
+
+@dataclass
+class ConesContainer:
+  photoz: pd.DataFrame
+  specz: pd.DataFrame
+  legacy: pd.DataFrame
+  shiftgap: pd.DataFrame
+  interlopers: pd.DataFrame
+  members: pd.DataFrame
+
+
+
+def _cluster_name_std(df: pd.DataFrame):
+  df['name'] = df.name.str.replace(' ', '')
+  df['name'] = df.name.str.replace(r'^ABELL0+', 'A', regex=True)
+  df['name'] = df.name.str.replace(r'^ABELL', 'A', regex=True)
+  df['name'] = df.name.str.replace(r'^Abell0+', 'A', regex=True)
+  df['name'] = df.name.str.replace(r'^Abell', 'A', regex=True)
+  df['name'] = df.name.str.replace(r'^A0+', 'A', regex=True)
+  df['name'] = df.name.str.replace(r'^AS', 'A', regex=True)
+  df['name'] = df.name.str.replace(r'^ACO', 'A', regex=True)
+  df['name'] = df.name.str.replace(r'^A(\d+)\w*', r'A\1', regex=True)
+  df['name'] = df.name.str.replace(r'^RXC', 'MCXC', regex=True)
+  df['name'] = df.name.str.replace(r'^MKW0+', 'MKW', regex=True)
+  return df
+
+
+
+def _df_subset(df, subset):
+  if isinstance(subset, list):
+    return df[df['name'].isin(subset)]
+  elif subset is True:
+    return df[df['name'].isin(['MKW4', 'A168'])]
+  return df
+
+
+
+def _load_clusters_v5(subset: bool = False):
+  df_clusters = read_table(configs.MEMBERS_V5_PATH / 'index.dat')
+  df_clusters['clsid'] = df_clusters['clsid'].astype('int')
+  df_index = read_table(configs.MEMBERS_V5_PATH / 'names.dat', columns=['clsid', 'name'])
+  df = df_clusters.set_index('clsid').join(df_index.set_index('clsid'), how='inner', rsuffix='_r')
+  df_filter = read_table(configs.ROOT / 'tables/catalog_v6_splus_only_filter.csv')
+  df = df[df.name.isin(df_filter.name)].copy().reset_index()
+  return _df_subset(df, subset)
+
+
+
+def _load_catalog_v6(subset: bool = False):
+  df = _cluster_name_std(read_table(configs.CATALOG_V6_TABLE_PATH, comment='#'))
+  df['clsid'] = list(range(1, len(df)+1))
+  return _df_subset(df, subset)
+
+
+
+def _load_catalog_v6_old():
+  df = _cluster_name_std(read_table(configs.CATALOG_V6_OLD_TABLE_PATH, comment='#'))
+  return df
+
+
+
+def _load_catalog_v6_hydra():
+  df = _cluster_name_std(read_table(configs.CATALOG_V6_HYDRA_TABLE_PATH, comment='#'))
+  df['clsid'] = list(range(1, len(df)+1))
+  return df
+
+
+
+def _load_catalog_v7(subset: bool = False):
+  return _df_subset(_load_shiftgap_index_v7()[['name', 'ra', 'dec', 'z_spec']].rename({'z_spec': 'zspec'}))
+
+
+
+def _load_shiftgap_index_v5():
   df_index = read_table(configs.MEMBERS_V5_PATH / 'names.dat')
   return df_index
 
 
-def load_shiftgap_v5(cls_id):
+
+def _load_shiftgap_v5(cls_id):
   path = configs.MEMBERS_V5_FOLDER / f'cluster.gals.sel.shiftgap.iter.{str(cls_id).zfill(5)}'
   col_names = [
     'ra', 'dec', 'z', 'z_err', 'v', 'v_err', 'radius_deg', 
@@ -35,7 +130,8 @@ def load_shiftgap_v5(cls_id):
   return read_table(path, fmt='dat', col_names=col_names)
 
 
-def load_shiftgap_index_v6():
+
+def _load_shiftgap_index_v6():
   cols = [
     'clsid', 'ra', 'dec', 'z_spec', 'sigma_cl_kms', 'sigma_cl_lower', 
     'sigma_cl_upper', 'r200', 'r200_lower', 'r200_upper', 'm200',
@@ -56,9 +152,10 @@ def load_shiftgap_index_v6():
   return info_df
 
 
-def load_shiftgap_v6(cls_name: str = None, cls_id: str | int = None):
+
+def _load_shiftgap_v6(cls_name: str = None, cls_id: str | int = None):
   if cls_name is not None:
-    index_df = load_shiftgap_index_v6()
+    index_df = _load_shiftgap_index_v6()
     cls_id = index_df[index_df.name == cls_name].clsid.values[0]
   prefixed_id = str(int(cls_id)).zfill(5)
   path = configs.MEMBERS_V6_FOLDER / f'cluster.gals.sel.shiftgap.iter.{prefixed_id}'
@@ -69,7 +166,8 @@ def load_shiftgap_v6(cls_name: str = None, cls_id: str | int = None):
   return read_table(path, fmt='dat', col_names=cols)
 
 
-def load_shiftgap_index_v7():
+
+def _load_shiftgap_index_v7():
   cols = [
     'clsid', 'ra', 'dec', 'z_spec', 'sigma_cl_kms', 'sigma_cl_lower', 
     'sigma_cl_upper', 'r200', 'r200_lower', 'r200_upper', 'm200',
@@ -90,9 +188,10 @@ def load_shiftgap_index_v7():
   return info_df
 
 
-def load_shiftgap_v7(cls_name: str = None, cls_id: str | int = None):
+
+def _load_shiftgap_v7(cls_name: str = None, cls_id: str | int = None):
   if cls_name is not None:
-    index_df = load_shiftgap_index_v6()
+    index_df = _load_shiftgap_index_v6()
     cls_id = index_df[index_df.name == cls_name].clsid.values[0]
   prefixed_id = str(int(cls_id)).zfill(5)
   path = configs.MEMBERS_V7_FOLDER / f'cluster.gals.sel.shiftgap.iter.{prefixed_id}'
@@ -103,7 +202,8 @@ def load_shiftgap_v7(cls_name: str = None, cls_id: str | int = None):
   return read_table(path, fmt='dat', col_names=cols)
 
 
-def load_photoz(coords: bool = True):
+
+def _load_photoz(coords: bool = True):
   df_photoz = read_table(configs.PHOTOZ_TABLE_PATH)
   if coords:
     ra, dec = guess_coords_columns(df_photoz)
@@ -117,7 +217,8 @@ def load_photoz(coords: bool = True):
   return df_photoz
 
 
-def load_photoz2(coords: bool = True):
+
+def _load_photoz2(coords: bool = True):
   df_photoz = read_table(configs.PHOTOZ2_TABLE_PATH)
   if coords:
     ra, dec = guess_coords_columns(df_photoz)
@@ -131,7 +232,8 @@ def load_photoz2(coords: bool = True):
   return df_photoz.rename(columns={'RA': 'ra', 'DEC': 'dec'})
 
 
-def load_legacy(coords: bool = True):
+
+def _load_legacy(coords: bool = True):
   df = read_table(configs.LEGACY_TABLE_PATH)
   if coords:
     ra, dec = guess_coords_columns(df)
@@ -145,73 +247,32 @@ def load_legacy(coords: bool = True):
   return df
 
 
-def load_eRASS():
+
+def _load_eRASS():
   df_erass = read_table(configs.ERASS_TABLE_PATH)
   return df_erass
 
 
-def load_full_eRASS():
+
+def _load_full_eRASS():
   df_full_eras = read_table(configs.FULL_ERASS_TABLE_PATH)
   return df_full_eras
 
 
-def load_eRASS_2():
+
+def _load_eRASS_2():
   return read_table(configs.ERASS2_TABLE_PATH)
 
 
-def _cluster_name_std(df: pd.DataFrame):
-  df['name'] = df.name.str.replace(' ', '')
-  df['name'] = df.name.str.replace(r'^ABELL0+', 'A', regex=True)
-  df['name'] = df.name.str.replace(r'^ABELL', 'A', regex=True)
-  df['name'] = df.name.str.replace(r'^Abell0+', 'A', regex=True)
-  df['name'] = df.name.str.replace(r'^Abell', 'A', regex=True)
-  df['name'] = df.name.str.replace(r'^A0+', 'A', regex=True)
-  df['name'] = df.name.str.replace(r'^AS', 'A', regex=True)
-  df['name'] = df.name.str.replace(r'^ACO', 'A', regex=True)
-  df['name'] = df.name.str.replace(r'^A(\d+)\w*', r'A\1', regex=True)
-  df['name'] = df.name.str.replace(r'^RXC', 'MCXC', regex=True)
-  df['name'] = df.name.str.replace(r'^MKW0+', 'MKW', regex=True)
-  return df
 
-
-def load_heasarc():
+def _load_heasarc():
   df = _cluster_name_std(read_table(configs.HEASARC_TABLE_PATH))
   df = df.drop_duplicates('name', keep='last')
   return df
 
 
-def load_clusters_v5():
-  df_clusters = read_table(configs.MEMBERS_V5_PATH / 'index.dat')
-  df_clusters['clsid'] = df_clusters['clsid'].astype('int')
-  df_index = read_table(configs.MEMBERS_V5_PATH / 'names.dat', columns=['clsid', 'name'])
-  df = df_clusters.set_index('clsid').join(df_index.set_index('clsid'), how='inner', rsuffix='_r')
-  df_filter = read_table(configs.ROOT / 'tables/catalog_v6_splus_only_filter.csv')
-  df = df[df.name.isin(df_filter.name)].copy().reset_index()
-  return df
 
-
-def load_catalog_v6():
-  df = _cluster_name_std(read_table(configs.CATALOG_V6_TABLE_PATH, comment='#'))
-  df['clsid'] = list(range(1, len(df)+1))
-  return df
-
-
-def load_catalog_v6_old():
-  df = _cluster_name_std(read_table(configs.CATALOG_V6_OLD_TABLE_PATH, comment='#'))
-  return df
-
-
-def load_catalog_v6_hydra():
-  df = _cluster_name_std(read_table(configs.CATALOG_V6_HYDRA_TABLE_PATH, comment='#'))
-  df['clsid'] = list(range(1, len(df)+1))
-  return df
-
-
-def load_catalog_v7():
-  return load_shiftgap_index_v7()[['name', 'ra', 'dec', 'z_spec']].rename({'z_spec': 'zspec'})
-
-
-def load_xray():
+def _load_xray():
   df = _cluster_name_std(read_table(configs.XRAY_TABLE_PATH, comment='#'))
   return df
 
@@ -239,6 +300,29 @@ def _load_cluster_product(info: ClusterInfo, base_path: Path):
 
 
 
+def load_catalog(version: int, subset: bool = False):
+  version_map = {
+    5: _load_clusters_v5,
+    6: _load_catalog_v6,
+    7: _load_catalog_v7,
+  }
+  return version_map[version](subset)
+
+
+
+def load_shiftgap_cone(info: ClusterInfo, version: int):
+  version_map = {
+    5: _load_shiftgap_v5,
+    6: _load_shiftgap_v6,
+    7: _load_shiftgap_v7,
+  }
+  df_sg = version_map[version](info.name)
+  df_members = df_sg[df_sg.flag_member == 0]
+  df_interlopers = df_sg[df_sg.flag_member == 1]
+  return df_sg, df_members, df_interlopers
+
+
+
 def load_legacy_cone(info: ClusterInfo):
   return _load_cluster_product(info, configs.LEG_PHOTO_FOLDER)
 
@@ -254,7 +338,7 @@ def load_specz_cone(info: ClusterInfo):
 
 
 
-def load_all_cone(info: ClusterInfo):
+def load_combined_cone(info: ClusterInfo):
   return _load_cluster_product(info, configs.PHOTOZ_SPECZ_LEG_FOLDER)
 
 
@@ -264,29 +348,23 @@ def load_mag_cone(info: ClusterInfo):
 
 
 
-
-def load_catalog(version: int):
-  version_map = {
-    5: load_clusters_v5,
-    6: load_catalog_v6,
-    7: load_catalog_v7,
-  }
-  return version_map[version]()
-
-
-
-
-def load_shiftgap_tables(cls_name: str, version: int):
-  version_map = {
-    5: load_shiftgap_v5,
-    6: load_shiftgap_v6,
-    7: load_shiftgap_v7,
-  }
-  df_sg = version_map[version](cls_name)
-  df_members = df_sg[df_sg.flag_member == 0]
-  df_interlopers = df_sg[df_sg.flag_member == 1]
-  return df_sg, df_members, df_interlopers
-
+def load_cones(info: ClusterInfo, version: int) -> ConesContainer:
+  df_shiftgap, df_members, df_interlopers = load_shiftgap_cone(
+    cls_name=info.name, 
+    version=version,
+  )
+  df_cone_photoz = load_photoz_cone(info)
+  df_cone_specz = load_specz_cone(info)
+  df_cone_legacy = load_legacy_cone(info)
+  
+  return ConesContainer(
+    photoz=df_cone_photoz,
+    specz=df_cone_specz,
+    legacy=df_cone_legacy,
+    shiftgap=df_shiftgap,
+    interlopers=df_interlopers,
+    members=df_members,
+  )
 
 
 
@@ -318,53 +396,63 @@ def load_spec(coords: bool = True):
       frame='icrs'
     )
     return df_spec, skycoords
-  return df_spec
+  return df_spec, None
 
 
-@dataclass
-class ConesContainer:
-  photoz: pd.DataFrame
-  specz: pd.DataFrame
-  legacy: pd.DataFrame
-  shiftgap: pd.DataFrame
-  interlopers: pd.DataFrame
-  members: pd.DataFrame
 
-
-def load_cones(info: ClusterInfo, version: int) -> ConesContainer:
-  df_shiftgap, df_members, df_interlopers = load_shiftgap_tables(
-    cls_name=info.name, 
-    version=version,
-  )
-  df_cone_photoz = load_photoz_cone(info)
-  df_cone_specz = load_specz_cone(info)
-  df_cone_legacy = load_legacy_cone(info)
+def compute_cluster_info(
+  df_clusters: pd.DataFrame, 
+  cls_name: str,
+  z_spec_delta: float,
+  z_photo_delta: float,
+) -> ClusterInfo:
+  cluster = df_clusters[df_clusters.name == cls_name]
+  ra_col, dec_col = guess_coords_columns(cluster)
+  ra = cluster[ra_col].values[0]
+  dec = cluster[dec_col].values[0]
+  z_col = 'zspec' if 'zspec' in cluster.columns else 'z_spec'
+  z = cluster[z_col].values[0]
   
-  return ConesContainer(
-    photoz=df_cone_photoz,
-    specz=df_cone_specz,
-    legacy=df_cone_legacy,
-    shiftgap=df_shiftgap,
-    interlopers=df_interlopers,
-    members=df_members,
+  cosmo = LambdaCDM(H0=70, Om0=0.3, Ode0=0.7)
+  if 'R500_Mpc' in cluster:
+    r500_Mpc = cluster['R500_Mpc'].values[0]
+    r500_deg = mpc2arcsec(r500_Mpc, z, cosmo).to(u.deg).value
+  else:
+    r500_Mpc = None
+    r500_deg = None
+  
+  if 'R200_Mpc' in cluster:
+    r200_Mpc = cluster['R200_Mpc'].values[0]
+    r200_deg = mpc2arcsec(r200_Mpc, z, cosmo).to(u.deg).value
+  else:
+    r200_Mpc = None
+    r200_deg = None
+  
+  if 'search_radius_Mpc' in df_clusters.columns:
+    search_radius_Mpc = cluster['search_radius_Mpc'].values[0]
+  else:
+    search_radius_Mpc = 15
+  search_radius_deg = min(mpc2arcsec(search_radius_Mpc, z, cosmo).to(u.deg).value, 17)
+  if search_radius_deg > 17:
+    print(f'Cluster angular radius @ 15Mpc = {search_radius_deg:.2f} deg, limiting to 17 deg')
+    search_radius_deg = min(search_radius_deg, 17)
+    
+  print('Cluster Name:', cls_name)
+  print(f'RA: {ra:.3f}, DEC: {dec:.3f}, z: {z:.2f}, search radius: {search_radius_deg:.2f}')
+  
+  return ClusterInfo(
+    name=cls_name,
+    ra=ra,
+    dec=dec,
+    z=z,
+    search_radius_Mpc=search_radius_Mpc,
+    search_radius_deg=search_radius_deg,
+    r500_Mpc=r500_Mpc,
+    r500_deg=r500_deg,
+    r200_Mpc=r200_Mpc,
+    r200_deg=r200_deg,
+    z_photo_delta=z_photo_delta,
+    z_spec_delta=z_spec_delta,
+    z_photo_range=(z - z_photo_delta, z + z_photo_delta),
+    z_spec_range=(z - z_spec_delta, z + z_spec_delta),
   )
-
-
-      
-
-
-
-@dg.op(out={'specz_df': dg.Out(pd.DataFrame), 'specz_skycoord': dg.Out(SkyCoord)})
-def dg_load_spec(version: int):
-  return load_spec(version)
-
-
-@dg.op
-def dg_load_cluster_catalog(version: int) -> pd.DataFrame:
-  return load_catalog(version)
-
-
-@dg.op(out=dg.Out(ClusterInfo))
-def dg_cluster_info(cls_name: str, version: int) -> ClusterInfo:
-  df_clusters = load_catalog(version)
-  return cluster_params(df_clusters, cls_name)
