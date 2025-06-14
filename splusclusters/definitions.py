@@ -208,6 +208,7 @@ def op_build_cluster_page(
       df_photoz_radial=df_photoz,
       df_members=df_members,
       df_clusters_prev=df_clusters_prev,
+      df_clusters=df_clusters,
     )
     # op_build_other_pages
     make_index(

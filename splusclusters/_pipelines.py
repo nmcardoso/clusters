@@ -84,6 +84,7 @@ def single_cluster_pipeline(
       df_photoz_radial=cones.photoz,
       df_members=cones.members,
       df_clusters_prev=df_clusters_prev,
+      df_clusters=df_clusters,
     )
 
 
