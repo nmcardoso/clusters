@@ -365,7 +365,7 @@ def make_cluster_page(
   cat_url = (
     f'http://cdsxmatch.u-strasbg.fr/QueryCat/QueryCat'
     f'?catName=SIMBAD&mode=cone&pos={info.ra:.6f}%20{info.dec:.6f}'
-    f'&r={5 * info.cls_r200_deg:.3f}deg&format=votable&limit=8000'
+    f'&r={5 * info.r200_deg:.3f}deg&format=votable&limit=8000'
   )
   
   page = f'''<!DOCTYPE html>
@@ -475,7 +475,7 @@ def make_cluster_page(
         aladin = A.aladin('#aladin-lite-div', {{
           source: 'CDS/P/DESI-Legacy-Surveys/DR10/color',
           target: '{info.ra:.6f} {info.dec:.6f}', 
-          fov: {5 * info.cls_r200_deg + 0.3},
+          fov: {5 * info.r200_deg + 0.3},
           cooFrame: 'ICRSd',
         }});
         aladin.setImageSurvey('CDS/P/DESI-Legacy-Surveys/DR10/color');
@@ -483,7 +483,7 @@ def make_cluster_page(
         // Add 5R200 Circle
         var overlay = A.graphicOverlay({{name: '5R200', color: '#ee2345', lineWidth: 2}});
         aladin.addOverlay(overlay);
-        overlay.add(A.circle({info.ra:.6f}, {info.dec:.6f}, {5 * info.cls_r200_deg:.3f}, 0));
+        overlay.add(A.circle({info.ra:.6f}, {info.dec:.6f}, {5 * info.r200_deg:.3f}, 0));
         
         // Add redshift catalog
         const cat_url = '{cat_url}'
