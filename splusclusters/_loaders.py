@@ -309,7 +309,8 @@ def load_catalog(version: int, subset: bool = False):
     6: _load_catalog_v6,
     7: _load_catalog_v7,
   }
-  return version_map[version](subset)
+  df = version_map[version](subset)
+  print('Columns:', ', '.join(df.columns))
 
 
 
@@ -322,6 +323,9 @@ def load_shiftgap_cone(info: ClusterInfo, version: int):
   df_sg = version_map[version](info.name)
   df_members = df_sg[df_sg.flag_member == 0]
   df_interlopers = df_sg[df_sg.flag_member == 1]
+  print('df_sg columns:', ', '.join(df_sg.columns))
+  print('df_members columns:', ', '.join(df_members.columns))
+  print('df_interlopers columns:', ', '.join(df_interlopers.columns))
   return df_sg, df_members, df_interlopers
 
 
