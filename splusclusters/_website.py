@@ -17,7 +17,7 @@ from splusclusters.loaders import (load_clusters, load_members_v5,
 
 
 def _get_cluster_folder(version: int):
-  return configs.WEBSITE_FOLDER / f'clusters_v{version}'
+  return configs.WEBSITE_PATH / f'clusters_v{version}'
 
 
 def _get_head_tag():
