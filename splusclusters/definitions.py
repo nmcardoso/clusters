@@ -79,7 +79,7 @@ def op_compute_cluster_info(
 def op_specz_cone(
   conf: ConfigResource, 
   specz_df: pd.DataFrame, 
-  specz_skycoord: pd.DataFrame, 
+  specz_skycoord: SkyCoord, 
   info: ClusterInfo,
 ) -> pd.DataFrame:
   return specz_cone(
@@ -94,7 +94,7 @@ def op_specz_cone(
 def op_specz_cone_outrange(
   conf: ConfigResource, 
   specz_df: pd.DataFrame, 
-  specz_skycoord: pd.DataFrame, 
+  specz_skycoord: SkyCoord, 
   info: ClusterInfo,
 ) -> pd.DataFrame:
   return specz_cone(
