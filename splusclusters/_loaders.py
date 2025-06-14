@@ -112,7 +112,7 @@ def _load_catalog_v6_hydra():
 
 def _load_catalog_v7(subset: bool = False):
   df = _load_shiftgap_index_v7()
-  df = df[['name', 'ra', 'dec', 'z_spec']]
+  # df = df[['name', 'ra', 'dec', 'z_spec']]
   df = df.rename({'z_spec': 'zspec'})
   return _df_subset(df, subset)
 
