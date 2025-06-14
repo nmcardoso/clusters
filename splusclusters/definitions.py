@@ -290,7 +290,10 @@ def cluster_pipeline(
 @dg.op(out=dg.DynamicOut(str))
 def get_all_cluster_names(df_clusters: pd.DataFrame):
   for i, cluster in df_clusters.iterrows():
-    yield dg.DynamicOutput(cluster['name'], mapping_key=str(i))
+    yield dg.DynamicOutput(
+      cluster['name'], 
+      mapping_key=f'{cluster["clsid"]}_{cluster["name"]}'
+    )
 
 
 
