@@ -439,11 +439,8 @@ def compute_cluster_info(
   if search_radius_deg > 17:
     print(f'Cluster angular radius @ 15Mpc = {search_radius_deg:.2f} deg, limiting to 17 deg')
     search_radius_deg = min(search_radius_deg, 17)
-    
-  print('Cluster Name:', cls_name)
-  print(f'RA: {ra:.3f}, DEC: {dec:.3f}, z: {z:.2f}, search radius: {search_radius_deg:.2f}')
   
-  return ClusterInfo(
+  info = ClusterInfo(
     name=cls_name,
     ra=ra,
     dec=dec,
@@ -459,3 +456,5 @@ def compute_cluster_info(
     z_photo_range=(z - z_photo_delta, z + z_photo_delta),
     z_spec_range=(z - z_spec_delta, z + z_spec_delta),
   )
+  print(info)
+  return info
