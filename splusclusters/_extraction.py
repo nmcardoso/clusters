@@ -2,6 +2,7 @@ import os
 import re
 import signal
 import subprocess
+import sys
 from pathlib import Path
 from shutil import copy
 from typing import Dict, Literal, Sequence, Tuple
@@ -303,8 +304,14 @@ def download_xray(
   if eps_path.exists() and (not raster_path.exists() or overwrite):
     # cbpfdown repos/clusters/outputs_v6/xray_plots/*.eps .
     # for i in *.eps; do convert -density 300 "$i" -trim -rotate 90 "${i%.*}.png"; done
+    print(f'Python interpreter: {sys.executable()}')
+    print(f'Machine: {os.environ.get('MACHINE')}')
+    if os.environ.get('MACHINE', '').lower() == 'cbpf':
+      program = str((Path(sys.executable()).parent / 'convert').absolute())
+    else:
+      program = 'convert'
     subprocess.run([
-      'convert', '-density', '300', str(eps_path.absolute()), 
+      program, '-density', '300', str(eps_path.absolute()), 
       '-trim', '-rotate', '90', str(raster_path.absolute())
     ])
 
