@@ -304,10 +304,10 @@ def download_xray(
   if eps_path.exists() and (not raster_path.exists() or overwrite):
     # cbpfdown repos/clusters/outputs_v6/xray_plots/*.eps .
     # for i in *.eps; do convert -density 300 "$i" -trim -rotate 90 "${i%.*}.png"; done
-    print('Python interpreter:', sys.executable())
+    print('Python interpreter:', sys.executable)
     print('Machine:', os.environ.get('MACHINE'))
     if os.environ.get('MACHINE', '').lower() == 'cbpf':
-      program = str((Path(sys.executable()).parent / 'convert').absolute())
+      program = str((Path(sys.executable).parent / 'convert').absolute())
     else:
       program = 'convert'
     subprocess.run([
