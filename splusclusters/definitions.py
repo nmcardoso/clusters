@@ -53,8 +53,8 @@ def op_load_previous_clusters_catalog(conf: ConfigResource):
 @dg.op(
   pool='io_intensive',
   out={
-    'df_spec_all': dg.Out(pd.DataFrame), 
-    'skycoord_spec_all': dg.Out(SkyCoord),
+    'specz_all_df': dg.Out(pd.DataFrame), 
+    'specz_all_coords': dg.Out(SkyCoord),
   }
 )
 def op_load_spec():
@@ -239,7 +239,7 @@ def cluster_pipeline(
 ):
   info = op_compute_cluster_info(df_clusters=df_clusters, cls_name=cls_name)
   
-  df_specz = op_specz_cone(specz_df, specz_coords, info)
+  df_specz = op_specz_cone(specz_df=specz_df, specz_skycoord=specz_coords, info=info)
   df_specz_outrange = op_specz_cone_outrange(specz_df, specz_coords, info)
   df_photoz = op_photoz_cone(info)
   df_legacy = op_legacy_cone(info)
@@ -282,10 +282,7 @@ def get_all_cluster_names(df_clusters: pd.DataFrame):
 
 
 
-@dg.job(resource_defs={
-  'in_memory': dg.InMemoryIOManager(), 
-  'conf': ConfigResource(),
-})
+@dg.job(resource_defs={'conf': ConfigResource()})
 def dg_make_all():
   df_clusters = op_load_clusters_catalog()
   df_clusters_prev = op_load_previous_clusters_catalog()
