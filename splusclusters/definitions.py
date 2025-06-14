@@ -51,7 +51,7 @@ def op_load_previous_clusters_catalog(conf: ConfigResource):
 
 
 @dg.op(
-  pool='io/intensive',
+  pool='io_intensive',
   out={
     'df_spec_all': dg.Out(pd.DataFrame, io_manager_key='in_memory'), 
     'skycoord_spec_all': dg.Out(SkyCoord, io_manager_key='in_memory'),
@@ -106,12 +106,12 @@ def op_specz_cone_outrange(
   )
 
 
-@dg.op(pool='remote/splus', out=dg.Out(pd.DataFrame, io_manager_key='in_memory'))
+@dg.op(pool='remote_splus', out=dg.Out(pd.DataFrame, io_manager_key='in_memory'))
 def op_photoz_cone(conf: ConfigResource, info: ClusterInfo) -> pd.DataFrame:
   return photoz_cone(info=info, overwrite=conf.overwrite)
 
 
-@dg.op(pool='remote/datalab', out=dg.Out(pd.DataFrame, io_manager_key='in_memory'))
+@dg.op(pool='remote_datalab', out=dg.Out(pd.DataFrame, io_manager_key='in_memory'))
 def op_legacy_cone(conf: ConfigResource, info: ClusterInfo) -> pd.DataFrame:
   return legacy_cone(
     info=info, 
@@ -131,7 +131,7 @@ def op_shiftgap_cone(conf: ConfigResource, info: ClusterInfo):
   return load_shiftgap_cone(info=info, version=conf.version)
 
 
-@dg.op(pool='crossmatch/intensive')
+@dg.op(pool='crossmatch_intensive')
 def op_compile_cluster_catalog(
   conf: ConfigResource,
   info: ClusterInfo,
