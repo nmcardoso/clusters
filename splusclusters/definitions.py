@@ -188,6 +188,7 @@ def op_build_cluster_page(
   df_photoz: pd.DataFrame,
   df_members: pd.DataFrame,
   df_clusters_prev: pd.DataFrame,
+  df_clusters: pd.DataFrame,
 ):
   if not conf.skip_website:
     download_xray(
@@ -207,6 +208,17 @@ def op_build_cluster_page(
       df_photoz_radial=df_photoz,
       df_members=df_members,
       df_clusters_prev=df_clusters_prev,
+    )
+    # op_build_other_pages
+    make_index(
+      df_clusters=df_clusters,
+      df_clusters_prev=df_clusters_prev,
+      version=conf.version,
+    )
+    make_zoffset_page(
+      df_clusters=df_clusters,
+      df_clusters_prev=df_clusters_prev,
+      version=conf.version,
     )
 
 
@@ -270,6 +282,7 @@ def cluster_pipeline(
     df_photoz=df_photoz,
     df_members=df_members,
     df_clusters_prev=df_clusters_prev,
+    df_clusters=df_clusters,
   )
 
 
@@ -294,7 +307,7 @@ def dg_make_all():
     cluster, df_clusters, df_clusters_prev, specz_df, specz_skycoord
   ))
   
-  op_build_other_pages(df_clusters, df_clusters_prev)
+  # op_build_other_pages(df_clusters, df_clusters_prev)
 
 
 
