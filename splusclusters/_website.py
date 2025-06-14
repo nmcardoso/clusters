@@ -121,8 +121,9 @@ def _get_nearest(info: ClusterInfo, df_clusters: pd.DataFrame, version: int):
   sep = info.coord.separation(others)
   nearest_idx = sep.argsort()
   html = ''
+  print(f'Cluster: {info.name}, nearest_idx: {nearest_idx}')
   for i in nearest_idx[1:8]:
-    name = df_clusters.name[i]
+    name = df_clusters['name'][i]
     separation = sep[i].to('arcmin')
     html += f' <a href="/clusters_v{version}/{name}">{name}</a> ({separation:.2f}) &bullet;'
   return html[:-8]
