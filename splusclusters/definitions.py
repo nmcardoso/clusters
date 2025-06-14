@@ -35,14 +35,14 @@ class ConfigResource(dg.ConfigurableResource):
 
 
 @dg.op(
-  out=dg.Out(pd.DataFrame, io_manager_key='in_memory')
+  out=dg.Out(pd.DataFrame)
 )
 def op_load_clusters_catalog(conf: ConfigResource):
   return load_catalog(version=conf.version, subset=conf.subset)
 
 
 @dg.op(
-  out=dg.Out(pd.DataFrame, io_manager_key='in_memory')
+  out=dg.Out(pd.DataFrame)
 )
 def op_load_previous_clusters_catalog(conf: ConfigResource):
   if conf.version > 6:
@@ -53,15 +53,15 @@ def op_load_previous_clusters_catalog(conf: ConfigResource):
 @dg.op(
   pool='io_intensive',
   out={
-    'df_spec_all': dg.Out(pd.DataFrame, io_manager_key='in_memory'), 
-    'skycoord_spec_all': dg.Out(SkyCoord, io_manager_key='in_memory'),
+    'df_spec_all': dg.Out(pd.DataFrame), 
+    'skycoord_spec_all': dg.Out(SkyCoord),
   }
 )
 def op_load_spec():
   return load_spec()
 
 
-@dg.op(out=dg.Out(ClusterInfo, io_manager_key='in_memory'))
+@dg.op(out=dg.Out(ClusterInfo))
 def op_compute_cluster_info(
   conf: ConfigResource,
   df_clusters: pd.DataFrame,
@@ -75,7 +75,7 @@ def op_compute_cluster_info(
   )
 
 
-@dg.op(out=dg.Out(pd.DataFrame, io_manager_key='in_memory'))
+@dg.op(out=dg.Out(pd.DataFrame))
 def op_specz_cone(
   conf: ConfigResource, 
   specz_df: pd.DataFrame, 
@@ -90,7 +90,7 @@ def op_specz_cone(
   )
 
 
-@dg.op(out=dg.Out(pd.DataFrame, io_manager_key='in_memory'))
+@dg.op(out=dg.Out(pd.DataFrame))
 def op_specz_cone_outrange(
   conf: ConfigResource, 
   specz_df: pd.DataFrame, 
@@ -106,12 +106,12 @@ def op_specz_cone_outrange(
   )
 
 
-@dg.op(pool='remote_splus', out=dg.Out(pd.DataFrame, io_manager_key='in_memory'))
+@dg.op(pool='remote_splus', out=dg.Out(pd.DataFrame))
 def op_photoz_cone(conf: ConfigResource, info: ClusterInfo) -> pd.DataFrame:
   return photoz_cone(info=info, overwrite=conf.overwrite)
 
 
-@dg.op(pool='remote_datalab', out=dg.Out(pd.DataFrame, io_manager_key='in_memory'))
+@dg.op(pool='remote_datalab', out=dg.Out(pd.DataFrame))
 def op_legacy_cone(conf: ConfigResource, info: ClusterInfo) -> pd.DataFrame:
   return legacy_cone(
     info=info, 
@@ -122,9 +122,9 @@ def op_legacy_cone(conf: ConfigResource, info: ClusterInfo) -> pd.DataFrame:
 
 @dg.op(
   out={
-    'df_shiftgap': dg.Out(pd.DataFrame, io_manager_key='in_memory'), 
-    'df_members': dg.Out(pd.DataFrame, io_manager_key='in_memory'), 
-    'df_interlopers': dg.Out(pd.DataFrame, io_manager_key='in_memory'),
+    'df_shiftgap': dg.Out(pd.DataFrame), 
+    'df_members': dg.Out(pd.DataFrame), 
+    'df_interlopers': dg.Out(pd.DataFrame),
   }
 )
 def op_shiftgap_cone(conf: ConfigResource, info: ClusterInfo):
