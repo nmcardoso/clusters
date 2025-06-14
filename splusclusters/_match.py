@@ -105,7 +105,7 @@ def _remove_separation_columns(df: pd.DataFrame) -> pd.DataFrame:
   
 
 
-def _log_columns(self, df: pd.DataFrame, tab: int = 0):
+def _log_columns(df: pd.DataFrame, tab: int = 0):
   cols = ', '.join(df.columns)
   print(' ' * tab, '- Current columns: ', cols, ' (objects: ', len(df), ')', sep='')
   
