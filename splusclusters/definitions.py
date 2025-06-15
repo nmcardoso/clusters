@@ -202,7 +202,7 @@ def cluster_pipeline(cls_name: str):
     specz_cone=df_specz, 
     photoz_cone=df_photoz, 
     legacy_cone=df_legacy, 
-    op_specz_cone_outrange=df_specz_outrange,
+    specz_outrange_cone=df_specz_outrange,
   )
   
   x = op_render_plots(
