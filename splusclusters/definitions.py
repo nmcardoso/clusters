@@ -123,7 +123,6 @@ def op_render_plots(conf: ConfigResource, info: ClusterInfo):
       df_members=members_df,
       df_interlopers=interlopers_df,
       df_legacy_radial=info.legacy_df,
-      version=conf.version,
       photoz_odds=conf.photoz_odds,
       separated=conf.separated_plots,
       overwrite=conf.overwrite,
