@@ -62,22 +62,22 @@ def op_compute_cluster_info(conf: ConfigResource, cls_name: str) -> ClusterInfo:
 
 
 @dg.op
-def op_specz_cone(conf: ConfigResource, info: ClusterInfo) -> pd.DataFrame:
+def op_specz_cone(conf: ConfigResource, info: ClusterInfo):
   specz_cone(info=info, overwrite=conf.overwrite)
 
 
 @dg.op
-def op_specz_cone_outrange(conf: ConfigResource, info: ClusterInfo) -> pd.DataFrame:
+def op_specz_cone_outrange(conf: ConfigResource, info: ClusterInfo):
   specz_cone(info=info, overwrite=conf.overwrite, in_range=False)
 
 
 @dg.op(tags={'remote': 'splus'})
-def op_photoz_cone(conf: ConfigResource, info: ClusterInfo) -> pd.DataFrame:
+def op_photoz_cone(conf: ConfigResource, info: ClusterInfo):
   photoz_cone(info=info, overwrite=conf.overwrite)
 
 
 @dg.op(tags={'remote': 'datalab'})
-def op_legacy_cone(conf: ConfigResource, info: ClusterInfo) -> pd.DataFrame:
+def op_legacy_cone(conf: ConfigResource, info: ClusterInfo):
   legacy_cone(
     info=info, 
     workers=conf.workers, 
