@@ -76,7 +76,7 @@ def op_photoz_cone(conf: ConfigResource, info: ClusterInfo):
   photoz_cone(info=info, overwrite=conf.overwrite)
 
 
-@dg.op(tags={'remote': 'datalab'}, pool='cluster', retry_policy=dg.RetryPolicy(3))
+@dg.op(tags={'remote': 'datalab'}, pool='legacy', retry_policy=dg.RetryPolicy(3))
 def op_legacy_cone(conf: ConfigResource, info: ClusterInfo):
   legacy_cone(
     info=info, 
