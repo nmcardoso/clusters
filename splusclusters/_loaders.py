@@ -472,6 +472,7 @@ def load_catalog(version: int, subset: bool = False):
   }
   df = version_map[version](subset)
   print('Columns:', ', '.join(df.columns))
+  print('Rows:', len(df))
   return df
 
 
