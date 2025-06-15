@@ -21,7 +21,8 @@ class ConfigResource(dg.ConfigurableResource):
   subset: Optional[bool] = False
   overwrite: Optional[bool] = False
   workers: Optional[int] = 5
-  magnitude_range: Optional[Tuple[float, float]] = (13, 22)
+  magnitude_min: float = 13
+  magnitude_max: float = 22
   
   z_spec_delta: Optional[float] = 0.02
   z_photo_delta: Optional[float] = 0.05
@@ -55,7 +56,7 @@ def op_compute_cluster_info(conf: ConfigResource, cls_name: str) -> ClusterInfo:
     z_photo_delta=conf.z_photo_delta,
     version=conf.version,
     plot_format=conf.plot_format,
-    magnitude_range=conf.magnitude_range,
+    magnitude_range=(conf.magnitude_min, conf.magnitude_max),
     subset=conf.subset,
   )
 
