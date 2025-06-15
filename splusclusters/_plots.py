@@ -317,7 +317,7 @@ def make_overview_plots(
   title = _get_plot_title(info)
   
   if separated:
-    out = configs.WEBSITE_PATH / f'clusters_v{version}' / info.name / f'specz.{fmt}'
+    out = info.plot_specz_path
     with cond_overwrite(out, overwrite, mkdir=True):
       fig = plt.figure(figsize=(7.5, 7.5), dpi=150)
       ax = fig.add_subplot(projection=wcs)
@@ -331,7 +331,7 @@ def make_overview_plots(
       plt.savefig(out, bbox_inches='tight', pad_inches=0.1)
       plt.close(fig)
       
-    out = configs.WEBSITE_PATH / f'clusters_v{version}' / info.name / f'photoz.{fmt}'
+    out = info.plot_photoz_path
     with cond_overwrite(out, overwrite, mkdir=True):
       fig = plt.figure(figsize=(7.5, 7.5), dpi=150)
       ax = fig.add_subplot(projection=wcs)
@@ -343,7 +343,7 @@ def make_overview_plots(
       plt.savefig(out, bbox_inches='tight', pad_inches=0.1)
       plt.close(fig)
       
-    out = configs.WEBSITE_PATH / f'clusters_v{version}' / info.name / f'legacy_coverage.{fmt}'
+    out = info.plot_legacy_coverage_path
     with cond_overwrite(out, overwrite, mkdir=True):
       fig = plt.figure(figsize=(7.5, 7.5), dpi=150)
       ax = fig.add_subplot(projection=wcs)
@@ -355,7 +355,7 @@ def make_overview_plots(
       plt.savefig(out, bbox_inches='tight', pad_inches=0.1)
       plt.close(fig)
       
-    out = configs.WEBSITE_PATH / f'clusters_v{version}' / info.name / f'photoz_specz.{fmt}'
+    out = info.plot_photoz_specz_path
     with cond_overwrite(out, overwrite, mkdir=True):
       fig = plt.figure(figsize=(7.5, 7.5), dpi=150)
       ax = fig.add_subplot(projection=wcs)
@@ -370,7 +370,7 @@ def make_overview_plots(
       plt.savefig(out, bbox_inches='tight', pad_inches=0.1)
       plt.close(fig)
   else:
-    out_path = configs.PLOTS_FOLDER / f'cls_{info.name}.{fmt}'
+    out_path = info.plot_agg_info_path
     with cond_overwrite(out_path, overwrite, mkdir=True):
       if splus_only and len(df_photoz_radial) == 0:
         return
@@ -546,7 +546,7 @@ def make_contour_plots(
   overwrite: bool = False,
   **kwargs
 ):
-  out = configs.WEBSITE_PATH / f'clusters_v{version}' / info.name / f'specz_contours.{fmt}'
+  out = info.plot_specz_contours_path
   if overwrite or not out.exists():
     out.parent.mkdir(parents=True, exist_ok=True)
     fig = plt.figure(figsize=(7.5, 7.5), dpi=150)
@@ -761,7 +761,7 @@ def make_histogram_plots(
   **kwargs
 ):
   if len(df_photoz_radial) > 0:
-    out = configs.WEBSITE_PATH / f'clusters_v{version}' / info.name / f'redshift_diagonal.{fmt}'
+    out = info.plot_redshift_diagonal_path
     if not out.exists() or overwrite:
       fig = plt.figure(figsize=(7.5, 7.5), dpi=150)
       ax = fig.add_subplot()
@@ -775,7 +775,7 @@ def make_histogram_plots(
       plt.savefig(out, bbox_inches='tight', pad_inches=0.1)
       plt.close(fig)
     
-    out = configs.WEBSITE_PATH / f'clusters_v{version}' / info.name / f'redshift_diff_mag.{fmt}'
+    out = info.plot_redshift_diff_mag_path
     if not out.exists() or overwrite:
       fig = plt.figure(figsize=(7.5, 7.5), dpi=150)
       ax = fig.add_subplot()
@@ -789,7 +789,7 @@ def make_histogram_plots(
       plt.savefig(out, bbox_inches='tight', pad_inches=0.1)
       plt.close(fig)
       
-    out = configs.WEBSITE_PATH / f'clusters_v{version}' / info.name / f'redshift_diff_distance.{fmt}'
+    out = info.plot_redshift_diff_distance_path
     if not out.exists() or overwrite:
       fig = plt.figure(figsize=(7.5, 7.5), dpi=150)
       ax = fig.add_subplot()
@@ -803,7 +803,7 @@ def make_histogram_plots(
       plt.savefig(out, bbox_inches='tight', pad_inches=0.1)
       plt.close(fig)
     
-    out = configs.WEBSITE_PATH / f'clusters_v{version}' / info.name / f'redshift_diff_odds.{fmt}'
+    out = info.plot_redshift_diff_odds_path
     if not out.exists() or overwrite:
       fig = plt.figure(figsize=(7.5, 7.5), dpi=150)
       ax = fig.add_subplot()
@@ -818,7 +818,7 @@ def make_histogram_plots(
       plt.close(fig)
   
   if df_members is not None and len(df_members) > 0:
-    out = configs.WEBSITE_PATH / f'clusters_v{version}' / info.name / f'redshift_histogram_members.{fmt}'
+    out = info.plot_redshift_hist_members_path
     if not out.exists() or overwrite:
       fig = plt.figure(figsize=(7.5, 7.5), dpi=150)
       ax = fig.add_subplot()
@@ -831,7 +831,7 @@ def make_histogram_plots(
       plt.close(fig)
       
   if df_interlopers is not None and len(df_interlopers) > 0:
-    out = configs.WEBSITE_PATH / f'clusters_v{version}' / info.name / f'redshift_histogram_interlopers.{fmt}'
+    out = info.plot_redshift_hist_interlopers_path
     if not out.exists() or overwrite:
       fig = plt.figure(figsize=(7.5, 7.5), dpi=150)
       ax = fig.add_subplot()
@@ -844,7 +844,7 @@ def make_histogram_plots(
       plt.close(fig)
   
   if df_all_radial is not None and len(df_all_radial) > 0:
-    out = configs.WEBSITE_PATH / f'clusters_v{version}' / info.name / f'redshift_histogram_all.{fmt}'
+    out = info.plot_redshift_hist_all_path
     if not out.exists() or overwrite:
       fig = plt.figure(figsize=(7.5, 7.5), dpi=150)
       ax = fig.add_subplot()
@@ -1031,8 +1031,6 @@ def make_velocity_plots(
   df_members: pd.DataFrame,
   df_interlopers: pd.DataFrame,
   df_photoz_radial: pd.DataFrame,
-  version: int,
-  fmt: str = 'png',
   overwrite: bool = False,
   separated: bool = True,
   photoz_odds: float = 0.9,
@@ -1054,7 +1052,7 @@ def make_velocity_plots(
   title = _get_plot_title(info)
     
   if separated:
-    out = configs.WEBSITE_PATH / f'clusters_v{version}' / info.name / f'spec_velocity.{fmt}'
+    out = info.plot_specz_velocity_path
     with cond_overwrite(out, overwrite, mkdir=True):
       fig = plt.figure(figsize=(7.5, 7.5), dpi=150)
       ax = fig.add_subplot()
@@ -1062,7 +1060,7 @@ def make_velocity_plots(
       plt.savefig(out, bbox_inches='tight', pad_inches=0.1)
       plt.close(fig)
       
-    out = configs.WEBSITE_PATH / f'clusters_v{version}' / info.name / f'specz_distance.{fmt}'
+    out = info.plot_specz_distance_path
     with cond_overwrite(out, overwrite, mkdir=True):
       fig = plt.figure(figsize=(7.5, 7.5), dpi=150)
       ax = fig.add_subplot()
@@ -1070,7 +1068,7 @@ def make_velocity_plots(
       plt.savefig(out, bbox_inches='tight', pad_inches=0.1)
       plt.close(fig)
       
-    out = configs.WEBSITE_PATH / f'clusters_v{version}' / info.name / f'photoz_distance.{fmt}'
+    out = info.plot_photoz_distance_path
     with cond_overwrite(out, overwrite, mkdir=True):
       fig = plt.figure(figsize=(7.5, 7.5), dpi=150)
       ax = fig.add_subplot()
@@ -1078,7 +1076,7 @@ def make_velocity_plots(
       plt.savefig(out, bbox_inches='tight', pad_inches=0.1)
       plt.close(fig)
       
-    out = configs.WEBSITE_PATH / f'clusters_v{version}' / info.name / f'spec_velocity_position.{fmt}'
+    out = info.plot_photoz_velocity_path
     with cond_overwrite(out, overwrite, mkdir=True):
       fig = plt.figure(figsize=(7.5, 7.5), dpi=150)
       ax = fig.add_subplot(projection=wcs)
@@ -1091,7 +1089,7 @@ def make_velocity_plots(
       plt.savefig(out, bbox_inches='tight', pad_inches=0.1)
       plt.close(fig)
       
-    out = configs.WEBSITE_PATH / f'clusters_v{version}' / info.name / f'spec_velocity_rel_position.{fmt}'
+    out = info.plot_specz_velocity_rel_position_path
     with cond_overwrite(out, overwrite, mkdir=True):
       fig = plt.figure(figsize=(7.5, 7.5), dpi=150)
       ax = fig.add_subplot()
@@ -1104,7 +1102,7 @@ def make_velocity_plots(
       plt.savefig(out, bbox_inches='tight', pad_inches=0.1)
       plt.close(fig)
   else:
-    out_path = configs.VELOCITY_PLOTS_FOLDER / f'cls_{info.name}.{fmt}'
+    out_path = info.plot_agg_velocity_path
     with cond_overwrite(out_path, overwrite, mkdir=True):
       fig = plt.figure(figsize=(7.5, 16), dpi=300)
       ax1 = fig.add_subplot(211)
@@ -1204,9 +1202,7 @@ def _plot_magdiff_histogram(
 
 def make_magdiff_plots(
   info: ClusterInfo,
-  df_all_radial: pd.DataFrame, 
-  version: int,
-  fmt: str = 'png',
+  df_all_radial: pd.DataFrame,
   separated: bool = False,
   overwrite: bool = False,
   **kwargs
@@ -1216,15 +1212,15 @@ def make_magdiff_plots(
   
   df = df_all_radial[
     (df_all_radial.type != 'PSF') & 
-    df_all_radial.r_auto.between(*configs.MAG_RANGE) & 
-    df_all_radial.mag_r.between(*configs.MAG_RANGE) &
+    df_all_radial.r_auto.between(*info.magnitude_range) & 
+    df_all_radial.mag_r.between(*info.magnitude_range) &
     (df_all_radial.z.between(*info.z_spec_range) | df_all_radial.z.isna()) &
     df_all_radial.zml.between(*info.z_photo_range)
   ]
   title = _get_plot_title(info)
   
   if separated:
-    out = configs.WEBSITE_PATH / f'clusters_v{version}' / info.name / f'mag_diff.{fmt}'
+    out = info.plot_mag_diff_path
     if overwrite or not out.exists():
       out.parent.mkdir(parents=True, exist_ok=True)
       fig, axs = plt.subplots(figsize=(7.5, 7.5), dpi=150)
@@ -1232,7 +1228,7 @@ def make_magdiff_plots(
       plt.savefig(out, bbox_inches='tight', pad_inches=0.1)
       plt.close(fig)
     
-    out = configs.WEBSITE_PATH / f'clusters_v{version}' / info.name / f'mag_diff_hist.{fmt}'
+    out = info.plot_mag_diff_hist_path
     if overwrite or not out.exists():
       out.parent.mkdir(parents=True, exist_ok=True)
       fig, axs = plt.subplots(figsize=(7.5, 7.5), dpi=150)
@@ -1240,7 +1236,7 @@ def make_magdiff_plots(
       plt.savefig(out, bbox_inches='tight', pad_inches=0.1)
       plt.close(fig)
   else:
-    out_path = configs.sMAGDIFF_PLOTS_FOLDER / f'cls_{info.name}.pdf'
+    out_path = info.plot_agg_mag_diff_path
     if not overwrite and out_path.exists():
       return
 
@@ -1267,12 +1263,10 @@ def make_plots(
   df_members: pd.DataFrame,
   df_interlopers: pd.DataFrame,
   df_legacy_radial: pd.DataFrame,
-  version: int,
   photoz_odds: float = 0.9,
   separated: bool = False,
   overwrite: bool = False,
   splus_only: bool = False,
-  fmt: str = 'png',
 ):
   kwargs = dict(
     info=info,
@@ -1282,12 +1276,10 @@ def make_plots(
     df_members=df_members,
     df_interlopers=df_interlopers,
     df_legacy_radial=df_legacy_radial,
-    version=version,
     photoz_odds=photoz_odds,
     separated=separated,
     overwrite=overwrite,
     splus_only=splus_only,
-    fmt=fmt,
   )
   
   plot_functions = [

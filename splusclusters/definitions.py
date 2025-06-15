@@ -1,8 +1,9 @@
-from typing import List, Optional
+from typing import List, Optional, Tuple
 
 import dagster as dg
 import pandas as pd
 from astropy.coordinates import SkyCoord
+from pylegs.io import read_table
 
 from splusclusters._extraction import (download_xray, legacy_cone, photoz_cone,
                                        specz_cone)
@@ -20,6 +21,7 @@ class ConfigResource(dg.ConfigurableResource):
   subset: Optional[bool] = False
   overwrite: Optional[bool] = False
   workers: Optional[int] = 5
+  magnitude_range: Optional[List[float, float]] = [13, 22]
   
   z_spec_delta: Optional[float] = 0.02
   z_photo_delta: Optional[float] = 0.05
@@ -35,22 +37,6 @@ class ConfigResource(dg.ConfigurableResource):
 
 
 @dg.op(
-  out=dg.Out(pd.DataFrame)
-)
-def op_load_clusters_catalog(conf: ConfigResource):
-  return load_catalog(version=conf.version, subset=conf.subset)
-
-
-@dg.op(
-  out=dg.Out(pd.DataFrame)
-)
-def op_load_previous_clusters_catalog(conf: ConfigResource):
-  if conf.version > 6:
-    return load_catalog(version=conf.version - 1, subset=conf.subset)
-  return None
-
-
-@dg.op(
   tags={'io': 'intensive'},
   out={
     'specz_all_df': dg.Out(pd.DataFrame), 
@@ -62,116 +48,79 @@ def op_load_spec():
 
 
 @dg.op(out=dg.Out(ClusterInfo))
-def op_compute_cluster_info(
-  conf: ConfigResource,
-  df_clusters: pd.DataFrame,
-  cls_name: str
-) -> ClusterInfo:
+def op_compute_cluster_info(conf: ConfigResource, cls_name: str) -> ClusterInfo:
   return compute_cluster_info(
-    df_clusters=df_clusters, 
     cls_name=cls_name,
     z_spec_delta=conf.z_spec_delta,
     z_photo_delta=conf.z_photo_delta,
+    version=conf.version,
+    plot_format=conf.plot_format,
+    magnitude_range=conf.magnitude_range,
+    subset=conf.subset,
   )
 
 
-@dg.op(out=dg.Out(pd.DataFrame))
-def op_specz_cone(
-  conf: ConfigResource, 
-  specz_df: pd.DataFrame, 
-  specz_skycoord: SkyCoord, 
-  info: ClusterInfo,
-) -> pd.DataFrame:
-  return specz_cone(
-    specz_df=specz_df, 
-    specz_skycoord=specz_skycoord, 
-    info=info, 
-    overwrite=conf.overwrite,
-  )
+@dg.op
+def op_specz_cone(conf: ConfigResource, info: ClusterInfo) -> pd.DataFrame:
+  specz_cone(info=info, overwrite=conf.overwrite)
 
 
-@dg.op(out=dg.Out(pd.DataFrame))
-def op_specz_cone_outrange(
-  conf: ConfigResource, 
-  specz_df: pd.DataFrame, 
-  specz_skycoord: SkyCoord, 
-  info: ClusterInfo,
-) -> pd.DataFrame:
-  return specz_cone(
-    specz_df=specz_df, 
-    specz_skycoord=specz_skycoord, 
-    info=info, 
-    overwrite=conf.overwrite,
-    in_range=False,
-  )
+@dg.op
+def op_specz_cone_outrange(conf: ConfigResource, info: ClusterInfo) -> pd.DataFrame:
+  specz_cone(info=info, overwrite=conf.overwrite, in_range=False)
 
 
-@dg.op(tags={'remote': 'splus'}, out=dg.Out(pd.DataFrame))
+@dg.op(tags={'remote': 'splus'})
 def op_photoz_cone(conf: ConfigResource, info: ClusterInfo) -> pd.DataFrame:
-  return photoz_cone(info=info, overwrite=conf.overwrite)
+  photoz_cone(info=info, overwrite=conf.overwrite)
 
 
-@dg.op(tags={'remote': 'datalab'}, out=dg.Out(pd.DataFrame))
+@dg.op(tags={'remote': 'datalab'})
 def op_legacy_cone(conf: ConfigResource, info: ClusterInfo) -> pd.DataFrame:
-  return legacy_cone(
+  legacy_cone(
     info=info, 
     workers=conf.workers, 
     overwrite=conf.overwrite
   )
 
 
+@dg.op
+def op_shiftgap_cone(conf: ConfigResource, info: ClusterInfo):
+  load_shiftgap_cone(info=info, version=conf.version)
+
+
 @dg.op(
-  out={
-    'df_shiftgap': dg.Out(pd.DataFrame), 
-    'df_members': dg.Out(pd.DataFrame), 
-    'df_interlopers': dg.Out(pd.DataFrame),
+  tags={'crossmatch': 'intensive'}, 
+  ins={
+    'specz_cone': dg.In(dg.Nothing), 'photoz_cone': dg.In(dg.Nothing), 
+    'legacy_cone': dg.In(dg.Nothing), 'specz_outrange_cone': dg.In(dg.Nothing)
   }
 )
-def op_shiftgap_cone(conf: ConfigResource, info: ClusterInfo):
-  return load_shiftgap_cone(info=info, version=conf.version)
-
-
-@dg.op(tags={'crossmatch': 'intensive'})
-def op_compile_cluster_catalog(
-  conf: ConfigResource,
-  info: ClusterInfo,
-  specz_cone_df: pd.DataFrame,
-  photoz_cone_df: pd.DataFrame,
-  legacy_cone_df: pd.DataFrame,
-  shiftgap_df: pd.DataFrame,
-  specz_outrange_cone_df: pd.DataFrame,
-) -> pd.DataFrame:
+def op_compile_cluster_catalog(conf: ConfigResource, info: ClusterInfo) -> pd.DataFrame:
+  shiftgap_df, _, _ = load_shiftgap_cone(info, conf.version)
   return make_cluster_catalog(
     info=info,
-    df_specz_radial=specz_cone_df,
-    df_photoz_radial=photoz_cone_df,
-    df_legacy_radial=legacy_cone_df,
+    df_specz_radial=info.specz_df,
+    df_photoz_radial=info.photoz_df,
+    df_legacy_radial=info.legacy_df,
     df_ret=shiftgap_df,
-    df_specz_outrange_radial=specz_outrange_cone_df,
+    df_specz_outrange_radial=info.specz_outrange_df,
     overwrite=conf.overwrite,
   )
 
 
-@dg.op
-def op_render_plots(
-  conf: ConfigResource,
-  info: ClusterInfo,
-  photoz_cone_df: pd.DataFrame,
-  specz_cone_df: pd.DataFrame,
-  compiled_cluster_catalog_df: pd.DataFrame,
-  members_df: pd.DataFrame,
-  interlopers_df: pd.DataFrame,
-  legacy_cone_df: pd.DataFrame,
-):
+@dg.op(ins={'start_after': dg.In(dg.Nothing)})
+def op_render_plots(conf: ConfigResource, info: ClusterInfo):
+  _, members_df, interlopers_df = load_shiftgap_cone(info, conf.version)
   if not conf.skip_plots:
     make_plots(
       info=info,
-      df_photoz_radial=photoz_cone_df,
-      df_specz_radial=specz_cone_df,
-      df_all_radial=compiled_cluster_catalog_df,
+      df_photoz_radial=info.photoz_df,
+      df_specz_radial=info.specz_df,
+      df_all_radial=info.compilation_df,
       df_members=members_df,
       df_interlopers=interlopers_df,
-      df_legacy_radial=legacy_cone_df,
+      df_legacy_radial=info.legacy_df,
       version=conf.version,
       photoz_odds=conf.photoz_odds,
       separated=conf.separated_plots,
@@ -182,15 +131,12 @@ def op_render_plots(
 
 
 @dg.op(ins={'start_after': dg.In(dg.Nothing)})
-def op_build_cluster_page(
-  conf: ConfigResource, 
-  info: ClusterInfo,
-  df_photoz: pd.DataFrame,
-  df_members: pd.DataFrame,
-  df_clusters_prev: pd.DataFrame,
-  df_clusters: pd.DataFrame,
-):
+def op_build_cluster_page(conf: ConfigResource, info: ClusterInfo):
   if not conf.skip_website:
+    df_clusters = load_catalog(version=conf.version, subset=conf.subset)
+    df_clusters_prev = load_catalog(version=conf.version - 1, subset=conf.subset)
+    df_photoz = read_table(info.photoz_path)
+    _, df_members, _ = load_shiftgap_cone(info=info, version=conf.version)
     download_xray(
       info=info, 
       overwrite=conf.overwrite, 
@@ -243,53 +189,37 @@ def op_build_other_pages(
 
 
 @dg.graph
-def cluster_pipeline(
-  cls_name: str,
-  df_clusters: pd.DataFrame,
-  df_clusters_prev: pd.DataFrame,
-  specz_df: pd.DataFrame,
-  specz_coords: SkyCoord | None,
-):
-  info = op_compute_cluster_info(df_clusters=df_clusters, cls_name=cls_name)
+def cluster_pipeline(cls_name: str):
+  info = op_compute_cluster_info(cls_name=cls_name)
   
-  df_specz = op_specz_cone(specz_df=specz_df, specz_skycoord=specz_coords, info=info)
-  df_specz_outrange = op_specz_cone_outrange(specz_df, specz_coords, info)
+  df_specz = op_specz_cone(info=info)
+  df_specz_outrange = op_specz_cone_outrange(info)
   df_photoz = op_photoz_cone(info)
   df_legacy = op_legacy_cone(info)
-  df_shiftgap, df_members, df_interlopers = op_shiftgap_cone(info)
   
   df_all = op_compile_cluster_catalog(
     info=info, 
-    specz_cone_df=df_specz,
-    photoz_cone_df=df_photoz, 
-    legacy_cone_df=df_legacy,
-    shiftgap_df=df_shiftgap,
-    specz_outrange_cone_df=df_specz_outrange,
+    specz_cone=df_specz, 
+    photoz_cone=df_photoz, 
+    legacy_cone=df_legacy, 
+    op_specz_cone_outrange=df_specz_outrange,
   )
   
   x = op_render_plots(
     info=info,
-    photoz_cone_df=df_photoz,
-    specz_cone_df=df_specz,
-    compiled_cluster_catalog_df=df_all,
-    members_df=df_members,
-    interlopers_df=df_interlopers,
-    legacy_cone_df=df_legacy,
+    start_after=df_all,
   )
   
   op_build_cluster_page(
     start_after=x,
     info=info,
-    df_photoz=df_photoz,
-    df_members=df_members,
-    df_clusters_prev=df_clusters_prev,
-    df_clusters=df_clusters,
   )
 
 
 
 @dg.op(out=dg.DynamicOut(str))
-def get_all_cluster_names(df_clusters: pd.DataFrame):
+def get_all_cluster_names(conf: ConfigResource):
+  df_clusters = load_catalog(version=conf.version, subset=conf.subset)
   for i, cluster in df_clusters.iterrows():
     yield dg.DynamicOutput(
       cluster['name'], 
@@ -301,16 +231,7 @@ def get_all_cluster_names(df_clusters: pd.DataFrame):
 
 @dg.job(resource_defs={'conf': ConfigResource()})
 def dg_make_all():
-  df_clusters = op_load_clusters_catalog()
-  df_clusters_prev = op_load_previous_clusters_catalog()
-  
-  specz_df, specz_skycoord = op_load_spec()
-  
-  clusters = get_all_cluster_names(df_clusters)
-  clusters.map(lambda cluster: cluster_pipeline(
-    cluster, df_clusters, df_clusters_prev, specz_df, specz_skycoord
-  ))
-  
+  get_all_cluster_names().map(cluster_pipeline)
   # op_build_other_pages(df_clusters, df_clusters_prev)
 
 

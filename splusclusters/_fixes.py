@@ -5,7 +5,7 @@ from splusclusters.configs import configs
 
 
 def fix_z_range(info: ClusterInfo):
-  out_path = configs.PHOTOZ_FOLDER / f'{info.name}.parquet'
+  out_path = info.photoz_path
   if out_path.exists():
     df = read_table(out_path)
     if len(df) > 0:

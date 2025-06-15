@@ -35,7 +35,7 @@ class Configs(metaclass=SingletonMeta):
   Z_PHOTO_DELTA = 0.015
   Z_SPEC_DELTA = 0.007
   Z_SPEC_DELTA_PAULO = 0.02
-  MAG_RANGE = (13, 22)
+  MAG_RANGE = [13, 22]
   
   def __init__(self):
     # OUT_PATH = ROOT / 'outputs_v6'
@@ -54,7 +54,6 @@ class Configs(metaclass=SingletonMeta):
     self.PHOTOZ_SPECZ_LEG_FOLDER = self.OUT_PATH / 'photoz+specz+legacy'
     self.MAG_COMP_FOLDER = self.OUT_PATH / 'mag_comp'
     self.SUBMIT_FOLDER = self.OUT_PATH / 'submit'
-    self.LUIGI_FOLDER = self.ROOT / 'luigi'
     self.setup_paths()
   
   @property

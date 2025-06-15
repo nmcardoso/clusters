@@ -37,17 +37,15 @@ from splusclusters.utils import (Timming, cond_overwrite, config_dask,
 
 
 def specz_cone(
-  specz_df: pd.DataFrame,
-  specz_skycoord: SkyCoord | None,
   info: ClusterInfo,
   overwrite: bool = False,
   in_range: bool = True,
 ) -> pd.DataFrame | None:
-  base_path = configs.SPECZ_FOLDER if in_range else configs.SPECZ_OUTRANGE_FOLDER
-  path = base_path / f'{info.name}.parquet'
+  path = info.specz_path if in_range else info.specz_outrange_path
   df = None
   
   with cond_overwrite(path, overwrite, mkdir=True, time=True) as cm:
+    specz_df, specz_skycoord = load_spec()
     print(*specz_df.columns, sep=', ')
     if specz_skycoord is None:
       specz_skycoord = SkyCoord(
@@ -86,7 +84,7 @@ def legacy_cone(
   workers: int = 3, 
   overwrite: bool = False
 ) -> pd.DataFrame | None:
-  out_path = configs.LEG_PHOTO_FOLDER / f'{info.name}.parquet'
+  out_path = info.legacy_path
   
   with cond_overwrite(out_path, overwrite, mkdir=True):
     sql = """
@@ -108,7 +106,7 @@ def legacy_cone(
         r_min=_r,
         r_max=_r + .05
       )
-      for _r in np.arange(*configs.MAG_RANGE, .05)
+      for _r in np.arange(*info.magnitude_range, .05)
     ]
     service = LegacyService(replace=True, workers=workers)
     service.batch_sync_query(
@@ -126,7 +124,7 @@ def photoz_cone(
   overwrite: bool = False
 ) -> pd.DataFrame | None:
   result = None
-  out_path = configs.PHOTOZ_FOLDER / f'{info.name}.parquet'
+  out_path = info.photoz_path
   
   with cond_overwrite(out_path, overwrite) as cm:
     # config_dask()
@@ -293,8 +291,8 @@ def download_xray(
   overwrite: bool = False,
   fmt: str = 'png',
 ):
-  eps_path = configs.XRAY_PLOTS_FOLDER / f'{info.name}.eps'
-  raster_path = configs.XRAY_PLOTS_FOLDER / f'{info.name}.{fmt}'
+  eps_path = info.plot_xray_vector_path
+  raster_path = info.plot_xray_raster_path
   if not eps_path.exists():
     base_url = 'http://zmtt.bao.ac.cn/galaxy_clusters/dyXimages/image_all/'
     url = base_url + info.name + '_image.eps'
@@ -324,7 +322,7 @@ def photoz_cone_old(
   overwrite: bool = False,
 ):
   df = None
-  path = configs.PHOTOZ_FOLDER / f'{info.name}.parquet'
+  path = info.photoz_path
   with cond_overwrite(path, overwrite, mkdir=True, time=True) as cm:
     df = radial_search(
       position=info.coord, 
@@ -336,7 +334,7 @@ def photoz_cone_old(
     if 'r_auto' in df.columns:
       df = df[
         # df.zml.between(*z_photo_range) &
-        df.r_auto.between(*configs.MAG_RANGE)
+        df.r_auto.between(*info.magnitude_range)
       ]
     
     cm.write_table(df)
@@ -352,7 +350,7 @@ def legacy_cone_old(
   overwrite: bool = False,
 ):
   df = None
-  path = configs.LEG_PHOTO_FOLDER / f'{info.name}.parquet'
+  path = info.legacy_path
   with cond_overwrite(path, overwrite, mkdir=True, time=True) as cm:
     df = radial_search(
       position=info.coord, 
@@ -371,12 +369,11 @@ def legacy_cone_old(
 
 
 def splus_members_match_old(
-  cls_name: str, 
-  version: int,  
+  info: ClusterInfo, 
   df_members: pd.DataFrame, 
   overwrite: bool = False
 ):
-  out_path = configs.WEBSITE_PATH / f'clusters_v{version}' / cls_name / f'members_ext.csv'
+  out_path = info.website_cluster_page / f'members_ext.csv'
   with cond_overwrite(out_path, overwrite, mkdir=True):
     sql = """
       SELECT photo.RA AS RA_splus, photo.DEC AS DEC_splus, photo.g_auto, 

@@ -341,26 +341,20 @@ def make_cluster_page(
     'splus_fields_search_radius.csv'
   ]
   attachments_html = [f'<a href="{a}">{a}</a>' for a in attachments]
-  images = [
-    'specz', 'photoz', 'legacy_coverage', 'photoz_specz', 
-    'spec_velocity_position', 'spec_velocity_rel_position', 
-    'spec_velocity', 'specz_distance', 'photoz_distance', 
-    'mag_diff', 'mag_diff_hist', 'redshift_diagonal', 'redshift_diff_mag',
-    'redshift_diff_odds', 'redshift_diff_distance', #'redshift_histogram_members', 
-    # 'redshift_histogram_interlopers', 'redshift_histogram_all',
-    'zoffset_baseline_m', 'zoffset_m-shift_m', 
-    'zoffset_baseline_mi', 'zoffset_mi-shift_mi',
-    'specz_contours', 'xray',
+  filter_plots = [
+    info.plot_redshift_hist_members_path.name, 
+    info.plot_redshift_hist_interlopers_path.name,
+    info.plot_redshift_hist_all_path.name,
   ]
-  img_paths = []
-  for i in images:
-    candidates = list(folder_path.glob(f'{i}.*'))
-    if len(candidates) > 0:
-      img_paths.append(str(candidates[0].name))
+  
+  images = [
+    p.name for p in folder_path.glob(f'*.{info.plot_format}') 
+    if p.name not in filter_plots
+  ]
       
   gallery = [
     f'<a href="{img}" class="gallery" data-lightbox="images"><img src="{img}" width="{width}" height="{height}" /></a>'
-    for img in img_paths
+    for img in images
   ]
   
   cat_url = (

@@ -1,6 +1,7 @@
 from dataclasses import dataclass
 from pathlib import Path
-from typing import Tuple
+from pprint import pprint
+from typing import List, Tuple
 
 import dagster as dg
 import numpy as np
@@ -36,21 +37,182 @@ class ClusterInfo:
   z_spec_delta: float = 0.02
   z_photo_range: Tuple[float, float] = None
   z_spec_range: Tuple[float, float] = None
+  magnitude_range = (13, 22)
+  version: int = 7
+  plot_format: str = 'png'
   
   @property
   def coord(self):
     return SkyCoord(ra=self.ra, dec=self.dec, unit=u.deg)
+  
+  @property
+  def output_folder(self):
+    return configs.ROOT / f'outputs_v{self.version}'
+  
+  @property
+  def photoz_path(self):
+    return self.output_folder / 'photoz' / f'{self.name}.parquet'
+  
+  @property
+  def photoz_df(self):
+    return read_table(self.photoz_path)
+  
+  @property
+  def specz_path(self):
+    return self.output_folder / 'specz' / f'{self.name}.parquet'
+  
+  @property
+  def specz_df(self):
+    return read_table(self.specz_path)
+  
+  @property
+  def specz_outrange_path(self):
+    return self.output_folder / 'specz_outrange' / f'{self.name}.parquet'
+  
+  @property
+  def specz_outrange_df(self):
+    return read_table(self.specz_outrange_path)
+  
+  @property
+  def compilation_path(self):
+    return self.output_folder / 'comp'
+  
+  @property
+  def compilation_df(self):
+    return read_table(self.compilation_path)
+  
+  @property
+  def legacy_path(self):
+    return self.output_folder / 'legacy' / f'{self.name}.parquet'
+  
+  @property
+  def legacy_df(self):
+    return read_table(self.legacy_path)
+  
+  @property
+  def legacy_bricks_folder(self):
+    return self.output_folder / 'legacy_bricks'
+  
+  @property
+  def submit_folder(self):
+    return self.output_folder / 'submit'
 
+  @property
+  def plots_folder(self):
+    return self.output_folder / 'plots'
+  
+  @property
+  def plot_xray_vector_path(self):
+    return self.plots_folder / f'xray_{self.name}.eps'
+  
+  @property
+  def plot_xray_raster_path(self):
+    return self.plots_folder / f'xray_{self.name}.{self.plot_format}'
+  
+  @property
+  def plot_specz_path(self):
+    return self.plots_folder / f'specz_{self.name}.{self.plot_format}'
+  
+  @property
+  def plot_photoz_path(self):
+    return self.plots_folder / f'photoz_{self.name}.{self.plot_format}'
+  
+  @property
+  def plot_legacy_coverage_path(self):
+    return self.plots_folder / f'legacy_coverage_{self.name}.{self.plot_format}'
+  
+  @property
+  def plot_photoz_specz_path(self):
+    return self.plots_folder / f'photoz_specz_{self.name}.{self.plot_format}'
+  
+  @property
+  def plot_specz_contours_path(self):
+    return self.plots_folder / f'specz_contours_{self.name}.{self.plot_format}'
+  
+  @property
+  def plot_redshift_diagonal_path(self):
+    return self.plots_folder / f'redshift_diagonal_{self.name}.{self.plot_format}'
+  
+  @property
+  def plot_redshift_diff_mag_path(self):
+    return self.plots_folder / f'redshift_diff_mag_{self.name}.{self.plot_format}'
+  
+  @property
+  def plot_redshift_diff_distance_path(self):
+    return self.plots_folder / f'redshift_diff_distance_{self.name}.{self.plot_format}'
+  
+  @property
+  def plot_redshift_diff_odds_path(self):
+    return self.plots_folder / f'redshift_diff_odds_{self.name}.{self.plot_format}'
+  
+  @property
+  def plot_redshift_hist_members_path(self):
+    return self.plots_folder / f'redshift_hist_members_{self.name}.{self.plot_format}'
+  
+  @property
+  def plot_redshift_hist_interlopers_path(self):
+    return self.plots_folder / f'redshift_hist_interlopers_{self.name}.{self.plot_format}'
+  
+  @property
+  def plot_redshift_hist_all_path(self):
+    return self.plots_folder / f'redshift_hist_all_{self.name}.{self.plot_format}'
+  
+  @property
+  def plot_specz_velocity_path(self):
+    return self.plots_folder / f'specz_velocity_{self.name}.{self.plot_format}'
+  
+  @property
+  def plot_specz_distance_path(self):
+    return self.plots_folder / f'specz_distance_{self.name}.{self.plot_format}'
+  
+  @property
+  def plot_photoz_velocity_path(self):
+    return self.plots_folder / f'photoz_velocity_{self.name}.{self.plot_format}'
+  
+  @property
+  def plot_photoz_distance_path(self):
+    return self.plots_folder / f'photoz_distance_{self.name}.{self.plot_format}'
+  
+  @property
+  def plot_specz_velocity_rel_position_path(self):
+    return self.plots_folder / f'specz_velocity_rel_position_{self.name}.{self.plot_format}'
+  
+  @property
+  def plot_mag_diff_path(self):
+    return self.plots_folder / f'mag_diff_{self.name}.{self.plot_format}'
+  
+  @property
+  def plot_mag_diff_hist_path(self):
+    return self.plots_folder / f'mag_diff_hist_{self.name}.{self.plot_format}'
+  
+  @property
+  def plot_agg_velocity_path(self):
+    return self.plots_folder / f'agg_velocity_{self.name}.{self.plot_format}'
+  
+  @property
+  def plot_agg_info_path(self):
+    return self.plots_folder / f'agg_info_{self.name}.{self.plot_format}'
+  
+  @property
+  def plot_agg_mag_diff_path(self):
+    return self.plots_folder / f'agg_mag_diff_{self.name}.{self.plot_format}'
+  
+  @property
+  def plot_xray_raster_path(self):
+    return self.plots_folder / f'xray_{self.name}.{self.plot_format}'
+  
+  @property
+  def website_root(self):
+    return configs.ROOT / 'docs'
+  
+  @property
+  def website_version_root(self):
+    return self.website_root / f'clusters_v{self.version}'
+  
+  @property
+  def website_cluster_page(self):
+    return self.website_version_root / self.name
 
-
-@dataclass
-class ConesContainer:
-  photoz: pd.DataFrame
-  specz: pd.DataFrame
-  legacy: pd.DataFrame
-  shiftgap: pd.DataFrame
-  interlopers: pd.DataFrame
-  members: pd.DataFrame
 
 
 
@@ -281,8 +443,7 @@ def _load_xray():
 
 
 
-def _load_cluster_product(info: ClusterInfo, base_path: Path):
-  path = base_path / f'{info.name}.parquet'
+def _load_cluster_product(info: ClusterInfo, path: Path):
   if not path.exists(): 
     print(f'Table {path} not found!')
     return None
@@ -332,47 +493,28 @@ def load_shiftgap_cone(info: ClusterInfo, version: int):
 
 
 def load_legacy_cone(info: ClusterInfo):
-  return _load_cluster_product(info, configs.LEG_PHOTO_FOLDER)
+  return _load_cluster_product(info, info.legacy_path)
 
 
 
 def load_photoz_cone(info: ClusterInfo):
-  return _load_cluster_product(info, configs.PHOTOZ_FOLDER)
+  return _load_cluster_product(info, info.photoz_path)
 
 
 
 def load_specz_cone(info: ClusterInfo):
-  return _load_cluster_product(info, configs.SPECZ_FOLDER)
+  return _load_cluster_product(info, info.specz_path)
 
 
 
 def load_combined_cone(info: ClusterInfo):
-  return _load_cluster_product(info, configs.PHOTOZ_SPECZ_LEG_FOLDER)
+  return _load_cluster_product(info, info.compilation_path)
 
 
 
 def load_mag_cone(info: ClusterInfo):
   return _load_cluster_product(info, configs.MAG_COMP_FOLDER)
 
-
-
-def load_cones(info: ClusterInfo, version: int) -> ConesContainer:
-  df_shiftgap, df_members, df_interlopers = load_shiftgap_cone(
-    cls_name=info.name, 
-    version=version,
-  )
-  df_cone_photoz = load_photoz_cone(info)
-  df_cone_specz = load_specz_cone(info)
-  df_cone_legacy = load_legacy_cone(info)
-  
-  return ConesContainer(
-    photoz=df_cone_photoz,
-    specz=df_cone_specz,
-    legacy=df_cone_legacy,
-    shiftgap=df_shiftgap,
-    interlopers=df_interlopers,
-    members=df_members,
-  )
 
 
 
@@ -409,11 +551,15 @@ def load_spec(coords: bool = True):
 
 
 def compute_cluster_info(
-  df_clusters: pd.DataFrame, 
   cls_name: str,
   z_spec_delta: float,
   z_photo_delta: float,
+  plot_format: str,
+  version: int,
+  magnitude_range: List[float, float],
+  subset: bool,
 ) -> ClusterInfo:
+  df_clusters = load_catalog(version, subset=subset)
   cluster = df_clusters[df_clusters.name == cls_name]
   ra_col, dec_col = guess_coords_columns(cluster)
   ra = cluster[ra_col].values[0]
@@ -460,6 +606,16 @@ def compute_cluster_info(
     z_spec_delta=z_spec_delta,
     z_photo_range=(z - z_photo_delta, z + z_photo_delta),
     z_spec_range=(z - z_spec_delta, z + z_spec_delta),
+    plot_format=plot_format,
+    version=version,
+    magnitude_range=magnitude_range,
   )
-  print(info)
+  pprint(info)
   return info
+
+
+if __name__ == '__main__':
+  from pprint import pprint
+  info = ClusterInfo(name='A168', ra=1.89, dec=69.90, z=0.10, search_radius_Mpc=15)
+  pprint(info)
+  pprint(info.compilation_path)

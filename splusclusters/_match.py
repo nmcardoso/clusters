@@ -594,7 +594,6 @@ def make_cluster_catalog(
   out_path = configs.PHOTOZ_SPECZ_LEG_FOLDER / f'{info.name}.parquet'
   out_flags_path = configs.PHOTOZ_SPECZ_LEG_FOLDER / f'{info.name}+flags.parquet'
   out_removed_path = configs.PHOTOZ_SPECZ_LEG_FOLDER / f'{info.name}+removed.parquet'
-  out_removed_vi_path = configs.PHOTOZ_SPECZ_LEG_FOLDER / f'{info.name}+removed_vi.parquet'
   out_lost = configs.PHOTOZ_SPECZ_LEG_FOLDER / f'{info.name}+lost.csv'
   df = None
   
