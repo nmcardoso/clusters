@@ -562,7 +562,8 @@ def compute_cluster_info(
 ) -> ClusterInfo:
   df_clusters = load_catalog(version, subset=subset)
   cluster = df_clusters[df_clusters.name == cls_name]
-  print(cluster)
+  if len(cluster) == 0:
+    pprint(df_clusters['name'].values)
   ra_col, dec_col = guess_coords_columns(cluster)
   ra = cluster[ra_col].values[0]
   dec = cluster[dec_col].values[0]
