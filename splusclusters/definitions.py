@@ -236,7 +236,7 @@ def dummy() -> int:
 @dg.graph(out=dg.DynamicOut(int))
 def op_map_all():
   op_get_all_cluster_names().map(cluster_pipeline)
-  return dg.DynamicOutput(dummy, mapping_key='map')
+  return dg.DynamicOutput(dummy)
   # op_build_other_pages(df_clusters, df_clusters_prev)
 
 
