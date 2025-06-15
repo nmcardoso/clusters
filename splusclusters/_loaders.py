@@ -556,7 +556,7 @@ def compute_cluster_info(
   z_photo_delta: float,
   plot_format: str,
   version: int,
-  magnitude_range: List[float, float],
+  magnitude_range: List[float],
   subset: bool,
 ) -> ClusterInfo:
   df_clusters = load_catalog(version, subset=subset)

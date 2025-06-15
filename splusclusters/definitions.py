@@ -21,7 +21,7 @@ class ConfigResource(dg.ConfigurableResource):
   subset: Optional[bool] = False
   overwrite: Optional[bool] = False
   workers: Optional[int] = 5
-  magnitude_range: Optional[List[float, float]] = [13, 22]
+  magnitude_range: Optional[List[float]] = [13, 22]
   
   z_spec_delta: Optional[float] = 0.02
   z_photo_delta: Optional[float] = 0.05
