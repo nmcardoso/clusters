@@ -37,7 +37,7 @@ class ClusterInfo:
   z_spec_delta: float = 0.02
   z_photo_range: Tuple[float, float] = None
   z_spec_range: Tuple[float, float] = None
-  magnitude_range: List[float] = [13, 22]
+  magnitude_range: Tuple[float, float] = [13, 22]
   version: int = 7
   plot_format: str = 'png'
   
@@ -556,7 +556,7 @@ def compute_cluster_info(
   z_photo_delta: float,
   plot_format: str,
   version: int,
-  magnitude_range: List[float],
+  magnitude_range: Tuple[float, float],
   subset: bool,
 ) -> ClusterInfo:
   df_clusters = load_catalog(version, subset=subset)
