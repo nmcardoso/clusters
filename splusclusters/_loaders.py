@@ -75,7 +75,7 @@ class ClusterInfo:
   
   @property
   def compilation_path(self):
-    return self.output_folder / 'comp'
+    return self.output_folder / 'comp' / f'{self.name}.parquet'
   
   @property
   def compilation_df(self):
