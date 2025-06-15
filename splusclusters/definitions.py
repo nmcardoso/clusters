@@ -127,7 +127,6 @@ def op_render_plots(conf: ConfigResource, info: ClusterInfo):
       separated=conf.separated_plots,
       overwrite=conf.overwrite,
       splus_only=conf.splus_only_plots,
-      fmt=conf.plot_format,
     )
 
 
