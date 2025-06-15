@@ -276,8 +276,8 @@ def copy_xray(info: ClusterInfo, overwrite: bool = False):
 
 
 
-def make_splus_fields_tables(info: ClusterInfo, version: int, df: pd.DataFrame):
-  base_path = _get_cluster_folder(version) / info.name
+def make_splus_fields_tables(info: ClusterInfo, df: pd.DataFrame):
+  base_path = _get_cluster_folder(info.version) / info.name
   r200_path = base_path / 'splus_fields_5r200.csv'
   r500_path = base_path / 'splus_fields_5r500.csv'
   search_radius_path = base_path / 'splus_fields_search_radius.csv'
@@ -528,5 +528,4 @@ def build_cluster_page(
   make_splus_fields_tables(info=info, df=df_photoz_radial)
   
   if df_members is not None:
-    folder_path = _get_cluster_folder(version) / info.name
-    write_table(df_members, folder_path / 'members.csv')
+    write_table(df_members, info.website_cluster_page / 'members.csv')
