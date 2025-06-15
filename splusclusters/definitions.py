@@ -229,7 +229,7 @@ def op_get_all_cluster_names(conf: ConfigResource):
     ']': '_',
   }
   for k, v in rep_map.items():
-    cluster["name"] = cluster["name"].str.replace(k, v)
+    df_clusters['name'] = df_clusters['name'].str.replace(k, v)
       
   for i, cluster in df_clusters.iterrows():
     yield dg.DynamicOutput(
