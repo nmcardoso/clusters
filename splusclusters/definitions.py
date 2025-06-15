@@ -113,7 +113,7 @@ def op_compile_cluster_catalog(conf: ConfigResource, info: ClusterInfo) -> pd.Da
 @dg.op(ins={'start_after': dg.In(dg.Nothing)})
 def op_render_plots(conf: ConfigResource, info: ClusterInfo):
   _, members_df, interlopers_df = load_shiftgap_cone(info, conf.version)
-  if not conf.skip_plots and not bool(conf.sample):
+  if not conf.skip_plots and not bool(conf.subset):
     make_plots(
       info=info,
       df_photoz_radial=info.photoz_df,
@@ -133,7 +133,7 @@ def op_render_plots(conf: ConfigResource, info: ClusterInfo):
 
 @dg.op(ins={'start_after': dg.In(dg.Nothing)})
 def op_build_cluster_page(conf: ConfigResource, info: ClusterInfo):
-  if not conf.skip_website and not bool(conf.sample):
+  if not conf.skip_website and not bool(conf.subset):
     df_clusters = load_catalog(version=conf.version, subset=conf.subset)
     df_clusters_prev = load_catalog(version=conf.version - 1, subset=conf.subset)
     df_photoz = read_table(info.photoz_path)
@@ -176,7 +176,7 @@ def op_build_other_pages(
   df_clusters: pd.DataFrame,
   df_clusters_prev: pd.DataFrame,
 ):
-  if not conf.skip_website and not bool(conf.sample):
+  if not conf.skip_website and not bool(conf.subset):
     make_index(
       df_clusters=df_clusters,
       df_clusters_prev=df_clusters_prev,
