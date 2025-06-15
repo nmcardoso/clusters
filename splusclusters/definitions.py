@@ -231,7 +231,7 @@ def op_get_all_cluster_names(conf: ConfigResource):
 
 @dg.graph
 def op_map_all():
-  op_get_all_cluster_names().map(cluster_pipeline)
+  return op_get_all_cluster_names().map(cluster_pipeline).collect()
   # op_build_other_pages(df_clusters, df_clusters_prev)
 
 
