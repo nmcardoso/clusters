@@ -36,6 +36,25 @@ from splusclusters.utils import (Timming, cond_overwrite, config_dask,
                                  return_table_if_exists)
 
 
+class EmptyDataFrameError(Exception):
+  def __init__(self, path: str | Path = None, size: int = None):
+    if path is not None:
+      path = Path(path)
+      self.message = f'The dataframe {path} is empty, file size: {size} bytes'
+    else:
+      self.message = f'Empty dataframe'
+    super().__init__(self.message)
+
+
+
+def _check_empty_dataframe(path: str | Path, error: bool = True):
+  path = Path(path)
+  if path.exists() and path.stat().st_size <= 600:
+    path.unlink()
+    if error:
+      raise EmptyDataFrameError(path, path.stat().st_size)
+
+
 def specz_cone(
   info: ClusterInfo,
   overwrite: bool = False,
@@ -85,7 +104,7 @@ def legacy_cone(
   overwrite: bool = False
 ) -> pd.DataFrame | None:
   out_path = info.legacy_path
-  
+  _check_empty_dataframe(out_path, error=False)
   with cond_overwrite(out_path, overwrite, mkdir=True):
     sql = """
       SELECT t.ra, t.dec, t.type, t.shape_r, t.mag_g, t.mag_r, t.mag_i, t.mag_z, 
@@ -115,6 +134,7 @@ def legacy_cone(
       join_outputs=True, 
       workers=workers
     )
+    _check_empty_dataframe(out_path)
   return return_table_if_exists(out_path)
 
 
@@ -125,7 +145,7 @@ def photoz_cone(
 ) -> pd.DataFrame | None:
   result = None
   out_path = info.photoz_path
-  
+  _check_empty_dataframe(out_path, error=False)
   with cond_overwrite(out_path, overwrite) as cm:
     # config_dask()
     conn = splusdata.Core(
@@ -282,6 +302,7 @@ def photoz_cone(
     print('\nTable rows:', len(result))
     print(result)
     write_table(result, out_path)
+    _check_empty_dataframe(out_path)
   return return_table_if_exists(out_path, result)
 
 

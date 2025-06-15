@@ -71,12 +71,12 @@ def op_specz_cone_outrange(conf: ConfigResource, info: ClusterInfo):
   specz_cone(info=info, overwrite=conf.overwrite, in_range=False)
 
 
-@dg.op(tags={'remote': 'splus'}, pool='cluster')
+@dg.op(tags={'remote': 'splus'}, pool='cluster', retry_policy=dg.RetryPolicy(3))
 def op_photoz_cone(conf: ConfigResource, info: ClusterInfo):
   photoz_cone(info=info, overwrite=conf.overwrite)
 
 
-@dg.op(tags={'remote': 'datalab'}, pool='cluster')
+@dg.op(tags={'remote': 'datalab'}, pool='cluster', retry_policy=dg.RetryPolicy(3))
 def op_legacy_cone(conf: ConfigResource, info: ClusterInfo):
   legacy_cone(
     info=info, 
@@ -205,15 +205,9 @@ def cluster_pipeline(cls_name: str):
     specz_outrange_cone=df_specz_outrange,
   )
   
-  x = op_render_plots(
-    info=info,
-    start_after=df_all,
-  )
+  x = op_render_plots(info=info, start_after=df_all)
   
-  op_build_cluster_page(
-    start_after=x,
-    info=info,
-  )
+  op_build_cluster_page(start_after=x, info=info)
 
 
 
