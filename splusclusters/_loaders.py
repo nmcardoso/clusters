@@ -37,7 +37,7 @@ class ClusterInfo:
   z_spec_delta: float = 0.02
   z_photo_range: Tuple[float, float] = None
   z_spec_range: Tuple[float, float] = None
-  magnitude_range = (13, 22)
+  magnitude_range: List[float] = [13, 22]
   version: int = 7
   plot_format: str = 'png'
   
@@ -55,7 +55,7 @@ class ClusterInfo:
   
   @property
   def photoz_df(self):
-    return read_table(self.photoz_path)
+    return _load_cluster_product(self, self.photoz_path)
   
   @property
   def specz_path(self):
@@ -63,7 +63,7 @@ class ClusterInfo:
   
   @property
   def specz_df(self):
-    return read_table(self.specz_path)
+    return _load_cluster_product(self, self.specz_path)
   
   @property
   def specz_outrange_path(self):
@@ -71,7 +71,7 @@ class ClusterInfo:
   
   @property
   def specz_outrange_df(self):
-    return read_table(self.specz_outrange_path)
+    return _load_cluster_product(self, self.specz_outrange_path)
   
   @property
   def compilation_path(self):
@@ -79,7 +79,7 @@ class ClusterInfo:
   
   @property
   def compilation_df(self):
-    return read_table(self.compilation_path)
+    return _load_cluster_product(self, self.compilation_path)
   
   @property
   def legacy_path(self):
@@ -87,7 +87,7 @@ class ClusterInfo:
   
   @property
   def legacy_df(self):
-    return read_table(self.legacy_path)
+    return _load_cluster_product(self, self.legacy_path)
   
   @property
   def legacy_bricks_folder(self):
