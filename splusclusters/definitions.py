@@ -99,7 +99,7 @@ def op_shiftgap_cone(conf: ConfigResource, info: ClusterInfo):
 )
 def op_compile_cluster_catalog(conf: ConfigResource, info: ClusterInfo) -> pd.DataFrame:
   shiftgap_df, _, _ = load_shiftgap_cone(info, conf.version)
-  return make_cluster_catalog(
+  make_cluster_catalog(
     info=info,
     df_specz_radial=info.specz_df,
     df_photoz_radial=info.photoz_df,
