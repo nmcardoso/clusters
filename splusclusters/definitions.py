@@ -48,7 +48,7 @@ def op_load_spec():
   return load_spec()
 
 
-@dg.op(out=dg.Out(ClusterInfo))
+@dg.op(out=dg.Out(ClusterInfo), pool='cluster')
 def op_compute_cluster_info(conf: ConfigResource, cls_name: str) -> ClusterInfo:
   return compute_cluster_info(
     cls_name=cls_name,
@@ -61,22 +61,22 @@ def op_compute_cluster_info(conf: ConfigResource, cls_name: str) -> ClusterInfo:
   )
 
 
-@dg.op
+@dg.op(pool='cluster')
 def op_specz_cone(conf: ConfigResource, info: ClusterInfo):
   specz_cone(info=info, overwrite=conf.overwrite)
 
 
-@dg.op
+@dg.op(pool='cluster')
 def op_specz_cone_outrange(conf: ConfigResource, info: ClusterInfo):
   specz_cone(info=info, overwrite=conf.overwrite, in_range=False)
 
 
-@dg.op(tags={'remote': 'splus'})
+@dg.op(tags={'remote': 'splus'}, pool='cluster')
 def op_photoz_cone(conf: ConfigResource, info: ClusterInfo):
   photoz_cone(info=info, overwrite=conf.overwrite)
 
 
-@dg.op(tags={'remote': 'datalab'})
+@dg.op(tags={'remote': 'datalab'}, pool='cluster')
 def op_legacy_cone(conf: ConfigResource, info: ClusterInfo):
   legacy_cone(
     info=info, 
@@ -85,7 +85,7 @@ def op_legacy_cone(conf: ConfigResource, info: ClusterInfo):
   )
 
 
-@dg.op
+@dg.op(pool='cluster')
 def op_shiftgap_cone(conf: ConfigResource, info: ClusterInfo):
   load_shiftgap_cone(info=info, version=conf.version)
 
@@ -95,7 +95,8 @@ def op_shiftgap_cone(conf: ConfigResource, info: ClusterInfo):
   ins={
     'specz_cone': dg.In(dg.Nothing), 'photoz_cone': dg.In(dg.Nothing), 
     'legacy_cone': dg.In(dg.Nothing), 'specz_outrange_cone': dg.In(dg.Nothing)
-  }
+  },
+  pool='cluster'
 )
 def op_compile_cluster_catalog(conf: ConfigResource, info: ClusterInfo) -> pd.DataFrame:
   shiftgap_df, _, _ = load_shiftgap_cone(info, conf.version)
@@ -110,7 +111,7 @@ def op_compile_cluster_catalog(conf: ConfigResource, info: ClusterInfo) -> pd.Da
   )
 
 
-@dg.op(ins={'start_after': dg.In(dg.Nothing)})
+@dg.op(ins={'start_after': dg.In(dg.Nothing)}, pool='cluster')
 def op_render_plots(conf: ConfigResource, info: ClusterInfo):
   _, members_df, interlopers_df = load_shiftgap_cone(info, conf.version)
   if not conf.skip_plots and not bool(conf.subset):
@@ -131,7 +132,7 @@ def op_render_plots(conf: ConfigResource, info: ClusterInfo):
     )
 
 
-@dg.op(ins={'start_after': dg.In(dg.Nothing)})
+@dg.op(ins={'start_after': dg.In(dg.Nothing)}, pool='cluster')
 def op_build_cluster_page(conf: ConfigResource, info: ClusterInfo):
   if not conf.skip_website and not bool(conf.subset):
     df_clusters = load_catalog(version=conf.version, subset=conf.subset)
@@ -170,7 +171,7 @@ def op_build_cluster_page(conf: ConfigResource, info: ClusterInfo):
     )
 
 
-@dg.op
+@dg.op(pool='cluster')
 def op_build_other_pages(
   conf: ConfigResource,
   df_clusters: pd.DataFrame,
@@ -189,7 +190,7 @@ def op_build_other_pages(
     )
 
 
-@dg.graph
+@dg.graph(pool='cluster')
 def cluster_pipeline(cls_name: str):
   info = op_compute_cluster_info(cls_name=cls_name)
   
