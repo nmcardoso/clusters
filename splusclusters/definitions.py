@@ -190,7 +190,7 @@ def op_build_other_pages(
     )
 
 
-@dg.graph(pool='cluster')
+@dg.graph
 def cluster_pipeline(cls_name: str):
   info = op_compute_cluster_info(cls_name=cls_name)
   
