@@ -221,11 +221,20 @@ def cluster_pipeline(cls_name: str):
 @dg.op(out=dg.DynamicOut(str))
 def op_get_all_cluster_names(conf: ConfigResource):
   df_clusters = load_catalog(version=conf.version, subset=conf.subset)
+  rep_map = {
+    '+': 'p',
+    '-': 'm',
+    '.': '_',
+    '[': '_',
+    ']': '_',
+  }
+  for k, v in rep_map.items():
+    cluster["name"] = cluster["name"].str.replace(k, v)
+      
   for i, cluster in df_clusters.iterrows():
-    key_name = cluster["name"].replace('+', 'p').replace('-', 'm').replace('.', '_')
     yield dg.DynamicOutput(
       cluster['name'], 
-      mapping_key=f'{cluster["clsid"]}_{key_name}'
+      mapping_key=f'{cluster["clsid"]}_{cluster["name"]}'
     )
 
 
