@@ -591,10 +591,11 @@ def make_cluster_catalog(
   df_specz_outrange_radial: pd.DataFrame | None,
   overwrite: bool = False,
 ):
-  out_path = configs.PHOTOZ_SPECZ_LEG_FOLDER / f'{info.name}.parquet'
-  out_flags_path = configs.PHOTOZ_SPECZ_LEG_FOLDER / f'{info.name}+flags.parquet'
-  out_removed_path = configs.PHOTOZ_SPECZ_LEG_FOLDER / f'{info.name}+removed.parquet'
-  out_lost = configs.PHOTOZ_SPECZ_LEG_FOLDER / f'{info.name}+lost.csv'
+  base_path = info.compilation_path.parent
+  out_path = info.compilation_path
+  out_flags_path = base_path / f'{info.name}+flags.parquet'
+  out_removed_path = base_path / f'{info.name}+removed.parquet'
+  out_lost = base_path / f'{info.name}+lost.csv'
   df = None
   
   with cond_overwrite(out_path, overwrite) as cm:

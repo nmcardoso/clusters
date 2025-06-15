@@ -42,16 +42,12 @@ class Configs(metaclass=SingletonMeta):
     self.version = 7
     self.STUDY_FOLDER = self.OUT_PATH / 'studies'
     self.PLOTS_FOLDER = self.OUT_PATH / 'plots'
-    self.VELOCITY_PLOTS_FOLDER = self.OUT_PATH / 'velocity_plots'
-    self.MAGDIFF_PLOTS_FOLDER = self.OUT_PATH / 'magdiff_plots'
-    self.XRAY_PLOTS_FOLDER = self.OUT_PATH / 'xray_plots'
-    self.MAGDIFF_OUTLIERS_FOLDER = self.OUT_PATH / 'magdiff_outliers'
     self.LEG_PHOTO_FOLDER = self.OUT_PATH / 'legacy'
     self.LEG_BRICKS_FOLDER = self.OUT_PATH / 'legacy_bricks'
     self.PHOTOZ_FOLDER = self.OUT_PATH / 'photoz'
     self.SPECZ_FOLDER = self.OUT_PATH / 'specz'
     self.SPECZ_OUTRANGE_FOLDER = self.OUT_PATH / 'specz_outrange'
-    self.PHOTOZ_SPECZ_LEG_FOLDER = self.OUT_PATH / 'photoz+specz+legacy'
+    self.PHOTOZ_SPECZ_LEG_FOLDER = self.OUT_PATH / 'comp'
     self.MAG_COMP_FOLDER = self.OUT_PATH / 'mag_comp'
     self.SUBMIT_FOLDER = self.OUT_PATH / 'submit'
     self.setup_paths()
