@@ -233,10 +233,10 @@ def dummy() -> int:
   return 1
 
 
-@dg.graph(out=dg.DynamicOut(int))
+@dg.graph(out=dg.GraphOut(int))
 def op_map_all():
   op_get_all_cluster_names().map(cluster_pipeline)
-  return dg.DynamicOutput(dummy)
+  return dg.GraphOut(dummy)
   # op_build_other_pages(df_clusters, df_clusters_prev)
 
 
