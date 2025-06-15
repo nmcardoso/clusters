@@ -96,7 +96,7 @@ def op_shiftgap_cone(conf: ConfigResource, info: ClusterInfo):
     'specz_cone': dg.In(dg.Nothing), 'photoz_cone': dg.In(dg.Nothing), 
     'legacy_cone': dg.In(dg.Nothing), 'specz_outrange_cone': dg.In(dg.Nothing)
   },
-  pool='cluster'
+  pool='cluster_intensive'
 )
 def op_compile_cluster_catalog(conf: ConfigResource, info: ClusterInfo):
   shiftgap_df, _, _ = load_shiftgap_cone(info, conf.version)
