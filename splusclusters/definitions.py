@@ -228,28 +228,11 @@ def op_get_all_cluster_names(conf: ConfigResource):
     )
 
 
-@dg.op
-def dummy() -> int:
-  return 1
-
-
-@dg.graph(out=dg.GraphOut())
-def op_map_all():
-  op_get_all_cluster_names().map(cluster_pipeline)
-  return dummy()
-  # op_build_other_pages(df_clusters, df_clusters_prev)
-
-
-
-@dg.op(ins={'start_after': dg.In(dg.Nothing)})
-def op_reduce():
-  print('ok')
-
-
 
 @dg.job(resource_defs={'conf': ConfigResource()})
 def scale_pipeline():
-  op_reduce(start_after=op_map_all())
+  op_get_all_cluster_names().map(cluster_pipeline)
+  # op_build_other_pages(df_clusters, df_clusters_prev)
 
 
 
