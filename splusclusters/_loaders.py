@@ -37,7 +37,7 @@ class ClusterInfo:
   z_spec_delta: float = 0.02
   z_photo_range: Tuple[float, float] = None
   z_spec_range: Tuple[float, float] = None
-  magnitude_range: Tuple[float, float] = [13, 22]
+  magnitude_range: Tuple[float, float] = None
   version: int = 7
   plot_format: str = 'png'
   
