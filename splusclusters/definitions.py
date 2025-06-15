@@ -236,7 +236,7 @@ def op_map_all():
 
 
 
-@dg.op
+@dg.op(ins={'start_after': dg.In(dg.Nothing)})
 def op_reduce():
   print('ok')
 
@@ -244,7 +244,7 @@ def op_reduce():
 
 @dg.job(resource_defs={'conf': ConfigResource()})
 def scale_pipeline():
-  op_reduce(op_map_all())
+  op_reduce(start_after=op_map_all())
 
 
 
