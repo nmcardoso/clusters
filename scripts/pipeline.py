@@ -6,11 +6,11 @@ sys.path.insert(0, str(Path(__file__).parent.parent.absolute()))
 from argparse import ArgumentParser
 
 from splusclusters.configs import configs
-from splusclusters.definitions import ConfigResource, dg_make_all
+from splusclusters.definitions import ConfigResource, op_map_all
 
 
 def main(args):
-  dg_make_all.execute_in_process(resources={
+  op_map_all.execute_in_process(resources={
     'conf': ConfigResource(
       version=args.version,
       skip_cones=args.skip_cones,

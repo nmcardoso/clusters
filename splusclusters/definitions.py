@@ -219,7 +219,7 @@ def cluster_pipeline(cls_name: str):
 
 
 @dg.op(out=dg.DynamicOut(str))
-def get_all_cluster_names(conf: ConfigResource):
+def op_get_all_cluster_names(conf: ConfigResource):
   df_clusters = load_catalog(version=conf.version, subset=conf.subset)
   for i, cluster in df_clusters.iterrows():
     yield dg.DynamicOutput(
@@ -229,15 +229,27 @@ def get_all_cluster_names(conf: ConfigResource):
 
 
 
-
-@dg.job(resource_defs={'conf': ConfigResource()})
-def dg_make_all():
-  get_all_cluster_names().map(cluster_pipeline)
+@dg.graph
+def op_map_all():
+  op_get_all_cluster_names().map(cluster_pipeline)
   # op_build_other_pages(df_clusters, df_clusters_prev)
 
 
 
+@dg.op
+def op_reduce():
+  print('ok')
+
+
+
+@dg.job(resource_defs={'conf': ConfigResource()})
+def scale_pipeline():
+  op_reduce(op_map_all())
+
+
+
+
 defs = dg.Definitions(
-  jobs=[dg_make_all],
+  jobs=[scale_pipeline],
   resources={'conf': ConfigResource()},
 )
