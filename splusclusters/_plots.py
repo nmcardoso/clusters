@@ -292,12 +292,10 @@ def make_overview_plots(
   df_members: pd.DataFrame,
   df_interlopers: pd.DataFrame,
   df_legacy_radial: pd.DataFrame,
-  version: int,
   photoz_odds: float = 0.9,
   separated: bool = False,
   overwrite: bool = False,
   splus_only: bool = False,
-  fmt: str = 'png',
   **kwargs
 ):
   wcs_spec =  {
@@ -541,8 +539,6 @@ def make_contour_plots(
   df_members: pd.DataFrame,
   df_interlopers: pd.DataFrame, 
   df_specz_radial: pd.DataFrame,
-  version: int,
-  fmt: str = 'png',
   overwrite: bool = False,
   **kwargs
 ):
@@ -755,8 +751,6 @@ def make_histogram_plots(
   df_interlopers: pd.DataFrame,
   df_all_radial: pd.DataFrame,
   df_photoz_radial: pd.DataFrame | None,
-  version: int,
-  fmt: str = 'png',
   overwrite: bool = False,
   **kwargs
 ):
