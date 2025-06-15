@@ -267,9 +267,9 @@ def make_zoffset_page(
 
 
 
-def copy_xray(cls_name: str, version: int, fmt: str = 'png', overwrite: bool = False):
-  src = configs.XRAY_PLOTS_FOLDER / f'{cls_name}.{fmt}'
-  dst = _get_cluster_folder(version) / cls_name / f'xray.{fmt}'
+def copy_xray(info: ClusterInfo, overwrite: bool = False):
+  src = info.plot_xray_raster_path
+  dst = info.website_cluster_page / src.name
   if (not dst.exists() or overwrite) and src.exists(): 
     copy(src, dst)
 

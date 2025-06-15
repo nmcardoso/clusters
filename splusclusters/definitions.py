@@ -143,9 +143,7 @@ def op_build_cluster_page(conf: ConfigResource, info: ClusterInfo):
       fmt=conf.plot_format
     )
     copy_xray(
-      cls_name=info.name, 
-      version=conf.version, 
-      fmt=conf.plot_format, 
+      info=info,
       overwrite=conf.overwrite
     )
     build_cluster_page(
