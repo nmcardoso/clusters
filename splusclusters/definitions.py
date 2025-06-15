@@ -228,10 +228,15 @@ def op_get_all_cluster_names(conf: ConfigResource):
     )
 
 
+@dg.op
+def dummy() -> int:
+  return 1
 
-@dg.graph
+
+@dg.graph(out=dg.DynamicOut(int))
 def op_map_all():
-  return op_get_all_cluster_names().map(cluster_pipeline).collect()
+  op_get_all_cluster_names().map(cluster_pipeline)
+  return dg.DynamicOutput(dummy, mapping_key='map')
   # op_build_other_pages(df_clusters, df_clusters_prev)
 
 
