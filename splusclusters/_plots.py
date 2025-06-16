@@ -729,6 +729,7 @@ def _histogram_plot_all(
   df_all_radial: pd.DataFrame, 
   ax: plt.Axes
 ):
+  if 'zml' not in df_all_radial: return
   df = df_all_radial[~df_all_radial.z.isna() & ~df_all_radial.zml.isna()]
   if len(df) == 0: return
   rng = (min(df.z.min(), df.zml.min()), max(df.z.max(), df.zml.max()))
