@@ -321,6 +321,8 @@ def _load_shiftgap_index_v6():
 def _load_shiftgap_v6(cls_name: str = None, cls_id: str | int = None):
   if cls_name is not None:
     index_df = _load_shiftgap_index_v6()
+    if cls_name not in index_df.name: 
+      return None
     cls_id = index_df[index_df.name == cls_name].clsid.values[0]
   prefixed_id = str(int(cls_id)).zfill(5)
   path = configs.MEMBERS_V6_FOLDER / f'cluster.gals.sel.shiftgap.iter.{prefixed_id}'
