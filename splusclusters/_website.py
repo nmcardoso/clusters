@@ -10,11 +10,8 @@ from astropy import units as u
 from astropy.coordinates import SkyCoord
 from pylegs.io import read_table
 
-from splusclusters._loaders import (ClusterInfo, _load_shiftgap_v7,
-                                    load_shiftgap_cone)
+from splusclusters._loaders import ClusterInfo, load_shiftgap_cone
 from splusclusters.configs import configs
-from splusclusters.loaders import (load_clusters, load_members_v5,
-                                   load_members_v6)
 
 
 def _get_cluster_folder(version: int):
@@ -320,7 +317,7 @@ def make_index(df_clusters: pd.DataFrame, df_clusters_prev: pd.DataFrame, versio
 
 
 def make_landing():
-  page = f'<!DOCTYPE html><html><head><meta http-equiv="refresh" content="0; url=clusters_v6"></head></html>'
+  page = f'<!DOCTYPE html><html><head><meta http-equiv="refresh" content="0; url=clusters_v7"></head></html>'
   index_path = configs.WEBSITE_PATH / 'index.html'
   index_path.parent.mkdir(parents=True, exist_ok=True)
   index_path.write_text(page)
