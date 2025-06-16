@@ -570,8 +570,8 @@ def _diagonal_plot(
   df_members: pd.DataFrame, 
   df_interlopers: pd.DataFrame,
   df_all_radial: pd.DataFrame,
-  df_photoz_radial: pd.DataFrame | None,
   ax: plt.Axes,
+  **kwargs
 ):
   if df_members is not None and df_interlopers is not None and 'r_auto' in df_all_radial.columns and 'z' in df_all_radial.columns:
     members_match = fast_crossmatch(df_members, df_all_radial)
@@ -600,8 +600,8 @@ def _spec_diff_mag_plot(
   df_members: pd.DataFrame, 
   df_interlopers: pd.DataFrame,
   df_all_radial: pd.DataFrame,
-  df_photoz_radial: pd.DataFrame | None,
   ax: plt.Axes,
+  **kwargs
 ):
   if df_members is not None and df_interlopers is not None and 'r_auto' in df_all_radial.columns and 'z' in df_all_radial.columns:
     members_match = fast_crossmatch(df_members, df_all_radial)
@@ -631,8 +631,8 @@ def _spec_diff_odds_plot(
   df_members: pd.DataFrame, 
   df_interlopers: pd.DataFrame,
   df_all_radial: pd.DataFrame,
-  df_photoz_radial: pd.DataFrame | None,
   ax: plt.Axes,
+  **kwargs
 ):
   if df_members is not None and df_interlopers is not None and 'r_auto' in df_all_radial.columns and 'z' in df_all_radial.columns:
     members_match = fast_crossmatch(df_members, df_all_radial)
@@ -662,8 +662,8 @@ def _spec_diff_distance_plot(
   df_members: pd.DataFrame, 
   df_interlopers: pd.DataFrame,
   df_all_radial: pd.DataFrame,
-  df_photoz_radial: pd.DataFrame | None,
   ax: plt.Axes,
+  **kwargs
 ):
   if df_members is not None and df_interlopers is not None and 'r_auto' in df_all_radial.columns and 'z' in df_all_radial.columns:
     members_match = fast_crossmatch(df_members, df_all_radial)
@@ -690,9 +690,9 @@ def _spec_diff_distance_plot(
 
 
 def _histogram_members_plot(
-  df_members: pd.DataFrame, 
   df_all_radial: pd.DataFrame, 
-  ax: plt.Axes
+  ax: plt.Axes,
+  **kwargs
 ):
   if not 'zml' in df_all_radial.columns: return
   df_members = df_all_radial[~df_all_radial.z.isna() & ~df_all_radial.zml.isna() & (df_all_radial.flag_members == 0)]
@@ -711,6 +711,7 @@ def _histogram_members_plot(
 def _histogram_interlopers_plot(
   df_all_radial: pd.DataFrame,
   ax: plt.Axes,
+  **kwargs,
 ):
   if 'zml' not in df_all_radial.columns: return
   df_interlopers = df_all_radial[~df_all_radial.z.isna() & ~df_all_radial.zml.isna() & (df_all_radial.flag_members == 1)]
@@ -728,7 +729,8 @@ def _histogram_interlopers_plot(
 
 def _histogram_plot_all(
   df_all_radial: pd.DataFrame, 
-  ax: plt.Axes
+  ax: plt.Axes,
+  **kwargs,
 ):
   if 'zml' not in df_all_radial: return
   df = df_all_radial[~df_all_radial.z.isna() & ~df_all_radial.zml.isna()]
@@ -755,94 +757,32 @@ def make_histogram_plots(
   overwrite: bool = False,
   **kwargs
 ):
-  if len(df_photoz_radial) > 0:
-    out = info.plot_redshift_diagonal_path
-    if not out.exists() or overwrite:
-      fig = plt.figure(figsize=(7.5, 7.5), dpi=150)
-      ax = fig.add_subplot()
-      _diagonal_plot(
-        df_members=df_members,
-        df_interlopers=df_interlopers,
-        df_all_radial=df_all_radial,
-        df_photoz_radial=df_photoz_radial,
-        ax=ax,
-      )
-      plt.savefig(out, bbox_inches='tight', pad_inches=0.1)
-      plt.close(fig)
-    
-    out = info.plot_redshift_diff_mag_path
-    if not out.exists() or overwrite:
-      fig = plt.figure(figsize=(7.5, 7.5), dpi=150)
-      ax = fig.add_subplot()
-      _spec_diff_mag_plot(
-        df_members=df_members,
-        df_interlopers=df_interlopers,
-        df_all_radial=df_all_radial,
-        df_photoz_radial=df_photoz_radial,
-        ax=ax,
-      )
-      plt.savefig(out, bbox_inches='tight', pad_inches=0.1)
-      plt.close(fig)
-      
-    out = info.plot_redshift_diff_distance_path
-    if not out.exists() or overwrite:
-      fig = plt.figure(figsize=(7.5, 7.5), dpi=150)
-      ax = fig.add_subplot()
-      _spec_diff_distance_plot(
-        df_members=df_members,
-        df_interlopers=df_interlopers,
-        df_all_radial=df_all_radial,
-        df_photoz_radial=df_photoz_radial,
-        ax=ax,
-      )
-      plt.savefig(out, bbox_inches='tight', pad_inches=0.1)
-      plt.close(fig)
-    
-    out = info.plot_redshift_diff_odds_path
-    if not out.exists() or overwrite:
-      fig = plt.figure(figsize=(7.5, 7.5), dpi=150)
-      ax = fig.add_subplot()
-      _spec_diff_odds_plot(
-        df_members=df_members,
-        df_interlopers=df_interlopers,
-        df_all_radial=df_all_radial,
-        df_photoz_radial=df_photoz_radial,
-        ax=ax,
-      )
-      plt.savefig(out, bbox_inches='tight', pad_inches=0.1)
-      plt.close(fig)
+  args = {
+    'info': info,
+    'df_members': df_members,
+    'df_interlopers': df_interlopers,
+    'df_all_radial': df_all_radial,
+    'df_photoz_radial': df_photoz_radial,
+    'overwrite': overwrite,
+  }
   
-  if df_members is not None and len(df_members) > 0:
-    out = info.plot_redshift_hist_members_path
-    if not out.exists() or overwrite:
-      fig = plt.figure(figsize=(7.5, 7.5), dpi=150)
-      ax = fig.add_subplot()
-      _histogram_members_plot(
-        df_all_radial=df_all_radial,
-        ax=ax,
-      )
-      plt.savefig(out, bbox_inches='tight', pad_inches=0.1)
-      plt.close(fig)
-      
-  if df_interlopers is not None and len(df_interlopers) > 0:
-    out = info.plot_redshift_hist_interlopers_path
-    if not out.exists() or overwrite:
-      fig = plt.figure(figsize=(7.5, 7.5), dpi=150)
-      ax = fig.add_subplot()
-      _histogram_interlopers_plot(
-        df_all_radial=df_all_radial,
-        ax=ax,
-      )
-      plt.savefig(out, bbox_inches='tight', pad_inches=0.1)
-      plt.close(fig)
+  plots = [
+    (_diagonal_plot, info.plot_redshift_diagonal_path),
+    (_spec_diff_mag_plot, info.plot_redshift_diff_mag_path),
+    (_spec_diff_distance_plot, info.plot_redshift_diff_distance_path),
+    (_spec_diff_odds_plot, info.plot_redshift_diff_odds_path),
+    (_histogram_members_plot, info.plot_redshift_hist_members_path),
+    (_histogram_interlopers_plot, info.plot_redshift_hist_interlopers_path),
+    (_histogram_plot_all, info.plot_redshift_hist_all_path),
+  ]
   
-  if df_all_radial is not None and len(df_all_radial) > 0:
-    out = info.plot_redshift_hist_all_path
-    if not out.exists() or overwrite:
+  for plot_func, plot_path in plots:
+    template = 'Plot ' + plot_path.name + ' done. Elapsed time: {}'
+    with cond_overwrite(plot_path, overwrite, mkdir=True, time=True, template=template):
       fig = plt.figure(figsize=(7.5, 7.5), dpi=150)
       ax = fig.add_subplot()
-      _histogram_plot_all(df_all_radial=df_all_radial, ax=ax)
-      plt.savefig(out, bbox_inches='tight', pad_inches=0.1)
+      plot_func(ax=ax, **args)
+      plt.savefig(plot_path, bbox_inches='tight', pad_inches=0.1)
       plt.close(fig)
 
 
@@ -850,10 +790,11 @@ def make_histogram_plots(
 
 
 
-def plot_velocity(
+def _plot_velocity(
   df_members: pd.DataFrame, 
   df_interlopers: pd.DataFrame, 
-  ax: plt.Axes
+  ax: plt.Axes,
+  **kwargs
 ):
   ax.scatter(df_members.radius_Mpc, df_members.v_offset, c='tab:red', s=5, label='Members', rasterized=True)  
   ax.scatter(df_interlopers.radius_Mpc, df_interlopers.v_offset, c='tab:blue', s=5, label='Interlopers', rasterized=True)
@@ -865,11 +806,12 @@ def plot_velocity(
   ax.set_title('Spectroscoptic velocity x distance')
 
 
-def plot_specz(
+def _plot_specz(
   df_members: pd.DataFrame, 
   df_interlopers: pd.DataFrame, 
   cls_z: float, 
-  ax: plt.Axes
+  ax: plt.Axes,
+  **kwargs
 ):
   df_members['z_offset'] = df_members['z'] - cls_z
   df_interlopers['z_offset'] = df_interlopers['z'] - cls_z
@@ -884,13 +826,14 @@ def plot_specz(
   ax.set_ylim(-0.03, 0.03)
 
 
-def plot_photoz(
+def _plot_photoz(
   df_members: pd.DataFrame, 
   df_interlopers: pd.DataFrame, 
   df_photoz_radial: pd.DataFrame, 
   cls_z: float,
   ax: plt.Axes,
   photoz_odds: float = 0.9, 
+  **kwargs
 ):
   if len(df_photoz_radial) > 0:
     df_members_match = fast_crossmatch(df_members, df_photoz_radial)
@@ -910,11 +853,12 @@ def plot_photoz(
   ax.set_ylim(-0.03, 0.03)
 
 
-def plot_ra_dec(
+def _plot_ra_dec(
   info: ClusterInfo,
   df_members: pd.DataFrame, 
   df_interlopers: pd.DataFrame, 
-  ax: plt.Axes
+  ax: plt.Axes,
+  **kwargs
 ):
   _add_all_circles(info, ax)
   ax.scatter(
@@ -946,11 +890,12 @@ def plot_ra_dec(
   ax.set_title('Spatial distribution of spectroscopic members')
   
 
-def plot_ra_dec_relative(
+def _plot_ra_dec_relative(
   info: ClusterInfo,
   df_members: pd.DataFrame, 
   df_interlopers: pd.DataFrame, 
-  ax: plt.Axes
+  ax: plt.Axes,
+  **kwargs
 ):
   circle = Circle(
     (0, 0), 
@@ -1043,65 +988,42 @@ def make_velocity_plots(
   }
   wcs = WCS(wcs_spec)
   title = _get_plot_title(info)
-    
+  
+  args = {
+    'info': info,
+    'df_members': df_members,
+    'df_interlopers': df_interlopers,
+    'df_photoz_radial': df_photoz_radial,
+    'overwrite': overwrite,
+    'separated': separated,
+    'photoz_odds': photoz_odds,
+  }
+  
+  plots = [
+    (_plot_velocity, info.plot_specz_velocity_path, None),
+    (_plot_specz, info.plot_specz_distance_path, None),
+    (_plot_photoz, info.plot_photoz_distance_path, None),
+    (_plot_ra_dec, info.plot_photoz_velocity_path, wcs),
+    (_plot_ra_dec_relative, info.plot_specz_velocity_rel_position_path, None),
+  ]
+  
   if separated:
-    out = info.plot_specz_velocity_path
-    with cond_overwrite(out, overwrite, mkdir=True):
-      fig = plt.figure(figsize=(7.5, 7.5), dpi=150)
-      ax = fig.add_subplot()
-      plot_velocity(df_members, df_interlopers, ax)
-      plt.savefig(out, bbox_inches='tight', pad_inches=0.1)
-      plt.close(fig)
-      
-    out = info.plot_specz_distance_path
-    with cond_overwrite(out, overwrite, mkdir=True):
-      fig = plt.figure(figsize=(7.5, 7.5), dpi=150)
-      ax = fig.add_subplot()
-      plot_specz(df_members, df_interlopers, info.z, ax)
-      plt.savefig(out, bbox_inches='tight', pad_inches=0.1)
-      plt.close(fig)
-      
-    out = info.plot_photoz_distance_path
-    with cond_overwrite(out, overwrite, mkdir=True):
-      fig = plt.figure(figsize=(7.5, 7.5), dpi=150)
-      ax = fig.add_subplot()
-      plot_photoz(df_members, df_interlopers, df_photoz_radial, info.z, ax, photoz_odds)
-      plt.savefig(out, bbox_inches='tight', pad_inches=0.1)
-      plt.close(fig)
-      
-    out = info.plot_photoz_velocity_path
-    with cond_overwrite(out, overwrite, mkdir=True):
-      fig = plt.figure(figsize=(7.5, 7.5), dpi=150)
-      ax = fig.add_subplot(projection=wcs)
-      plot_ra_dec(
-        info=info,
-        df_members=df_members, 
-        df_interlopers=df_interlopers, 
-        ax=ax
-      )
-      plt.savefig(out, bbox_inches='tight', pad_inches=0.1)
-      plt.close(fig)
-      
-    out = info.plot_specz_velocity_rel_position_path
-    with cond_overwrite(out, overwrite, mkdir=True):
-      fig = plt.figure(figsize=(7.5, 7.5), dpi=150)
-      ax = fig.add_subplot()
-      plot_ra_dec_relative(
-        info=info,
-        df_members=df_members, 
-        df_interlopers=df_interlopers, 
-        ax=ax
-      )
-      plt.savefig(out, bbox_inches='tight', pad_inches=0.1)
-      plt.close(fig)
+    for plot_func, plot_path, plot_projection in plots:
+      template = 'Plot ' + plot_path.name + ' done. Elapsed time: {}'
+      with cond_overwrite(plot_path, overwrite, mkdir=True, time=True, template=template):
+        fig = plt.figure(figsize=(7.5, 7.5), dpi=150)
+        ax = fig.add_subplot(projection=plot_projection)
+        plot_func(ax=ax, **args)
+        plt.savefig(plot_path, bbox_inches='tight', pad_inches=0.1)
+        plt.close(fig)
   else:
     out_path = info.plot_agg_velocity_path
     with cond_overwrite(out_path, overwrite, mkdir=True):
       fig = plt.figure(figsize=(7.5, 16), dpi=300)
       ax1 = fig.add_subplot(211)
       ax2 = fig.add_subplot(212, projection=wcs)
-      plot_velocity(df_members, df_interlopers, ax1)
-      plot_ra_dec(
+      _plot_velocity(df_members, df_interlopers, ax1)
+      _plot_ra_dec(
         info=info,
         df_members=df_members, 
         df_interlopers=df_interlopers, 
