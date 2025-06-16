@@ -239,12 +239,13 @@ def scale_pipeline():
   # op_build_other_pages(df_clusters, df_clusters_prev)
 
 
-def scale_website():
+@dg.job(resource_defs={'conf': ConfigResource()})
+def scale_website_pipeline():
   op_get_all_cluster_names().map(cluster_website_pipeline)
 
 
 
 defs = dg.Definitions(
-  jobs=[scale_pipeline],
+  jobs=[scale_pipeline, scale_website_pipeline],
   resources={'conf': ConfigResource()},
 )
