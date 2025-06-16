@@ -135,7 +135,7 @@ def op_build_cluster_page(conf: ConfigResource, info: ClusterInfo):
   if not conf.skip_website and not bool(conf.subset):
     df_clusters = load_catalog(version=conf.version, subset=conf.subset)
     df_clusters_prev = load_catalog(version=conf.version - 1, subset=conf.subset)
-    df_photoz = read_table(info.photoz_path)
+    df_photoz = info.photoz_df
     _, df_members, _ = load_shiftgap_cone(info=info, version=conf.version)
     download_xray(
       info=info, 
