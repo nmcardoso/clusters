@@ -61,8 +61,8 @@ def _get_nav_tag(
   for name in sorted(df_clusters.name.values):
     active = 'active' if name == curr_name else ''
     
-    if df_clusters_prev is not None and name not in df_clusters_prev.name.values:
-      new_tag = '<span class="badge text-bg-secondary">New</span>'
+    if df_clusters_prev is not None and name not in df_clusters_prev['name']:
+      new_tag = '<span class="badge text-bg-info">New</span>'
     else:
       new_tag = ''
     
@@ -71,7 +71,7 @@ def _get_nav_tag(
       f'<a class="nav-link {active}" href="/clusters_v{version}/{name}">'
       f'{name} {new_tag}'
       '</a>'
-      '</li>'
+      '</li>\n'
     )
   
   html = f'''
