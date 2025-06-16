@@ -10,7 +10,7 @@ from astropy import units as u
 from astropy.coordinates import SkyCoord
 from pylegs.io import read_table
 
-from splusclusters._loaders import ClusterInfo
+from splusclusters._loaders import ClusterInfo, _load_shiftgap_v7
 from splusclusters.configs import configs
 from splusclusters.loaders import (load_clusters, load_members_v5,
                                    load_members_v6)
@@ -131,18 +131,34 @@ def _get_nearest(info: ClusterInfo, df_clusters: pd.DataFrame, version: int):
 
 
 def _get_version_diff(name: str, df_clusters_prev: pd.DataFrame, version: int):
-  if version <= 5 or df_clusters_prev is None: return ''
-  q = df_clusters_prev[df_clusters_prev.name == name]
-  if len(q) == 0: return '<b>Differences between v5 and v6:</b> <i>not included in v5</i><br /><br />'
-  id_v5 = q.clsid.values[0]
-  catalog_v5 = load_members_v5(id_v5)
-  catalog_v6 = load_members_v6(name)
-  df = crossmatch(catalog_v6, catalog_v5, join='1not2')
-  html = f'<b>Differences between v5 and v6:</b> <span class="badge text-bg-success">members included: {len(df[df.flag_member == 0])}</span> &nbsp; '
-  html += f'<span class="badge text-bg-success">interlopers included: {len(df[df.flag_member == 1])}</span> &nbsp; '
-  df = crossmatch(catalog_v6, catalog_v5, join='2not1')
-  html += f'<span class="badge text-bg-danger">members excluded: {len(df[df.flag_member == 0])}</span> &nbsp; '
-  html += f'<span class="badge text-bg-danger">interlopers excluded: {len(df[df.flag_member == 1])}</span><br /><br />'
+  # todo: receber df_clusters e df_clusters_prev sem precisar carregar versões diferentes
+  if version <= 5 or df_clusters_prev is None: 
+    return ''
+  if version == 6:
+    q = df_clusters_prev[df_clusters_prev.name == name]
+    if len(q) == 0: 
+      return '<b>Differences between v5 and v6:</b> <i>not included in v5</i><br /><br />'
+    id_v5 = q.clsid.values[0]
+    catalog_v5 = load_members_v5(id_v5)
+    catalog_v6 = load_members_v6(name)
+    df = crossmatch(catalog_v6, catalog_v5, join='1not2')
+    html = f'<b>Differences between v5 and v6:</b> <span class="badge text-bg-success">members included: {len(df[df.flag_member == 0])}</span> &nbsp; '
+    html += f'<span class="badge text-bg-success">interlopers included: {len(df[df.flag_member == 1])}</span> &nbsp; '
+    df = crossmatch(catalog_v6, catalog_v5, join='2not1')
+    html += f'<span class="badge text-bg-danger">members excluded: {len(df[df.flag_member == 0])}</span> &nbsp; '
+    html += f'<span class="badge text-bg-danger">interlopers excluded: {len(df[df.flag_member == 1])}</span><br /><br />'
+  if version == 7:
+    q = df_clusters_prev[df_clusters_prev.name == name]
+    if len(q) == 0: 
+      return '<b>Differences between v7 and v6:</b> <i>not included in v6</i><br /><br />'
+    catalog_v6 = load_members_v6(name)
+    catalog_v7 = _load_shiftgap_v7(name)
+    df = crossmatch(catalog_v7, catalog_v6, join='1not2')
+    html = f'<b>Differences between v7 and v6:</b> <span class="badge text-bg-success">members included: {len(df[df.flag_member == 0])}</span> &nbsp; '
+    html += f'<span class="badge text-bg-success">interlopers included: {len(df[df.flag_member == 1])}</span> &nbsp; '
+    df = crossmatch(catalog_v7, catalog_v6, join='2not1')
+    html += f'<span class="badge text-bg-danger">members excluded: {len(df[df.flag_member == 0])}</span> &nbsp; '
+    html += f'<span class="badge text-bg-danger">interlopers excluded: {len(df[df.flag_member == 1])}</span><br /><br />'
   return html
 
 
