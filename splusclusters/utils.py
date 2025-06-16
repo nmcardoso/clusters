@@ -114,14 +114,18 @@ def compute_pdf_peak(a, binrange = None, binwidth = None):
 
 def return_table_if_exists(path: Path, default: pd.DataFrame = None):
   df = None
+  
   if default is not None:
     df = default
   elif path.exists():
     df = read_table(path)
+  
   if path is not None:
     print(f'Table {str(path)}')
-  print('Number of objects:', len(default))
-  pprint('Columns:', default)
+  
+  if df is not None:
+    print('Number of objects:', len(default))
+    pprint('Columns:', default)
   return df
 
 
