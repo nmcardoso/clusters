@@ -346,9 +346,9 @@ def create_zoffset_table(
   version: int,
   overwrite: bool = False,
 ):
-  path = configs.ROOT / 'tables' / f'z_offset_v{version}.csv'
-  print(f'z offset path: {str(path)}')
-  if path.exists() and not overwrite:
+  out_path = configs.ROOT / 'tables' / f'z_offset_v{version}.csv'
+  print(f'z offset path: {str(out_path)}')
+  if out_path.exists() and not overwrite:
     return
   
   data = []
@@ -361,8 +361,7 @@ def create_zoffset_table(
     cls_id = row['clsid']
     name = row['name']
     
-    path = configs.PHOTOZ_SPECZ_LEG_FOLDER / f'{name}.parquet'
-    df = read_table(path)
+    df = read_table(configs.PHOTOZ_SPECZ_LEG_FOLDER / f'{name}.parquet')
     if 'zml' not in df.columns:
       print('>> Skiped (zml not in columns)\n')
       skiped_clusters += 1
@@ -424,7 +423,7 @@ def create_zoffset_table(
   
   df = pd.DataFrame(data)
   print(df)
-  write_table(df, path)
+  write_table(df, out_path)
 
 
 
