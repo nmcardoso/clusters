@@ -111,7 +111,7 @@ def op_compile_cluster_catalog(conf: ConfigResource, info: ClusterInfo):
   )
 
 
-@dg.op(ins={'start_after': dg.In(dg.Nothing)}, pool='cluster_intensive')
+@dg.op(ins={'start_after': dg.In(dg.Nothing)}, pool='cluster')
 def op_render_plots(conf: ConfigResource, info: ClusterInfo):
   _, members_df, interlopers_df = load_shiftgap_cone(info, conf.version)
   if not conf.skip_plots and not bool(conf.subset):
