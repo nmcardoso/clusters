@@ -693,6 +693,7 @@ def _histogram_members_plot(
   df_all_radial: pd.DataFrame, 
   ax: plt.Axes
 ):
+  if not 'zml' in df_all_radial.columns: return
   members_match = fast_crossmatch(df_members, df_all_radial)
   members_match = members_match[~members_match.z.isna() & ~members_match.zml.isna()]
   if len(members_match) == 0: return
