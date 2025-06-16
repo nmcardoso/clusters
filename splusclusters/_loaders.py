@@ -103,87 +103,87 @@ class ClusterInfo:
   
   @property
   def plot_xray_vector_path(self):
-    return self.plots_folder / f'xray_{self.name}.eps'
+    return self.website_cluster_page / f'xray_{self.name}.eps'
   
   @property
   def plot_xray_raster_path(self):
-    return self.plots_folder / f'xray_{self.name}.{self.plot_format}'
+    return self.website_cluster_page / f'xray_{self.name}.{self.plot_format}'
   
   @property
   def plot_specz_path(self):
-    return self.plots_folder / f'specz_{self.name}.{self.plot_format}'
+    return self.website_cluster_page / f'specz_{self.name}.{self.plot_format}'
   
   @property
   def plot_photoz_path(self):
-    return self.plots_folder / f'photoz_{self.name}.{self.plot_format}'
+    return self.website_cluster_page / f'photoz_{self.name}.{self.plot_format}'
   
   @property
   def plot_legacy_coverage_path(self):
-    return self.plots_folder / f'legacy_coverage_{self.name}.{self.plot_format}'
+    return self.website_cluster_page / f'legacy_coverage_{self.name}.{self.plot_format}'
   
   @property
   def plot_photoz_specz_path(self):
-    return self.plots_folder / f'photoz_specz_{self.name}.{self.plot_format}'
+    return self.website_cluster_page / f'photoz_specz_{self.name}.{self.plot_format}'
   
   @property
   def plot_specz_contours_path(self):
-    return self.plots_folder / f'specz_contours_{self.name}.{self.plot_format}'
+    return self.website_cluster_page / f'specz_contours_{self.name}.{self.plot_format}'
   
   @property
   def plot_redshift_diagonal_path(self):
-    return self.plots_folder / f'redshift_diagonal_{self.name}.{self.plot_format}'
+    return self.website_cluster_page / f'redshift_diagonal_{self.name}.{self.plot_format}'
   
   @property
   def plot_redshift_diff_mag_path(self):
-    return self.plots_folder / f'redshift_diff_mag_{self.name}.{self.plot_format}'
+    return self.website_cluster_page / f'redshift_diff_mag_{self.name}.{self.plot_format}'
   
   @property
   def plot_redshift_diff_distance_path(self):
-    return self.plots_folder / f'redshift_diff_distance_{self.name}.{self.plot_format}'
+    return self.website_cluster_page / f'redshift_diff_distance_{self.name}.{self.plot_format}'
   
   @property
   def plot_redshift_diff_odds_path(self):
-    return self.plots_folder / f'redshift_diff_odds_{self.name}.{self.plot_format}'
+    return self.website_cluster_page / f'redshift_diff_odds_{self.name}.{self.plot_format}'
   
   @property
   def plot_redshift_hist_members_path(self):
-    return self.plots_folder / f'redshift_hist_members_{self.name}.{self.plot_format}'
+    return self.website_cluster_page / f'redshift_hist_members_{self.name}.{self.plot_format}'
   
   @property
   def plot_redshift_hist_interlopers_path(self):
-    return self.plots_folder / f'redshift_hist_interlopers_{self.name}.{self.plot_format}'
+    return self.website_cluster_page / f'redshift_hist_interlopers_{self.name}.{self.plot_format}'
   
   @property
   def plot_redshift_hist_all_path(self):
-    return self.plots_folder / f'redshift_hist_all_{self.name}.{self.plot_format}'
+    return self.website_cluster_page / f'redshift_hist_all_{self.name}.{self.plot_format}'
   
   @property
   def plot_specz_velocity_path(self):
-    return self.plots_folder / f'specz_velocity_{self.name}.{self.plot_format}'
+    return self.website_cluster_page / f'specz_velocity_{self.name}.{self.plot_format}'
   
   @property
   def plot_specz_distance_path(self):
-    return self.plots_folder / f'specz_distance_{self.name}.{self.plot_format}'
+    return self.website_cluster_page / f'specz_distance_{self.name}.{self.plot_format}'
   
   @property
   def plot_photoz_velocity_path(self):
-    return self.plots_folder / f'photoz_velocity_{self.name}.{self.plot_format}'
+    return self.website_cluster_page / f'photoz_velocity_{self.name}.{self.plot_format}'
   
   @property
   def plot_photoz_distance_path(self):
-    return self.plots_folder / f'photoz_distance_{self.name}.{self.plot_format}'
+    return self.website_cluster_page / f'photoz_distance_{self.name}.{self.plot_format}'
   
   @property
   def plot_specz_velocity_rel_position_path(self):
-    return self.plots_folder / f'specz_velocity_rel_position_{self.name}.{self.plot_format}'
+    return self.website_cluster_page / f'specz_velocity_rel_position_{self.name}.{self.plot_format}'
   
   @property
   def plot_mag_diff_path(self):
-    return self.plots_folder / f'mag_diff_{self.name}.{self.plot_format}'
+    return self.website_cluster_page / f'mag_diff_{self.name}.{self.plot_format}'
   
   @property
   def plot_mag_diff_hist_path(self):
-    return self.plots_folder / f'mag_diff_hist_{self.name}.{self.plot_format}'
+    return self.website_cluster_page / f'mag_diff_hist_{self.name}.{self.plot_format}'
   
   @property
   def plot_agg_velocity_path(self):
@@ -199,7 +199,7 @@ class ClusterInfo:
   
   @property
   def plot_xray_raster_path(self):
-    return self.plots_folder / f'xray_{self.name}.{self.plot_format}'
+    return self.website_cluster_page / f'xray_{self.name}.{self.plot_format}'
   
   @property
   def website_root(self):
