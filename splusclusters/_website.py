@@ -132,8 +132,8 @@ def _get_nearest(info: ClusterInfo, df_clusters: pd.DataFrame, version: int):
 
 
 def _get_version_diff(info: ClusterInfo, version: int):
-  catalog = load_shiftgap_cone(info, version)
-  catalog_prev = load_shiftgap_cone(info, version-1)
+  catalog, _, _ = load_shiftgap_cone(info, version)
+  catalog_prev, _, _ = load_shiftgap_cone(info, version-1)
   if catalog_prev is None or len(catalog_prev) == 0:
     return f'<b>Differences between v{version} and v{version-1}:</b> <i>not included in v{version-1}</i><br /><br />'
   df = crossmatch(catalog, catalog_prev, join='1not2')
