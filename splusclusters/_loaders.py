@@ -440,11 +440,15 @@ def load_shiftgap_cone(info: ClusterInfo, version: int):
     7: _load_shiftgap_v7,
   }
   df_sg = version_map[version](info.name)
-  df_members = df_sg[df_sg.flag_member == 0]
-  df_interlopers = df_sg[df_sg.flag_member == 1]
-  print('df_sg columns:', ', '.join(df_sg.columns))
-  print('df_members columns:', ', '.join(df_members.columns))
-  print('df_interlopers columns:', ', '.join(df_interlopers.columns))
+  if df_sg is not None:
+    df_members = df_sg[df_sg.flag_member == 0]
+    df_interlopers = df_sg[df_sg.flag_member == 1]
+    print('df_sg columns:', ', '.join(df_sg.columns))
+    print('df_members columns:', ', '.join(df_members.columns))
+    print('df_interlopers columns:', ', '.join(df_interlopers.columns))
+  else:
+    df_members, df_interlopers = None, None
+    print('df_sg is None')
   return df_sg, df_members, df_interlopers
 
 
