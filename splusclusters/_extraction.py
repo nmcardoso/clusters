@@ -347,6 +347,7 @@ def create_zoffset_table(
   overwrite: bool = False,
 ):
   path = configs.ROOT / 'tables' / f'z_offset_v{version}.csv'
+  print(f'z offset path: {str(path)}')
   if path.exists() and not overwrite:
     return
   
@@ -421,7 +422,9 @@ def create_zoffset_table(
   
   print('Skiped clusters:', skiped_clusters)
   
-  write_table(pd.DataFrame(data), path)
+  df = pd.DataFrame(data)
+  print(df)
+  write_table(df, path)
 
 
 
