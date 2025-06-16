@@ -30,7 +30,7 @@ class ConfigResource(dg.ConfigurableResource):
   photoz_odds: Optional[float] = 0.9
   separated_plots: Optional[bool] = True
   splus_only_plots: Optional[bool] = False
-  plot_format: Optional[str] = 'png'
+  plot_format: Optional[str] = 'jpg'
   
   skip_cones: Optional[bool] = False
   skip_plots: Optional[bool] = False
@@ -247,19 +247,21 @@ def op_get_all_cluster_names(conf: ConfigResource):
 
 @dg.job(resource_defs={'conf': ConfigResource()})
 def scale_pipeline():
-  op_create_zoffset_table()
   op_get_all_cluster_names().map(cluster_pipeline)
   # op_build_other_pages(df_clusters, df_clusters_prev)
 
 
 @dg.job(resource_defs={'conf': ConfigResource()})
 def scale_website_pipeline():
-  op_create_zoffset_table()
   op_get_all_cluster_names().map(cluster_website_pipeline)
+  
 
+@dg.job(resource_defs={'conf': ConfigResource()})
+def scale_zoffset_pipeline():
+  op_create_zoffset_table()
 
 
 defs = dg.Definitions(
-  jobs=[scale_pipeline, scale_website_pipeline],
+  jobs=[scale_pipeline, scale_website_pipeline, scale_zoffset_pipeline],
   resources={'conf': ConfigResource()},
 )

@@ -1267,7 +1267,7 @@ def make_zoffset_plots(
   overwrite: bool = False,
   **kwargs
 ):  
-  zoffset = read_table(configs.Z_OFFSET_TABLE_PATH)
+  zoffset = read_table(configs.ROOT / 'tables' / f'z_offset_v{info.version}.csv')
   zoffset = zoffset[zoffset['name'] == info.name]
   if len(zoffset) == 0: 
     print('>> Skiped\n')
