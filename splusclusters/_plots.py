@@ -694,12 +694,11 @@ def _histogram_members_plot(
   ax: plt.Axes
 ):
   if not 'zml' in df_all_radial.columns: return
-  members_match = fast_crossmatch(df_members, df_all_radial)
-  members_match = members_match[~members_match.z.isna() & ~members_match.zml.isna()]
-  if len(members_match) == 0: return
-  rng = (min(members_match.z.min(), members_match.zml.min()), max(members_match.z.max(), members_match.zml.max()))
-  ax.hist(members_match.z, histtype='step', bins=30, range=rng, color='tab:red', alpha=0.75, lw=2, label=f'$z_{{spec}}$ ({len(members_match.z)} objects)')
-  ax.hist(members_match.zml, histtype='step', bins=30, range=rng, color='tab:blue', alpha=0.75, lw=2, label=f'$z_{{photo}}$ ({len(members_match.z)} objects)')
+  df_members = df_all_radial[~df_all_radial.z.isna() & ~df_all_radial.zml.isna() & (df_all_radial.flag_members == 0)]
+  if len(df_members) == 0: return
+  rng = (min(df_members.z.min(), df_members.zml.min()), max(df_members.z.max(), df_members.zml.max()))
+  ax.hist(df_members.z, histtype='step', bins=30, range=rng, color='tab:red', alpha=0.75, lw=2, label=f'$z_{{spec}}$ ({len(df_members.z)} objects)')
+  ax.hist(df_members.zml, histtype='step', bins=30, range=rng, color='tab:blue', alpha=0.75, lw=2, label=f'$z_{{photo}}$ ({len(df_members.z)} objects)')
   ax.legend()
   ax.tick_params(direction='in')
   ax.set_xlabel('z')
@@ -709,16 +708,15 @@ def _histogram_members_plot(
 
 
 def _histogram_interlopers_plot(
-  df_interlopers: pd.DataFrame,
   df_all_radial: pd.DataFrame,
   ax: plt.Axes,
 ):
-  interlopers_match = fast_crossmatch(df_interlopers, df_all_radial)
-  interlopers_match = interlopers_match[~interlopers_match.z.isna() & ~interlopers_match.zml.isna()]
-  if len(interlopers_match) == 0: return
-  rng = (min(interlopers_match.z.min(), interlopers_match.zml.min()), max(interlopers_match.z.max(), interlopers_match.zml.max()))
-  ax.hist(interlopers_match.z, histtype='step', bins=30, range=rng, color='tab:red', alpha=0.75, lw=2, label=f'$z_{{spec}}$ ({len(interlopers_match.z)} objects)')
-  ax.hist(interlopers_match.zml, histtype='step', bins=30, range=rng, color='tab:blue', alpha=0.75, lw=2, label=f'$z_{{photo}}$ ({len(interlopers_match.z)} objects)')
+  if 'zml' not in df_all_radial.columns: return
+  df_interlopers = df_all_radial[~df_all_radial.z.isna() & ~df_all_radial.zml.isna() & (df_all_radial.flag_members == 1)]
+  if len(df_interlopers) == 0: return
+  rng = (min(df_interlopers.z.min(), df_interlopers.zml.min()), max(df_interlopers.z.max(), df_interlopers.zml.max()))
+  ax.hist(df_interlopers.z, histtype='step', bins=30, range=rng, color='tab:red', alpha=0.75, lw=2, label=f'$z_{{spec}}$ ({len(df_interlopers.z)} objects)')
+  ax.hist(df_interlopers.zml, histtype='step', bins=30, range=rng, color='tab:blue', alpha=0.75, lw=2, label=f'$z_{{photo}}$ ({len(df_interlopers.z)} objects)')
   ax.legend()
   ax.tick_params(direction='in')
   ax.set_xlabel('z')
@@ -818,7 +816,6 @@ def make_histogram_plots(
       fig = plt.figure(figsize=(7.5, 7.5), dpi=150)
       ax = fig.add_subplot()
       _histogram_members_plot(
-        df_members=df_members,
         df_all_radial=df_all_radial,
         ax=ax,
       )
@@ -831,7 +828,6 @@ def make_histogram_plots(
       fig = plt.figure(figsize=(7.5, 7.5), dpi=150)
       ax = fig.add_subplot()
       _histogram_interlopers_plot(
-        df_interlopers=df_interlopers,
         df_all_radial=df_all_radial,
         ax=ax,
       )
