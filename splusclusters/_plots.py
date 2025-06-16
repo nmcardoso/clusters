@@ -806,7 +806,7 @@ def _plot_velocity(
   ax.set_title('Spectroscoptic velocity x distance')
 
 
-def _plot_specz(
+def _plot_velocity_specz(
   df_members: pd.DataFrame, 
   df_interlopers: pd.DataFrame, 
   cls_z: float, 
@@ -826,7 +826,7 @@ def _plot_specz(
   ax.set_ylim(-0.03, 0.03)
 
 
-def _plot_photoz(
+def _plot_velocity_photoz(
   df_members: pd.DataFrame, 
   df_interlopers: pd.DataFrame, 
   df_photoz_radial: pd.DataFrame, 
@@ -997,12 +997,13 @@ def make_velocity_plots(
     'overwrite': overwrite,
     'separated': separated,
     'photoz_odds': photoz_odds,
+    'cls_z': info.z,
   }
   
   plots = [
     (_plot_velocity, info.plot_specz_velocity_path, None),
-    (_plot_specz, info.plot_specz_distance_path, None),
-    (_plot_photoz, info.plot_photoz_distance_path, None),
+    (_plot_velocity_specz, info.plot_specz_distance_path, None),
+    (_plot_velocity_photoz, info.plot_photoz_distance_path, None),
     (_plot_ra_dec, info.plot_photoz_velocity_path, wcs),
     (_plot_ra_dec_relative, info.plot_specz_velocity_rel_position_path, None),
   ]
