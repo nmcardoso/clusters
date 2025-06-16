@@ -280,7 +280,10 @@ def make_splus_fields_tables(info: ClusterInfo, df: pd.DataFrame):
   r200_path = base_path / 'splus_fields_5r200.csv'
   r500_path = base_path / 'splus_fields_5r500.csv'
   search_radius_path = base_path / 'splus_fields_search_radius.csv'
-  if not r200_path.exists() or not r500_path.exists() or not search_radius_path.exists():
+  if (
+    not r200_path.exists() or not r500_path.exists() or 
+    not search_radius_path.exists()
+  ) and ('Field' in df.columns):
   # if True:
     ra_col, dec_col = guess_coords_columns(df)
     coords = SkyCoord(df[ra_col], df[dec_col], unit='deg')
