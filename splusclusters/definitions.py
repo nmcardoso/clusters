@@ -48,7 +48,7 @@ def op_load_spec():
   return load_spec()
 
 
-@dg.op(out=dg.Out(ClusterInfo), pool='cluster')
+@dg.op(out=dg.Out(ClusterInfo), pool='cluster_info')
 def op_compute_cluster_info(conf: ConfigResource, cls_name: str) -> ClusterInfo:
   return compute_cluster_info(
     cls_name=cls_name,
