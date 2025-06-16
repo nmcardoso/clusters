@@ -351,6 +351,30 @@ def make_cluster_page(
     p.name for p in folder_path.glob(f'*.{info.plot_format}') 
     if p.name not in filter_plots
   ]
+  
+  images = [
+    info.plot_specz_path, info.plot_photoz_path,
+    info.plot_legacy_coverage_path, info.plot_photoz_specz_path,
+           info.plot_specz_velocity_rel_position_path, 
+    info.plot_specz_velocity_path, info.plot_specz_distance_path, 
+    info.plot_photoz_distance_path, info.plot_mag_diff_path,
+    info.plot_mag_diff_hist_path, info.plot_redshift_diagonal_path,
+    info.plot_redshift_diff_mag_path, info.plot_redshift_diff_odds_path, 
+    info.plot_redshift_diff_distance_path, 
+    info.plot_xray_raster_path
+  ]
+  
+  images = [p.name for p in images if p.exists()]
+  
+  # 'specz', 'photoz', 'legacy_coverage', 'photoz_specz', 
+  #     'spec_velocity_position', 'spec_velocity_rel_position', 
+  #     'spec_velocity', 'specz_distance', 'photoz_distance', 
+  #     'mag_diff', 'mag_diff_hist', 'redshift_diagonal', 'redshift_diff_mag',
+  #     'redshift_diff_odds', 'redshift_diff_distance', #'redshift_histogram_members', 
+  #     # 'redshift_histogram_interlopers', 'redshift_histogram_all',
+  #     'zoffset_baseline_m', 'zoffset_m-shift_m', 
+  #     'zoffset_baseline_mi', 'zoffset_mi-shift_mi',
+  #     'specz_contours', 'xray',
       
   gallery = [
     f'<a href="{img}" class="gallery" data-lightbox="images"><img src="{img}" width="{width}" height="{height}" /></a>'

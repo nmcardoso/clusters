@@ -5,8 +5,8 @@ import pandas as pd
 from astropy.coordinates import SkyCoord
 from pylegs.io import read_table
 
-from splusclusters._extraction import (download_xray, legacy_cone, photoz_cone,
-                                       specz_cone)
+from splusclusters._extraction import (create_zoffset_table, download_xray,
+                                       legacy_cone, photoz_cone, specz_cone)
 from splusclusters._loaders import (ClusterInfo, compute_cluster_info,
                                     load_catalog, load_shiftgap_cone,
                                     load_spec)
@@ -130,6 +130,18 @@ def op_render_plots(conf: ConfigResource, info: ClusterInfo):
     )
 
 
+@dg.op
+def op_create_zoffset_table(conf: ConfigResource):
+  df_clusters = load_catalog(version=conf.version, subset=conf.subset)
+  create_zoffset_table(
+    df_clusters=df_clusters,
+    z_delta=conf.z_spec_delta,
+    version=conf.version,
+    overwrite=conf.overwrite,
+  )
+
+
+
 @dg.op(ins={'start_after': dg.In(dg.Nothing)}, pool='cluster')
 def op_build_cluster_page(conf: ConfigResource, info: ClusterInfo):
   if not conf.skip_website and not bool(conf.subset):
@@ -235,12 +247,14 @@ def op_get_all_cluster_names(conf: ConfigResource):
 
 @dg.job(resource_defs={'conf': ConfigResource()})
 def scale_pipeline():
+  op_create_zoffset_table()
   op_get_all_cluster_names().map(cluster_pipeline)
   # op_build_other_pages(df_clusters, df_clusters_prev)
 
 
 @dg.job(resource_defs={'conf': ConfigResource()})
 def scale_website_pipeline():
+  op_create_zoffset_table()
   op_get_all_cluster_names().map(cluster_website_pipeline)
 
 

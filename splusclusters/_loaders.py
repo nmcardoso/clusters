@@ -202,6 +202,22 @@ class ClusterInfo:
     return self.website_cluster_page / f'xray_{self.name}.{self.plot_format}'
   
   @property
+  def plot_zoffset_baseline_m_path(self):
+    return self.website_cluster_page / f'zoffset_baseline_m_{self.name}.{self.plot_format}'
+  
+  @property
+  def plot_zoffset_baseline_mi_path(self):
+    return self.website_cluster_page / f'zoffset_baseline_mi_{self.name}.{self.plot_format}'
+  
+  @property
+  def plot_zoffset_m_shift_m_path(self):
+    return self.website_cluster_page / f'zoffset_m-shift_m_{self.name}.{self.plot_format}'
+  
+  @property
+  def plot_zoffset_mi_shift_mi_path(self):
+    return self.website_cluster_page / f'zoffset_mi-shift_mi_{self.name}.{self.plot_format}'
+  
+  @property
   def website_root(self):
     return configs.ROOT / 'docs'
   

@@ -15,6 +15,7 @@ from astropy.visualization.wcsaxes import SphericalCircle
 from astropy.wcs import WCS
 from matplotlib.colors import LinearSegmentedColormap
 from matplotlib.patches import Circle
+from pylegs.io import read_table
 from scipy.ndimage.filters import gaussian_filter
 from tqdm import tqdm
 
@@ -1247,6 +1248,90 @@ def make_magdiff_plots(
 
 
 
+
+def zoffset_hist_plot(z, zml, z_label, zml_label, title, filename, binrange):
+  plt.figure(figsize=(8,6.5))
+  sns.histplot(x=z, binrange=binrange, binwidth=0.001, kde=True, label=z_label)
+  sns.histplot(x=zml, binrange=binrange, binwidth=0.001, kde=True, label=zml_label)
+  plt.legend()
+  plt.title(title)
+  plt.ylabel(None)
+  plt.savefig(filename, pad_inches=0.02, bbox_inches='tight')
+  plt.close()
+
+
+
+def make_zoffset_plots(
+  info: ClusterInfo,
+  df_all_radial: pd.DataFrame, 
+  overwrite: bool = False,
+  **kwargs
+):  
+  zoffset = read_table(configs.Z_OFFSET_TABLE_PATH)
+  zoffset = zoffset[zoffset['name'] == info.name]
+  if len(zoffset) == 0: 
+    print('>> Skiped\n')
+    return
+  zoffset = zoffset.iloc[0]
+  
+  df = df_all_radial
+  mask = (
+    (df.flag_member.isin([0, 1])) & 
+    (df.z.between(info.z - info.z_spec_delta, info.z + info.z_spec_delta)) &
+    (df.zml.between(info.z - 0.03, info.z + 0.03)) &
+    (df.radius_Mpc < 5 * info.r200_Mpc)
+  )
+  df = df[mask]
+  df_members = df[df.flag_member == 0]
+  
+  x_min = min(df.zml.min(), df.z.min())
+  x_max = max(df.zml.max(), df.z.max())
+  binrange = (x_min, x_max)
+  
+  if overwrite or not info.plot_zoffset_baseline_m_path.exists():
+    zoffset_hist_plot(
+      z=df_members.z.values, 
+      zml=df_members.zml.values, 
+      z_label=f'spec-z M ({len(df_members)})', 
+      zml_label=f'photo-z M ({len(df_members)})', 
+      title=f"{info.name}: MEM (no correction) $z_{{offset}} = {zoffset['z_offset_m']:.4f}$; $RMSE = {zoffset['rmse_base_m']:.4f}$", 
+      filename=info.plot_zoffset_baseline_m_path, 
+      binrange=binrange
+    )
+  if overwrite or not info.plot_zoffset_baseline_mi_path:
+    zoffset_hist_plot(
+      z=df.z.values, 
+      zml=df.zml.values, 
+      z_label=f'spec-z M+I ({len(df)})', 
+      zml_label=f'photo-z M+I ({len(df)})', 
+      title=f"{info.name}: M+I (no correction) $z_{{offset}} = {zoffset['z_offset_mi']:.4f}$; $RMSE = {zoffset['rmse_base_mi']:.4f}$", 
+      filename=info.plot_zoffset_baseline_mi_path, 
+      binrange=binrange
+    )
+  if overwrite or not info.plot_zoffset_m_shift_m_path:
+    zoffset_hist_plot(
+      z=df_members.z.values, 
+      zml=df_members.zml.values - zoffset['z_offset_m'], 
+      z_label=f'spec-z M ({len(df_members)})', 
+      zml_label=f'photo-z M ({len(df_members)})', 
+      title=f"{info.name}: M (M shift) $z_{{offset}} = {0.0:.4f}$; $RMSE = {zoffset['rmse_om_m']:.4f}$", 
+      filename=info.plot_zoffset_m_shift_m_path, 
+      binrange=binrange
+    )
+  if overwrite or not info.plot_zoffset_mi_shift_mi_path:
+    zoffset_hist_plot(
+      z=df.z.values, 
+      zml=df.zml.values - zoffset['z_offset_mi'], 
+      z_label=f'spec-z M+I ({len(df)})', 
+      zml_label=f'photo-z M+I ({len(df)})', 
+      title=f"{info.name}: M+I (M+I shift) $z_{{offset}} = {0.0:.4f}$; $RMSE = {zoffset['rmse_om_mi']:.4f}$", 
+      filename=info.plot_zoffset_mi_shift_mi_path, 
+      binrange=binrange
+    )
+  print()
+
+
+
 def make_plots(
   info: ClusterInfo,
   df_photoz_radial: pd.DataFrame,
@@ -1280,6 +1365,7 @@ def make_plots(
     make_contour_plots,
     make_histogram_plots,
     make_magdiff_plots,
+    make_zoffset_plots,
   ]
   
   for f in plot_functions:

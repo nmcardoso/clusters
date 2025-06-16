@@ -32,8 +32,9 @@ from upath import UPath
 from splusclusters._loaders import ClusterInfo, load_spec
 from splusclusters.configs import configs
 from splusclusters.loaders import remove_bad_objects
-from splusclusters.utils import (Timming, cond_overwrite, config_dask,
-                                 return_table_if_exists)
+from splusclusters.utils import (Timming, compute_pdf_peak, cond_overwrite,
+                                 config_dask, relative_err,
+                                 return_table_if_exists, rmse)
 
 
 class EmptyDataFrameError(Exception):
@@ -333,6 +334,91 @@ def download_xray(
       program, '-density', '300', str(eps_path.absolute()), 
       '-trim', '-rotate', '90', str(raster_path.absolute())
     ])
+
+
+
+
+
+
+def create_zoffset_table(
+  df_clusters: pd.DataFrame,
+  z_delta: float, 
+  version: int,
+  overwrite: bool = False,
+):
+  path = configs.ROOT / 'tables' / f'z_offset_v{version}.csv'
+  if path.exists() and not overwrite:
+    return
+  
+  data = []
+  skiped_clusters = 0
+  z_col = 'z_spec' if 'z_spec' in df_clusters.columns else 'zspec'
+  
+  for i, row in df_clusters.iterrows():
+    z_cluster = row[z_col]
+    r200_Mpc = row['R200_Mpc']
+    cls_id = row['clsid']
+    name = row['name']
+    
+    path = configs.PHOTOZ_SPECZ_LEG_FOLDER / f'{name}.parquet'
+    df = read_table(path)
+    mask = (
+      (df.flag_member.isin([0, 1])) & 
+      (df.z.between(z_cluster - z_delta, z_cluster + z_delta)) &
+      (df.zml.between(z_cluster-0.03, z_cluster+0.03)) &
+      (df.radius_Mpc < 5*r200_Mpc)
+    )
+    df = df[mask]
+    df_members = df[df.flag_member == 0]
+    
+    print(f'[{i+1} / {len(df_clusters)}] Cluster: {name}')
+    print(f'Members: {len(df_members)}')
+    print(f'Members + Interlopers: {len(df)}')
+    
+    if len(df_members) < 10: 
+      print('>> skiped\n')
+      skiped_clusters += 1
+      continue
+    
+    row = dict()
+    row['name'] = name
+    row['clsid'] = cls_id
+    row['z_cluster'] = z_cluster
+    row['R200_Mpc'] = r200_Mpc
+    
+    # members offset
+    row['peak_spec_m'], row['peak_spec_m_density'] = compute_pdf_peak(df_members.z.values, binwidth=0.001)
+    row['peak_photo_m'], row['peak_photo_m_density'] = compute_pdf_peak(df_members.zml.values, binwidth=0.001)
+    row['z_offset_m'] = row['peak_photo_m'] - row['peak_spec_m']
+    
+    # members + interlopers offset
+    row['peak_spec_mi'], row['peak_spec_mi_density'] = compute_pdf_peak(df.z.values, binwidth=0.001)
+    row['peak_photo_mi'], row['peak_photo_mi_density'] = compute_pdf_peak(df.zml.values, binwidth=0.001)
+    row['z_offset_mi'] = row['peak_photo_mi'] - row['peak_spec_mi']
+    
+    # baseline offset errors
+    row['rmse_base_m'] = rmse(df_members.z.values, df_members.zml.values)
+    row['rmse_base_mi'] = rmse(df.z.values, df.zml.values)
+    
+    # members offset errors
+    row['rmse_om_m'] = rmse(df_members.z.values, df_members.zml.values - row['z_offset_m'])
+    row['rmse_om_mi'] = rmse(df.z.values, df.zml.values - row['z_offset_m'])
+    row['rel_om_m'] = relative_err(row['rmse_om_m'], row['rmse_base_m'])
+    row['rel_om_mi'] = relative_err(row['rmse_om_mi'], row['rmse_base_mi'])
+    
+    # members + intelopers offset errors
+    row['rmse_omi_m'] = rmse(df_members.z.values, df_members.zml.values - row['z_offset_mi'])
+    row['rmse_omi_mi'] = rmse(df.z.values, df.zml.values - row['z_offset_mi'])
+    row['rel_omi_m'] = relative_err(row['rmse_omi_m'], row['rmse_base_m'])
+    row['rel_omi_mi'] = relative_err(row['rmse_omi_mi'], row['rmse_base_mi'])
+    
+    data.append(row)
+    print()
+  
+  print('Skiped clusters:', skiped_clusters)
+  
+  write_table(pd.DataFrame(data), path)
+
 
 
 
