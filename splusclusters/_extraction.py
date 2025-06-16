@@ -362,6 +362,10 @@ def create_zoffset_table(
     
     path = configs.PHOTOZ_SPECZ_LEG_FOLDER / f'{name}.parquet'
     df = read_table(path)
+    if 'zml' not in df.columns:
+      print('>> Skiped (zml not in columns)\n')
+      skiped_clusters += 1
+      continue
     mask = (
       (df.flag_member.isin([0, 1])) & 
       (df.z.between(z_cluster - z_delta, z_cluster + z_delta)) &
@@ -376,7 +380,7 @@ def create_zoffset_table(
     print(f'Members + Interlopers: {len(df)}')
     
     if len(df_members) < 10: 
-      print('>> skiped\n')
+      print('>> Skiped (n_members < 10)\n')
       skiped_clusters += 1
       continue
     
