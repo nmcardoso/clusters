@@ -353,15 +353,27 @@ def make_cluster_page(
   ]
   
   images = [
-    info.plot_specz_path, info.plot_photoz_path,
-    info.plot_legacy_coverage_path, info.plot_photoz_specz_path,
-           info.plot_specz_velocity_rel_position_path, 
-    info.plot_specz_velocity_path, info.plot_specz_distance_path, 
-    info.plot_photoz_distance_path, info.plot_mag_diff_path,
-    info.plot_mag_diff_hist_path, info.plot_redshift_diagonal_path,
-    info.plot_redshift_diff_mag_path, info.plot_redshift_diff_odds_path, 
+    info.plot_specz_path, 
+    info.plot_photoz_path,
+    info.plot_legacy_coverage_path, 
+    info.plot_photoz_specz_path,
+    info.plot_specz_velocity_rel_position_path, 
+    info.plot_specz_velocity_path, 
+    info.plot_specz_distance_path, 
+    info.plot_photoz_velocity_path,
+    info.plot_photoz_distance_path, 
+    info.plot_mag_diff_path,
+    info.plot_mag_diff_hist_path, 
+    info.plot_redshift_diagonal_path,
+    info.plot_redshift_diff_mag_path, 
+    info.plot_redshift_diff_odds_path, 
     info.plot_redshift_diff_distance_path, 
-    info.plot_xray_raster_path
+    info.plot_zoffset_baseline_m_path,
+    info.plot_zoffset_baseline_mi_path, 
+    info.plot_zoffset_m_shift_m_path,
+    info.plot_zoffset_mi_shift_mi_path, 
+    info.plot_specz_contours_path, 
+    info.plot_xray_raster_path,
   ]
   
   images = [p.name for p in images if p.exists()]
@@ -391,7 +403,12 @@ def make_cluster_page(
   <html>
   {_get_head_tag()}
   <body>
-    {_get_nav_tag(df_clusters=df_clusters, df_clusters_prev=df_clusters_prev, version=version, curr_name=info.name)}
+    {_get_nav_tag(
+      df_clusters=df_clusters, 
+      df_clusters_prev=df_clusters_prev, 
+      version=version, 
+      curr_name=info.name
+    )}
     
     <hr />
     
