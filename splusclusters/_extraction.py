@@ -336,6 +336,8 @@ def download_xray(
 
 
 
+
+
 def photoz_cone_old(
   photoz_df: pd.DataFrame,
   photoz_skycoord: SkyCoord,
@@ -428,28 +430,3 @@ def splus_members_match_old(
       )
     else:
       print('members dataframe not found, skiping')
-
-
-
-
-def make_cones(
-  info: ClusterInfo,
-  specz_df: pd.DataFrame,
-  specz_skycoord: SkyCoord | None,
-  overwrite: bool = False,
-  workers: int = 5,
-):
-  cone_functions = [
-    specz_cone,
-    photoz_cone,
-    legacy_cone,
-  ]
-  
-  cone_params = [
-    dict(specz_df=specz_df, specz_skycoord=specz_skycoord, info=info, overwrite=overwrite),
-    dict(info=info, overwrite=overwrite),
-    dict(info=info, workers=workers, overwrite=overwrite),
-  ]
-  
-  futures = [f.submit(**p) for f, p in zip(cone_functions, cone_params)]
-  # wait(futures)

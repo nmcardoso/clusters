@@ -368,50 +368,6 @@ def _load_shiftgap_v7(cls_name: str = None, cls_id: str | int = None):
 
 
 
-def _load_photoz(coords: bool = True):
-  df_photoz = read_table(configs.PHOTOZ_TABLE_PATH)
-  if coords:
-    ra, dec = guess_coords_columns(df_photoz)
-    coords = SkyCoord(
-      ra=df_photoz[ra].values, 
-      dec=df_photoz[dec].values, 
-      unit=u.deg, 
-      frame='icrs'
-    )
-    return df_photoz, coords
-  return df_photoz
-
-
-
-def _load_photoz2(coords: bool = True):
-  df_photoz = read_table(configs.PHOTOZ2_TABLE_PATH)
-  if coords:
-    ra, dec = guess_coords_columns(df_photoz)
-    coords = SkyCoord(
-      ra=df_photoz[ra].values, 
-      dec=df_photoz[dec].values, 
-      unit=u.deg, 
-      frame='icrs'
-    )
-    return df_photoz, coords
-  return df_photoz.rename(columns={'RA': 'ra', 'DEC': 'dec'})
-
-
-
-def _load_legacy(coords: bool = True):
-  df = read_table(configs.LEGACY_TABLE_PATH)
-  if coords:
-    ra, dec = guess_coords_columns(df)
-    coords = SkyCoord(
-      ra=df[ra].values, 
-      dec=df[dec].values, 
-      unit=u.deg, 
-      frame='icrs'
-    )
-    return df, coords
-  return df
-
-
 
 def _load_eRASS():
   df_erass = read_table(configs.ERASS_TABLE_PATH)
@@ -449,17 +405,14 @@ def _load_cluster_product(info: ClusterInfo, path: Path):
     return None
   t = Timming()
   df = read_table(path)
+  print(f'loaded table {str(path)} in {t.end()}.')
+  print(f'number of objects: {len(df)}')
+  pprint(f'columns: ', df.columns)
   if 'z' in df.columns:
-    z_delta1 = info.z - df.z.min()
-    z_delta2 = df.z.max() - info.z
-    print(f'z range: [{info.z:.3f} - {z_delta1:.3f}, {info.z:.3f} + {z_delta2:.3f}]')
+    print(f'z range: [{df.z.min()}, {df.z.max()}]')
   if 'zml' in df.columns:
-    zml_delta1 = info.z - df.zml.min()
-    zml_delta2 = df.zml.max() - info.z
-    print(f'z range: [{info.z:.3f} - {zml_delta1:.3f}, {info.z:.3f} + {zml_delta2:.3f}]')
-  # if 'z' in df.columns:
-  #   df = df[df.z.between(*z_spec_range)].reset_index(drop=True)
-  print(f'Table loaded. Duration: {t.end()}. Number of objects: {len(df)}')
+    print(f'zml range: [{df.zml.min()}, {df.zml.max()}]')
+  print()
   return df
 
 

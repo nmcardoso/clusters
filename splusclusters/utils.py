@@ -3,6 +3,7 @@ from contextlib import contextmanager
 from datetime import datetime, timedelta
 from multiprocessing import Lock
 from pathlib import Path
+from pprint import pprint
 
 import matplotlib.pyplot as plt
 import numpy as np
@@ -112,11 +113,16 @@ def compute_pdf_peak(a, binrange = None, binwidth = None):
 
 
 def return_table_if_exists(path: Path, default: pd.DataFrame = None):
+  df = None
   if default is not None:
-    return default
-  if path.exists():
-    return read_table(path)
-  return None
+    df = default
+  elif path.exists():
+    df = read_table(path)
+  if path is not None:
+    print(f'Table {str(path)}')
+  print('Number of objects:', len(default))
+  pprint('Columns:', default)
+  return df
 
 
 
