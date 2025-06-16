@@ -124,8 +124,8 @@ def return_table_if_exists(path: Path, default: pd.DataFrame = None):
     print(f'Table {str(path)}')
   
   if df is not None:
-    print('Number of objects:', len(default))
-    pprint('Columns:', default)
+    print('Number of objects:', len(df))
+    pprint('Columns:', df)
   return df
 
 
