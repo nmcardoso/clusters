@@ -407,7 +407,8 @@ def _load_cluster_product(info: ClusterInfo, path: Path):
   df = read_table(path)
   print(f'loaded table {str(path)} in {t.end()}.')
   print(f'number of objects: {len(df)}')
-  pprint(f'columns: ', df.columns)
+  print('columns:')
+  pprint(df.columns)
   if 'z' in df.columns:
     print(f'z range: [{df.z.min()}, {df.z.max()}]')
   if 'zml' in df.columns:
