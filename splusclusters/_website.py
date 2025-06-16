@@ -5,7 +5,7 @@ import numpy as np
 import pandas as pd
 from astromodule.io import write_table
 from astromodule.pipeline import PipelineStage
-from astromodule.table import crossmatch, radial_search
+from astromodule.table import crossmatch, guess_coords_columns, radial_search
 from astropy import units as u
 from astropy.coordinates import SkyCoord
 from pylegs.io import read_table
@@ -283,7 +283,8 @@ def make_splus_fields_tables(info: ClusterInfo, df: pd.DataFrame):
   search_radius_path = base_path / 'splus_fields_search_radius.csv'
   if not r200_path.exists() or not r500_path.exists() or not search_radius_path.exists():
   # if True:
-    coords = SkyCoord(df.ra, df.dec, unit='deg')
+    ra_col, dec_col = guess_coords_columns(df)
+    coords = SkyCoord(df[ra_col], df[dec_col], unit='deg')
     df_r200 = radial_search(info.coord, df, 5*info.r200_deg * u.deg, cached_catalog=coords)
     df_r500 = radial_search(info.coord, df, 5*info.r500_deg * u.deg, cached_catalog=coords)
     fields_r200 = df_r200.groupby('field').size().reset_index(name='n_objects')
@@ -513,7 +514,7 @@ def make_cluster_page(
 def build_cluster_page(
   info: ClusterInfo,
   version: int,
-  df_photoz_radial: pd.DataFrame,
+  df_compilation_radial: pd.DataFrame,
   df_members: pd.DataFrame,
   df_clusters: pd.DataFrame,
   df_clusters_prev: pd.DataFrame,
@@ -525,7 +526,7 @@ def build_cluster_page(
     version=version
   )
   
-  make_splus_fields_tables(info=info, df=df_photoz_radial)
+  make_splus_fields_tables(info=info, df=df_compilation_radial)
   
   if df_members is not None:
     write_table(df_members, info.website_cluster_page / 'members.csv')
