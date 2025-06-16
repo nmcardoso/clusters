@@ -19,10 +19,17 @@ from splusclusters._website import (build_cluster_page, copy_xray, make_index,
 class ConfigResource(dg.ConfigurableResource):
   version: Optional[int] = 7
   subset: Optional[bool] = False
-  overwrite: Optional[bool] = False
   workers: Optional[int] = 5
   magnitude_min: float = 13
   magnitude_max: float = 22
+  
+  overwrite_photoz_cone: Optional[bool] = False
+  overwrite_specz_cone: Optional[bool] = False
+  overwrite_legacy_cone: Optional[bool] = False
+  overwrite_compilation: Optional[bool] = False
+  overwrite_plots: Optional[bool] = False
+  overwrite_website: Optional[bool] = False
+  overwrite_zoffset: Optional[bool] = False
   
   z_spec_delta: Optional[float] = 0.02
   z_photo_delta: Optional[float] = 0.05
@@ -63,17 +70,17 @@ def op_compute_cluster_info(conf: ConfigResource, cls_name: str) -> ClusterInfo:
 
 @dg.op(pool='cluster')
 def op_specz_cone(conf: ConfigResource, info: ClusterInfo):
-  specz_cone(info=info, overwrite=conf.overwrite)
+  specz_cone(info=info, overwrite=conf.overwrite_specz_cone)
 
 
 @dg.op(pool='cluster')
 def op_specz_cone_outrange(conf: ConfigResource, info: ClusterInfo):
-  specz_cone(info=info, overwrite=conf.overwrite, in_range=False)
+  specz_cone(info=info, overwrite=conf.overwrite_specz_cone, in_range=False)
 
 
 @dg.op(tags={'remote': 'splus'}, pool='cluster', retry_policy=dg.RetryPolicy(3))
 def op_photoz_cone(conf: ConfigResource, info: ClusterInfo):
-  photoz_cone(info=info, overwrite=conf.overwrite)
+  photoz_cone(info=info, overwrite=conf.overwrite_photoz_cone)
 
 
 @dg.op(tags={'remote': 'datalab'}, pool='legacy', retry_policy=dg.RetryPolicy(3))
@@ -81,7 +88,7 @@ def op_legacy_cone(conf: ConfigResource, info: ClusterInfo):
   legacy_cone(
     info=info, 
     workers=conf.workers, 
-    overwrite=conf.overwrite
+    overwrite=conf.overwrite_legacy_cone
   )
 
 
@@ -107,7 +114,7 @@ def op_compile_cluster_catalog(conf: ConfigResource, info: ClusterInfo):
     df_legacy_radial=info.legacy_df,
     df_ret=shiftgap_df,
     df_specz_outrange_radial=info.specz_outrange_df,
-    overwrite=conf.overwrite,
+    overwrite=conf.overwrite_compilation,
   )
 
 
@@ -125,7 +132,7 @@ def op_render_plots(conf: ConfigResource, info: ClusterInfo):
       df_legacy_radial=info.legacy_df,
       photoz_odds=conf.photoz_odds,
       separated=conf.separated_plots,
-      overwrite=conf.overwrite,
+      overwrite=conf.overwrite_plots,
       splus_only=conf.splus_only_plots,
     )
 
@@ -137,7 +144,7 @@ def op_create_zoffset_table(conf: ConfigResource):
     df_clusters=df_clusters,
     z_delta=conf.z_spec_delta,
     version=conf.version,
-    overwrite=conf.overwrite,
+    overwrite=conf.overwrite_zoffset,
   )
 
 
@@ -151,12 +158,12 @@ def op_build_cluster_page(conf: ConfigResource, info: ClusterInfo):
     _, df_members, _ = load_shiftgap_cone(info=info, version=conf.version)
     download_xray(
       info=info, 
-      overwrite=conf.overwrite, 
+      overwrite=conf.overwrite_website, 
       fmt=conf.plot_format
     )
     copy_xray(
       info=info,
-      overwrite=conf.overwrite
+      overwrite=conf.overwrite_website,
     )
     build_cluster_page(
       info=info,
