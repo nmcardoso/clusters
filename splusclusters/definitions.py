@@ -209,6 +209,14 @@ def cluster_pipeline(cls_name: str):
 
 
 
+@dg.graph
+def cluster_website_pipeline(cls_name: str):
+  info = op_compute_cluster_info(cls_name=cls_name)
+  x = op_render_plots(info=info, start_after=info)
+  op_build_cluster_page(start_after=x, info=info)
+
+
+
 @dg.op(out=dg.DynamicOut(str))
 def op_get_all_cluster_names(conf: ConfigResource):
   df_clusters = load_catalog(version=conf.version, subset=conf.subset)
@@ -230,6 +238,9 @@ def scale_pipeline():
   op_get_all_cluster_names().map(cluster_pipeline)
   # op_build_other_pages(df_clusters, df_clusters_prev)
 
+
+def scale_website():
+  op_get_all_cluster_names().map(cluster_website_pipeline)
 
 
 
