@@ -694,8 +694,8 @@ def _histogram_members_plot(
   ax: plt.Axes,
   **kwargs
 ):
-  if not 'zml' in df_all_radial.columns: return
-  df_members = df_all_radial[~df_all_radial.z.isna() & ~df_all_radial.zml.isna() & (df_all_radial.flag_members == 0)]
+  if not 'zml' in df_all_radial.columns or 'flag_member' not in df_all_radial.columns: return
+  df_members = df_all_radial[~df_all_radial.z.isna() & ~df_all_radial.zml.isna() & (df_all_radial.flag_member == 0)]
   if len(df_members) == 0: return
   rng = (min(df_members.z.min(), df_members.zml.min()), max(df_members.z.max(), df_members.zml.max()))
   ax.hist(df_members.z, histtype='step', bins=30, range=rng, color='tab:red', alpha=0.75, lw=2, label=f'$z_{{spec}}$ ({len(df_members.z)} objects)')
@@ -713,8 +713,8 @@ def _histogram_interlopers_plot(
   ax: plt.Axes,
   **kwargs,
 ):
-  if 'zml' not in df_all_radial.columns: return
-  df_interlopers = df_all_radial[~df_all_radial.z.isna() & ~df_all_radial.zml.isna() & (df_all_radial.flag_members == 1)]
+  if 'zml' not in df_all_radial.columns or 'flag_member' not in df_all_radial.columns: return
+  df_interlopers = df_all_radial[~df_all_radial.z.isna() & ~df_all_radial.zml.isna() & (df_all_radial.flag_member == 1)]
   if len(df_interlopers) == 0: return
   rng = (min(df_interlopers.z.min(), df_interlopers.zml.min()), max(df_interlopers.z.max(), df_interlopers.zml.max()))
   ax.hist(df_interlopers.z, histtype='step', bins=30, range=rng, color='tab:red', alpha=0.75, lw=2, label=f'$z_{{spec}}$ ({len(df_interlopers.z)} objects)')
