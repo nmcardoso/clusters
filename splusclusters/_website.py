@@ -58,6 +58,12 @@ def _get_nav_tag(
   version: int,
   curr_name: str = None, 
 ):
+  new_clusters = {
+    7: {
+      'A133', 'A3104', 'A3225', 'A463', 'ESO351-021', 'MCXCJ0229.3-3332', 
+      'NGC3054', 'NGC3347', 'NGC5004', '[YMV2007]4832'
+    }
+  }
   links = ''
   for name in sorted(df_clusters.name.values):
     active = 'active' if name == curr_name else ''
@@ -65,7 +71,7 @@ def _get_nav_tag(
     print('df_clusters_prev names:')
     pprint(df_clusters_prev.name.tolist())
     
-    if df_clusters_prev is not None and not (len(df_clusters_prev[df_clusters_prev['name'] == name]) == 0):
+    if len({name}.intersection(new_clusters.get(version, {}))) > 0:
       new_tag = '<span class="badge text-bg-info">New</span>'
     else:
       new_tag = ''
