@@ -457,20 +457,20 @@ def make_cluster_page(
               <tr>
                 <td>z<sub>spec</sub> range</td>
                 <td>
-                  {info.z:.4f} &plusmn; 0.007 = [{info.z_spec_range[0]:.4f}, 
+                  {info.z:.4f} &plusmn; {info.z_spec_delta} = [{info.z_spec_range[0]:.4f}, 
                   {info.z_spec_range[1]:.4f}]
                 </td>
               </tr>
               <tr>
                 <td>z<sub>photo</sub> range</td>
                 <td>
-                  {info.z:.4f} &plusmn; 0.015 = [{info.z_photo_range[0]:.4f}, 
+                  {info.z:.4f} &plusmn; {info.z_photo_delta} = [{info.z_photo_range[0]:.4f}, 
                   {info.z_photo_range[1]:.4f}]
                 </td>
               </tr>
               <tr>
                 <td>mag<sub>r</sub> range</td>
-                <td>[13, 22]</td>
+                <td>[{info.magnitude_range[0]:.2f}, {info.magnitude_range[1]:.2f}]</td>
               </tr>
               <tr>
                 <td>class<sub>spec</sub></td>
