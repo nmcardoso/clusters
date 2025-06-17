@@ -65,7 +65,7 @@ def _get_nav_tag(
     print('df_clusters_prev names:')
     pprint(df_clusters_prev.name.tolist())
     
-    if df_clusters_prev is not None and len(df_clusters_prev[df_clusters_prev['name'] == name]) == 0:
+    if df_clusters_prev is not None and not (len(df_clusters_prev[df_clusters_prev['name'] == name]) == 0):
       new_tag = '<span class="badge text-bg-info">New</span>'
     else:
       new_tag = ''
