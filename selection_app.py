@@ -4,18 +4,23 @@ import urllib
 from copy import deepcopy
 from pathlib import Path
 
+import matplotlib.pyplot as plt
+import matplotlib.tri as tri
 import numpy as np
 import pandas as pd
 import PIL
 import plotly.express as px
 import plotly.figure_factory as ff
 import plotly.graph_objs as go
+import seaborn as sns
 import streamlit as st
+from astropy.wcs import WCS
+from matplotlib.ticker import MaxNLocator, NullFormatter
 from streamlit.components.v1 import html
 
 SPEC_DATA_V1_URL = 'public/clusters_v1.csv'
 SPEC_DATA_V2_URL = 'public/clusters_v2.csv'
-SPEC_DATA_V3_URL = 'https://github.com/nmcardoso/clusters/releases/download/clusters_v3/clusters_v3.parquet' if os.environ.get('HOSTNAME', '') == 'streamlit' else 'outputs_v3/clusters_v3.csv'
+SPEC_DATA_V3_URL = 'https://github.com/nmcardoso/clusters/releases/download/clusters_v3/clusters_v3.parquet' #if os.environ.get('HOSTNAME', '') == 'streamlit' else 'outputs_v3/clusters_v3.csv'
 AUX_DATA_URL = 'public/catalog_chinese_xray.csv'
 URL_MAP = {
   'clusters_v1': SPEC_DATA_V1_URL,
@@ -146,6 +151,100 @@ plot_layout_reversed = deepcopy(plot_layout)
 plot_layout_reversed['xaxis']['autorange'] = 'reversed'
 
 
+def plot_histogram(x, nbins: int = 22):
+  fig, ax = plt.subplots(figsize=(8, 4))
+  ax.grid('on', color='tab:gray', linestyle='--', alpha=.5)
+  ax.tick_params(direction='in')
+  ax.hist(x, bins=nbins)
+  st.pyplot(fig, clear_figure=True, use_container_width=True)
+
+
+def plot_density(x, y, z, ra, dec):
+  xlims = [min(x),max(x)]
+  ylims = [min(y),max(y)]
+ 
+  # Set up your x and y labels
+  xlabel = 'RA'
+  ylabel = 'DEC'
+  
+  # Define the locations for the axes
+  left, width = 0.12, 0.55
+  bottom, height = 0.12, 0.55
+  bottom_h = left_h = left + width + 0.02
+  
+  # Set up the geometry of the three plots
+  rect_temperature = [left, bottom, width, height] # dimensions of temp plot
+  rect_histx = [left, bottom_h, width, 0.25] # dimensions of x-histogram
+  rect_histy = [left_h, bottom, 0.15, height] # dimensions of y-histogram
+  
+  # Set up the size of the figure
+  fig = plt.figure(1, figsize=(9.5,9))
+  
+  wcs_spec =  {
+    # 'CDELT1': -1.0,
+    # 'CDELT2': 1.0,
+    # 'CRPIX1': 8.5,
+    # 'CRPIX2': 8.5,
+    'CRVAL1': ra,
+    'CRVAL2': dec,
+    'CTYPE1': 'RA---AIT',
+    'CTYPE2': 'DEC--AIT',
+    'CUNIT1': 'deg',
+    'CUNIT2': 'deg'
+  }
+  wcs = WCS(wcs_spec)
+  
+  # Make the three plots
+  ax_density = plt.axes(rect_temperature, projection=wcs) # temperature plot
+  ax_hist_x = plt.axes(rect_histx) # x histogram
+  ax_hist_y = plt.axes(rect_histy) # y histogram
+  
+  # Remove the inner axes numbers of the histograms
+  nullfmt = NullFormatter()
+  ax_hist_x.xaxis.set_major_formatter(nullfmt)
+  ax_hist_y.yaxis.set_major_formatter(nullfmt)
+  
+  # Find the min/max of the data
+  xmin = min(xlims)
+  xmax = max(xlims)
+  ymin = min(ylims)
+  ymax = max(y)
+  
+  # Make the 'main' temperature plot
+  # Define the number of bins
+  nbins = 22
+  
+  sns.kdeplot(x=x, y=y, levels=18, ax=ax_density, xlabel='x', transform=ax_density.get_transform('icrs'))
+  ax_density.scatter(x, y, transform=ax_density.get_transform('icrs'))
+  ax_density.invert_xaxis()
+  
+  #Plot the axes labels
+  ax_density.set_xlabel(xlabel)
+  ax_density.set_ylabel(ylabel)
+  
+  #Set up the plot limits
+  # ax_density.set_xlim(xlims)
+  # ax_density.set_ylim(ylims)
+  
+  #Set up the histogram bins
+  xbins = np.arange(xmin, xmax, (xmax-xmin)/nbins)
+  ybins = np.arange(ymin, ymax, (ymax-ymin)/nbins)
+  
+  #Plot the histograms
+  ax_hist_x.hist(x, bins=xbins, color='tab:blue')
+  ax_hist_y.hist(y, bins=ybins, orientation='horizontal', color='tab:blue')
+  
+  #Set up the histogram limits
+  ax_hist_x.set_xlim( min(x), max(x) )
+  ax_hist_y.set_ylim( min(y), max(y) )
+  
+  #Cool trick that changes the number of tickmarks for the histogram axes
+  ax_hist_y.xaxis.set_major_locator(MaxNLocator(4))
+  ax_hist_x.yaxis.set_major_locator(MaxNLocator(4))
+  
+  st.pyplot(fig, clear_figure=True, use_container_width=True)
+  
+
 def main():
   st.set_page_config(page_title='Cluster Analysis', layout='wide', page_icon='🌌')
   
@@ -248,7 +347,7 @@ def main():
     )
     hist_z.update_layout(plot_layout)
     st.plotly_chart(hist_z, use_container_width=True, config={'staticPlot': True})
-    
+    # plot_histogram(cluster_df_z.z.values)
     
     ra_delta_z = np.maximum(np.abs(cluster_ra - cluster_df_z.RA.values.min()), np.abs(cluster_df_z.RA.values.max() - cluster_ra))
     dec_delta_z = np.maximum(np.abs(cluster_dec - cluster_df_z.DEC.values.min()), np.abs(cluster_df_z.DEC.values.max() - cluster_dec))
@@ -261,6 +360,9 @@ def main():
       title='Spec Z Density',
       ncontours=22,
     )
+    
+    # plot_density(cluster_df_z.RA.values, cluster_df_z.DEC.values, cluster_df_z.z.values, cluster_ra, cluster_dec)
+    
     density_z.add_scatter(
       x=[cluster_ra], 
       y=[cluster_dec], 
