@@ -1,3 +1,4 @@
+from pprint import pprint
 from shutil import copy
 from typing import Sequence, Tuple
 
@@ -61,7 +62,10 @@ def _get_nav_tag(
   for name in sorted(df_clusters.name.values):
     active = 'active' if name == curr_name else ''
     
-    if df_clusters_prev is not None and name not in df_clusters_prev['name']:
+    print('df_clusters_prev names:')
+    pprint(df_clusters_prev.name.tolist())
+    
+    if df_clusters_prev is not None and len(df_clusters_prev[df_clusters_prev['name'] == name]) == 0:
       new_tag = '<span class="badge text-bg-info">New</span>'
     else:
       new_tag = ''
