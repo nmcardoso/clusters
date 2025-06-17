@@ -159,7 +159,7 @@ def make_zoffset_page(
   df_clusters_prev: pd.DataFrame, 
   version: int
 ):
-  df = read_table(configs.Z_OFFSET_TABLE_PATH)
+  df = read_table(configs.ROOT / 'tables' / f'z_offset_v{version}.csv')
   rows = ''
   for i, row in df.iterrows():
     cls_m = [''] * 3
@@ -187,23 +187,23 @@ def make_zoffset_page(
       <td class="{cls_mi[1]}">{row['rmse_omi_mi']:.3f} ({row['rel_omi_mi']*100:.1f}%)</td>
       
       <td>
-        <a href="{row['name']}/zoffset_baseline_m.jpg" class="gallery" data-lightbox="{row['name']}">
-          <img height="120" src="{row['name']}/zoffset_baseline_m.jpg" />
+        <a href="{row['name']}/zoffset_baseline_m_{row['name']}.jpg" class="gallery" data-lightbox="{row['name']}">
+          <img height="120" src="{row['name']}/zoffset_baseline_m_{row['name']}.jpg" />
         </a>
       </td>
       <td>
-        <a href="{row['name']}/zoffset_m-shift_m.jpg" class="gallery" data-lightbox="{row['name']}">
-          <img height="120" src="{row['name']}/zoffset_m-shift_m.jpg" />
+        <a href="{row['name']}/zoffset_m-shift_m_{row['name']}.jpg" class="gallery" data-lightbox="{row['name']}">
+          <img height="120" src="{row['name']}/zoffset_m-shift_m_{row['name']}.jpg" />
         </a>
       </td>
       <td>
-        <a href="{row['name']}/zoffset_baseline_mi.jpg" class="gallery" data-lightbox="{row['name']}">
-          <img height="120" src="{row['name']}/zoffset_baseline_mi.jpg" />
+        <a href="{row['name']}/zoffset_baseline_mi_{row['name']}.jpg" class="gallery" data-lightbox="{row['name']}">
+          <img height="120" src="{row['name']}/zoffset_baseline_mi_{row['name']}.jpg" />
         </a>
       </td>
       <td>
-        <a href="{row['name']}/zoffset_mi-shift_mi.jpg" class="gallery" data-lightbox="{row['name']}">
-          <img height="120" src="{row['name']}/zoffset_mi-shift_mi.jpg" />
+        <a href="{row['name']}/zoffset_mi-shift_mi_{row['name']}.jpg" class="gallery" data-lightbox="{row['name']}">
+          <img height="120" src="{row['name']}/zoffset_mi-shift_mi_{row['name']}.jpg" />
         </a>
       </td>
     </tr>
