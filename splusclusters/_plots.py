@@ -106,6 +106,7 @@ def _plot_specz(
   df_members: pd.DataFrame | None,
   df_interlopers: pd.DataFrame | None,
   ax: plt.Axes,
+  **kwargs
 ):
   df_plot = df_specz_radial[df_specz_radial.z.between(*info.z_spec_range)]
   ra_col, dec_col = guess_coords_columns(df_plot)
@@ -164,7 +165,8 @@ def _plot_specz(
 def _plot_photoz(
   info: ClusterInfo, 
   df_photoz_radial: pd.DataFrame, 
-  ax: plt.Axes
+  ax: plt.Axes,
+  **kwargs
 ):
   if df_photoz_radial is not None and len(df_photoz_radial) > 0:
     ra_col, dec_col = guess_coords_columns(df_photoz_radial)
@@ -188,11 +190,14 @@ def _plot_photoz(
   ax.tick_params(direction='in')
   ax.set_xlabel('RA')
   ax.set_ylabel('DEC')
-    
-def plot_legacy_coverage(
+
+
+
+def _plot_legacy_coverage(
   info: ClusterInfo,
   df_legacy_radial: pd.DataFrame,
   ax: plt.Axes,
+  **kwargs
 ):
   if df_legacy_radial is not None and len(df_legacy_radial) > 0:
     ra_col, dec_col = guess_coords_columns(df_legacy_radial)
@@ -231,6 +236,7 @@ def _plot_photoz_specz(
   df_all_radial: pd.DataFrame,
   photoz_odds: float,
   ax: plt.Axes,
+  **kwargs
 ):
   if len(df_specz_radial) > 0 and len(df_photoz_radial) > 0:
     df_photoz_good = df_all_radial[df_all_radial.zml.between(*info.z_photo_range) & (df_all_radial.odds > photoz_odds)]
@@ -313,61 +319,38 @@ def make_overview_plots(
   }
   wcs = WCS(wcs_spec)
   
-  title = _get_plot_title(info)
-  
   if separated:
-    out = info.plot_specz_path
-    with cond_overwrite(out, overwrite, mkdir=True):
-      fig = plt.figure(figsize=(7.5, 7.5), dpi=150)
-      ax = fig.add_subplot(projection=wcs)
-      _plot_specz(
-        info=info,
-        df_members=df_members,
-        df_interlopers=df_interlopers,
-        df_specz_radial=df_specz_radial,
-        ax=ax,
-      )
-      plt.savefig(out, bbox_inches='tight', pad_inches=0.1)
-      plt.close(fig)
-      
-    out = info.plot_photoz_path
-    with cond_overwrite(out, overwrite, mkdir=True):
-      fig = plt.figure(figsize=(7.5, 7.5), dpi=150)
-      ax = fig.add_subplot(projection=wcs)
-      _plot_photoz(
-        info=info,
-        df_photoz_radial=df_photoz_radial,
-        ax=ax,
-      )
-      plt.savefig(out, bbox_inches='tight', pad_inches=0.1)
-      plt.close(fig)
-      
-    out = info.plot_legacy_coverage_path
-    with cond_overwrite(out, overwrite, mkdir=True):
-      fig = plt.figure(figsize=(7.5, 7.5), dpi=150)
-      ax = fig.add_subplot(projection=wcs)
-      plot_legacy_coverage(
-        info=info,
-        df_legacy_radial=df_legacy_radial,
-        ax=ax,
-      )
-      plt.savefig(out, bbox_inches='tight', pad_inches=0.1)
-      plt.close(fig)
-      
-    out = info.plot_photoz_specz_path
-    with cond_overwrite(out, overwrite, mkdir=True):
-      fig = plt.figure(figsize=(7.5, 7.5), dpi=150)
-      ax = fig.add_subplot(projection=wcs)
-      _plot_photoz_specz(
-        info=info,
-        df_specz_radial=df_specz_radial,
-        df_photoz_radial=df_photoz_radial,
-        df_all_radial=df_all_radial,
-        photoz_odds=photoz_odds,
-        ax=ax,
-      )
-      plt.savefig(out, bbox_inches='tight', pad_inches=0.1)
-      plt.close(fig)
+    plots = [
+      (_plot_specz, info.plot_specz_path),
+      (_plot_photoz, info.plot_photoz_path),
+      (_plot_legacy_coverage, info.plot_legacy_coverage_path),
+      (_plot_photoz_specz, info.plot_photoz_specz_path),
+    ]
+    
+    args = {
+      'info': info,
+      'df_photoz_radial': df_photoz_radial,
+      'df_specz_radial': df_specz_radial,
+      'df_all_radial': df_all_radial,
+      'df_members': df_members,
+      'df_interlopers': df_interlopers,
+      'df_legacy_radial': df_legacy_radial,
+      'photoz_odds': photoz_odds,
+      'separated': separated,
+      'overwrite': overwrite,
+      'splus_only': splus_only,
+    }
+    
+    for plot_func, plot_path in plots:
+      with cond_overwrite(plot_path, overwrite, mkdir=True):
+        fig = plt.figure(figsize=(7.5, 7.5), dpi=150)
+        ax = fig.add_subplot(projection=wcs)
+        plot_func(ax=ax, **args)
+        if hasattr(ax, 'coords'):
+          ax.coords[0].set_format_unit(u.deg, decimal=True)
+          ax.coords[1].set_format_unit(u.deg, decimal=True)
+        plt.savefig(plot_path, bbox_inches='tight', pad_inches=0.1)
+        plt.close(fig)
   else:
     out_path = info.plot_agg_info_path
     with cond_overwrite(out_path, overwrite, mkdir=True):
@@ -405,7 +388,7 @@ def make_overview_plots(
         ax=axs[2],
       )
       
-      fig.suptitle(title, size=18)
+      fig.suptitle(_get_plot_title(info), size=18)
       plt.savefig(out_path, bbox_inches='tight', pad_inches=0.1)
       plt.close(fig)
       
@@ -909,7 +892,7 @@ def _plot_ra_dec_relative(
   ax.add_patch(circle)
   circle = Circle(
     (0, 0), 
-    5*(info.r500_deg/info.r200_deg),
+    5 * (info.r500_deg / info.r200_deg),
     fc='none', 
     lw=2, 
     linestyle='--',
@@ -919,7 +902,7 @@ def _plot_ra_dec_relative(
   ax.add_patch(circle)
   circle = Circle(
     (0, 0), 
-    info.search_radius_deg/info.r200_deg,
+    info.search_radius_deg / info.r200_deg,
     fc='none', 
     lw=2, 
     linestyle='-',
@@ -987,7 +970,6 @@ def make_velocity_plots(
     'CUNIT2': 'deg'
   }
   wcs = WCS(wcs_spec)
-  title = _get_plot_title(info)
   
   args = {
     'info': info,
@@ -1031,7 +1013,7 @@ def make_velocity_plots(
         ax=ax2
       )
       
-      fig.suptitle(title, size=18)
+      fig.suptitle(_get_plot_title(info), size=18)
       plt.savefig(out_path, bbox_inches='tight', pad_inches=0.1)
       plt.close(fig)
 
