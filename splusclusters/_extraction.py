@@ -111,22 +111,25 @@ def legacy_cone(
       SELECT t.ra, t.dec, t.type, t.shape_r, t.mag_g, t.mag_r, t.mag_i, t.mag_z, 
       t.mag_w1, t.mag_w2, t.mag_w3, t.mag_w4
       FROM ls_dr10.tractor AS t
-      WHERE (ra BETWEEN {ra_min} AND {ra_max}) AND 
+      WHERE (brick_primary = 1) AND 
+      (mag_r BETWEEN {r_min:.2f} AND {r_max:.2f}) AND 
       (dec BETWEEN {dec_min} AND {dec_max}) AND
-      (brick_primary = 1) AND 
-      (mag_r BETWEEN {r_min:.2f} AND {r_max:.2f})
+      q3c_radial_query(ra, dec, {ra_center}, {dec_center}, {radius_deg})
     """.strip()
-
+    dec_min = info.dec - info.search_radius_deg
+    dec_max = info.dec + info.search_radius_deg
+    dec_delta = 120 / 3600 # 2 minutes in degrees
     queries = [
       sql.format(
-        ra_min=info.ra - info.search_radius_deg, 
-        ra_max=info.ra + info.search_radius_deg, 
-        dec_min=info.dec - info.search_radius_deg,
-        dec_max=info.dec + info.search_radius_deg,
-        r_min=_r,
-        r_max=_r + .05
+        r_min=info.magnitude_range[0],
+        r_max=info.magnitude_range[1],
+        dec_min=info.dec,
+        dec_max=info.dec + dec_delta,
+        ra_center=info.ra,
+        dec_center=info.dec,
+        radius=info.search_radius_deg,
       )
-      for _r in np.arange(*info.magnitude_range, .05)
+      for dec_delta in np.arange(dec_min, dec_max, dec_delta)
     ]
     service = LegacyService(replace=True, workers=workers)
     service.batch_sync_query(
